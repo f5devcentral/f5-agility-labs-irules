@@ -1,0 +1,59 @@
+img {
+	width: 100%;
+	max-width: 650px;
+	margin-bottom: 12px;
+}
+
+table {
+	margin-bottom: 12px;
+}
+
+.admonition-tmsh {
+  border: 1px #3c763d solid;
+  background-color: #dff0d8;
+}
+
+.admonition-tmsh>.admonition-title:before {
+  content: "\f05a";
+}
+
+.admonition-tmsh>.admonition-title:after {
+  content: " Command";
+}
+
+.admonition-tmsh>.admonition-title {
+  background-color: #3c763d;
+  color: white;
+  padding: 6px;
+}
+
+.admonition-tmsh p.last {
+    display: block;
+    padding: 10.5px;
+    margin: 6px 6px 11px;
+    font-size: 15px;
+    line-height: 1.375;
+    word-break: break-all;
+    word-wrap: break-word;
+    color: #4d4f53;
+    background-color: #f5f5f5;
+    border: 1px solid #ccc;
+    border-radius: 0;
+    font-family: Menlo,Monaco,Consolas,Courier New,monospace;
+}
+
+
+.admonition-todo>.admonition-title:before {
+  content: "\f046";
+}
+
+.admonition-todo>.admonition-title {
+  background-color: #ff3030;
+  color: white;
+  padding: 6px;
+}
+
+.admonition-todo {
+  border: solid 1px red;
+  background-color: #ffa0a0;
+}
