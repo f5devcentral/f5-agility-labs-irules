@@ -1,5 +1,5 @@
-|classname|
-===========
+Cooking with iRules - HTTP
+==========================
 
 This class covers the following topics:
 

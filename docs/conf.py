@@ -5,7 +5,7 @@
 # ------------
 #
 # REQUIRED: Your class/lab name
-classname = "Cooking with iRules - HTTP"
+classname = "F5 iRules Data Plane Programmability"
 
 # OPTIONAL: The URL to the GitHub Repository for this class
 # github_repo = "https://github.com/f5devcentral/your-class-repo"

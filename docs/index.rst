@@ -1,8 +1,3 @@
-F5 Agility Labs - Index
-=======================
-
-.. _label-welcome:
-
 Welcome
 -------
 
