@@ -7,8 +7,7 @@ page will display our POST data. As part of the lab exercise, we will
 apply an LX iRule that will convert the form POST data into JSON and
 change the Content-Type header.
 
-Using Your Lab Environment
---------------------------
+**Using Your Lab Environment**
 
 You will be using Ravello for this lab. We will be working with a
 Windows 7 desktop, a BIG-IP 13.0 LTM VE and a server with HTTP and SQL
@@ -20,12 +19,10 @@ configured -
 
 |image0|
 
-HTTP and SSH Access to the BIG-IP
----------------------------------
+**HTTP and SSH Access to the BIG-IP**
 
 You can SSH directly to your SSH Ravello environment with the SSH client
 provided on your workstation.
-
 
 .. toctree::
    :maxdepth: 1
