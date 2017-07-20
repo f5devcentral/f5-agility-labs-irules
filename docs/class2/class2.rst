@@ -20,6 +20,7 @@ configured -
 |image0|
 
 **How to Access the Labs**
+
 You will receive instructions from your proctor on how to access the workstation in the lab.
 On this workstation, you will have the following applications –
 
@@ -29,6 +30,8 @@ On this workstation, you will have the following applications –
   Links are bookmarked just below the address bar.
 - Putty SSH Client – For accessing the BASH and TMSH command line of the BIG-IP. The BIG-IP
   properties have been saved to the session labeled *BIG-IP*.
+
+
 
 .. toctree::
    :maxdepth: 1
