@@ -5,22 +5,20 @@ Test and Review the Existing Configuration
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 To start off we have a web application that has a web form that we enter
-some information into and submit. The response of the POST will show our
-form data and “Content-Type” header. This web app is configured on our
-BIG-IP as the virtual server *ilxlab1\_vs* and does not have any iRules
-attached. Feel free log into the BIG-IP and explore the configuration.
-
-Now lets look at the web app at the URL http://10.0.0.20/ilxlab1/ (Lab 1
-on bookmarks). Here is the example of the web form –
+some information into and submit. Now lets look at the web app at the URL
+http://10.0.0.20/ilxlab1/ (Lab 1 on bookmarks). The response of the POST
+will show our form data and “Content-Type” header. Here is the example of
+the web form –
 
 |image1|
 
-Here is an example of the response to a POST.
+Go ahead and run your own test of the web app. Observe the “Content-Type”
+header and POST data values. Here is an example of the response to a POST.
 
 |image2|
 
-Go ahead and run your own test of the web app. Observe the
-“Content-Type” header and POST data values.
+Go ahead and run your own test of the web app. Observe the “Content-Type”
+header and POST data values. Here is an example of the response to a POST.
 
 Create the LX Workspace
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -43,9 +41,10 @@ of the editor, then give it the name *ilxlab1\_ext*. The various files
 of the extension will show up. Select the *index.js* file and you should
 see a template of example code in the editor window. Normally you could
 use this example code as a starting point, but in our case we should
-delete all the example code from the window. In your documents folder,
+delete all the example code from the window. In the Atom editor,
 locate the file named *ilxlab1.js* and double click it which should open
-it in a text editor. Copy and paste this into the editor on our BIG-IP.
+it in a text editor. Copy and paste this into the index.js file on our
+BIG-IP.
 
 Just for reference, here is the code:
 
@@ -81,16 +80,14 @@ Create the TCL iRule
 Next, we need to create the TCL iRule that will call our Node.js code.
 Click the button *Add iRule* at the bottom of the editor window, name
 the iRule *json\_post* and don’t check the box to Include example code
-(we don’t need the example code for this lab). On the desktop, locate
-the file named *ilxlab.tcl* and double click it which should open it in
-a text editor. Copy and paste this into the editor on our BIG-IP.
+(we don’t need the example code for this lab). In the Atom editor, locate
+the file named *ilxlab.tcl* a. Copy and paste this into the *json\_post*
+file on our BIG-IP.
 
-Just for reference, here is the code. Some important parts are
-highlighted:
+Just for reference, here is the code.
 
 .. code-block:: tcl
    :linenos:
-   :emphasize-lines: 10
 
    when HTTP_REQUEST {
        # Collect POST data
@@ -123,7 +120,7 @@ Create the LX Plugin
 Now that we have our code in a workspace, you will need to navigate over
 to the LX Plugins menu in the tab located at *Local Traffic > iRules >
 LX Plugins*. Click the *Create* button, name the plugin *ilxlab1\_pl*,
-select the *post\_json* workspace and save the changes. This makes the
+select the *ilxlab1* workspace and click *Finished*. This makes the
 Node.js code active.
 
 Apply the LX iRule to the Virtual Server
@@ -181,18 +178,20 @@ would happen on a separate BIG-IP).
 Export/Import a Workspace
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Go to the *LX Workspaces* list, check the box of our workspace and click
+Go to the *LX Workspaces* list, check the box of our *ilxlab1* workspace and click
 the *Export* button below the list. You will be prompted to download the
 tgz file to your computer. This will save the file to the user’s
 *Downloads* folder.
 
 Now click the *Import* button on the top right hand corner of the
 workspace list. On the next window give the imported workspace the name
-of *ilxlab1\_bak*, select the option *Archive File*, and use the browse
-button to find the tgz file in the user’s *Downloads* folder. When you
-click the *Import* button you will be taken back to the workspace list
-and you should see the 2 workspaces now. Feel free to navigate into the
+of *ilxlab1\_restore*, select the option *Archive File*, and use the
+*Choose File* button to find the tgz file in the user’s *Downloads* folder.
+When you click the *Import* button you will be taken back to the workspace
+list and you should see the imported workspace now. Feel free to navigate into the
 imported workspace.
+
+You have concluded lab exercise #1. 
 
 .. |image1| image:: /_static/class2/image2.png
    :width: 3.27850in

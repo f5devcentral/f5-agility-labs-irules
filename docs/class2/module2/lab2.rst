@@ -5,15 +5,16 @@ Test and Review the Existing Configuration
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 In this lab we will be working from the file ilxlab2\_steps.js. You will
-be cutting and pasting code from this file as directed. We will be
-working with the virtual server (10.0.0.21) & workspace named *ilxlab2*.
-The plugin and TCL iRule are already assigned to the virtual server.
+be **cutting and pasting** code from this file as directed. We will be
+working with the virtual server (10.0.0.21) & workspace named *ilxlab2*
+which already has some base code in it. The plugin has already been created
+and the TCL iRule are already assigned to the virtual server.
 
-To start off we have a web application that has a web form that we enter
+To start off we have a web application with a web form that we enter
 some information into and submit. The response of the POST will show our
 form data and “Content-Type” header. This web app is configured on our
 BIG-IP at the URL http://10.0.0.21/ilxlab2/. Now lets look at the web
-app in a tab of your browser. Here is the example of the web form:
+app in the browser. Here is the example of the web form:
 
 |image6|
 
@@ -48,7 +49,7 @@ iRules LX Code Update Behavior
 Because the way iRules LX transitions new generations of an LX Plugin,
 when we make changes to the code we will not see these changes in our
 original browser window because it is using the same TCP connection and
-being serviced by the previous version of the LX plugin. To force the
+is being serviced by the previous version of the LX plugin. To force the
 BIG-IP to give us the new generation of the LX plugin, we will be
 running the following TMSH command after every workspace change:
 
@@ -67,8 +68,8 @@ dedicated log file for each Node.js process for an extension within an
 LX Plugin.
 
 The extension ``ilxlab2_ext`` of plugin ``ilxlab2_pl`` is already
-configured with the following settings so we can make the logs of lab
-easier to find -
+configured with the following settings so we can make the logs of the
+lab easier to find -
 
 +---------------------+-------------+----------------------------------------------------+
 | Setting             | New Value   | Reason                                             |
@@ -79,20 +80,28 @@ easier to find -
 +---------------------+-------------+----------------------------------------------------+
 
 To see these settings for yourself, click on the *ilxlab2\_pl* LX plugin
-and then click on the *ilxlab2\_ext* extension.
+and then click on the *ilxlab2\_ext* extension. The dedicated log files
+can be found in the directory */var/log/ilx/* and will be named in the
+format *<partition_name>.<plugin_name>.<ext_name><tmm_id_if_dedicated_mode>*.
+Here are some examples of file names -
+
+.. code-block:: none
+  Common.ilxlab2_pl.ilxlab2_ext
+  Common.ilxlab99_pl.some_ext0
+  Common.ilxlab99_pl.some_ext1
 
 Exception Handling
 ~~~~~~~~~~~~~~~~~~
 
 Good software development incorporates exception handling into the code.
 Without it, our programs would simply crash when there is an uncaught
-exception. On iRules TCL the TCL interpreter crashes for an uncaught
+exception. On iRules TCL, the TCL interpreter crashes for an uncaught
 exception, but the worst consequence is that a single client connection
 is reset.
 
 Because Node.js in iRules LX is external from TMM, a crash is much more
 serious. Any connection being serviced by that Node.js process will get
-reset and all state for any pending RPC call will be lost. A crash
+reset and all state for any outstanding RPC calls will be lost. A crash
 triggered from a single function call has the potential to reset
 hundreds or even thousands of connections on the BIG-IP. Also, any new
 connections that are trying to establish while Node.js is rebooting
@@ -123,7 +132,7 @@ All we are doing is extracting the form input box labeled “JSON”. But we
 would like to insert more data into the JSON that we send to the
 application. In order to do that, we must first parse the JSON to a JS
 object, then stringify it again. Go to the *code\_instructions* and
-complete **code step 1**. The ILX addMethod code should look like this
+complete **code step 1** (remember to copy and paste). The ILX addMethod code should look like this
 after you are done (changes are highlighted) -
 
 **Code Step 1**
@@ -147,16 +156,34 @@ like we did earlier. You will see an text only error like this:
 |image10|
 
 This error is coming from the iRules TCL code in our “catch” of the ILX
-call. **If we look at the logs we will see the following error**:
+call. If we look at the logs we will see the following:
 
-``Stopping``
+``# tail -1 /var/log/ltm
+Jul 11 16:02:15 bigip1 err tmm1[14567]: Rule /Common/ilxlab2_pl/json_parse <HTTP_REQUEST_DATA>: Client - 10.0.0.10, ILX failure: ILX timeout.     invoked from within "ILX::call $handle jsonParse [HTTP::payload]" ``
+
+# tail -1 /var/log/ltm
+Jul 11 16:02:15 bigip1 err tmm1[14567]: Rule /Common/ilxlab2_pl/json_parse <HTTP_REQUEST_DATA>: Client - 10.0.0.10, ILX failure: ILX timeout.     invoked from within "ILX::call $handle jsonParse [HTTP::payload]"
+
+The log file for the extension should have some entries similar to this:
+
+``
+# tail -20 /var/log/ilx/Common.ilxlab2_pl.ilxlab2_ext
+Jul 11 16:02:12 pid[15201] undefined:5
+Jul 11 16:02:12 pid[15201] randomtext
+Jul 11 16:02:12 pid[15201] ^
+Jul 11 16:02:12 pid[15201] SyntaxError: Unexpected token w
+Jul 11 16:02:12 pid[15201]     at Object.parse (native)
+Jul 11 16:02:12 pid[15201]     at Object.jsonParse (/var/sdm/plugin_store/plugins/:Common:ilxlab2_pl_62102_2/extensions/ilxlab2_ext/index.js:13:23)
+Jul 11 16:02:12 pid[15201]     at ILXClient.<anonymous> (/var/sdm/plugin_store/plugins/:Common:ilxlab2_pl_62102_2/extensions/ilxlab2_ext/node_modules/f5-nodejs/lib/ilx_server.js:100:46)
+<--------------Rest of output truncated -------------->
+
+``
 
 As you can see, our bad JSON threw an exception that crashed the Node.js
-process which caused an ILX timeout in TCL. To prevent Node.js from
-crashing we need to put JSON.parse in a try/catch block.
+process which caused an ILX timeout in TCL. This is the stack track for our exception.
 
-Perform code step 2 on the workspace to do this. The Node method should
-end up like this –
+To prevent Node.js from crashing we need to put JSON.parse in a try/catch block. Perform
+code step 2 on the workspace to do this. The Node function should end up like this –
 
 **Code Step 2**
 
@@ -177,11 +204,12 @@ end up like this –
      res.reply(JSON.stringify(jsonData));
    });
 
-Save and reload the workpsace. Now if you try bad JSON again, you will
-still get the same error on the web browser, but we will not crash the
-Node.js process. **We will see an error message in the logs such as this**:
+Save and reload the workspace. Now if you try bad JSON again, you will still
+get the same error on the web browser, but we will not crash the Node.js
+process. Doing a tail of the log files again, you will see an error message
+similar to this:
 
-``sdmd[11018]: 018e0017:6: pid[19619] plugin[/Common/json_parser_pl.parser_ext] Error with JSON.parse: Unexpected token e``
+``Jul 11 16:14:55 pid[15456] Error with JSON.parse: Unexpected token w``
 
 **Note**: Try/catch is only for synchronous functions. Most asynchronous
 functions handle exceptions/errors in the callback function or with
@@ -205,9 +233,9 @@ be 0 if everything was okay but would be an integer to indicate a
 specific error code.
 
 For this next step, we will make changes to both Node and TCL to create
-the error communication between Node and TMM. This is what the Node
-method and the TCL *HTTP\_REQUEST\_DATA* event should look like after
-you make the changes:
+the error communication between Node and TMM. Perform code step 3a and 3b
+on the workspace. This is what the Node method and the TCL
+*HTTP\_REQUEST\_DATA* event should look like after you make the changes:
 
 **Code Step 3 Node.js**
 
@@ -227,6 +255,10 @@ you make the changes:
 
      res.reply([0, JSON.stringify(jsonData)]);
    });
+
+As you can see in the res.resply function, we can return multiple values
+back to TCL if we put an array as the argument. TCL will then see these
+values returned as a TCL list.
 
 **Code Step 3 TCL**
 
@@ -257,13 +289,15 @@ you make the changes:
        }
    }
 
-Save and reload the workpsace. What we have done is allow Node.js to
+Here we are checking the value of index 0 of the TCL list to see if it is
+greater than zero. Based upon what that value is we can tailor our return
+message back to the client. What we have done is allowed Node.js to
 communicate specific errors that we define back to the client. You would
 never want to send back all errors because stack traces could reveal
 sensitive data about your iRule.
 
-Now when you submit invalid JSON in the browser you should see an error
-like this:
+Save and reload the workspace. Now when you submit invalid JSON in the
+browser you should see an error like this –
 
 |image11|
 
@@ -309,7 +343,7 @@ after this step:
 
    ilx.listen();
 
-Save and reload the workpsace.
+Save and reload the workspace.
 
 **Note**: This is not really a proper use of a cryptographic nonce, it
 is just to show how we can extend functionality with Node.js.
@@ -363,16 +397,14 @@ dependencies as shown here in the workspace:
 Using the Validator Module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-To use this module, we must import it into out Node.js code and then
-call it. In code step 5, we will “require” the module in Node.js, then
-put some code that will validate if our email address has the proper
-format. We will also need to add some extra code to TCL to hand 2 more
-error conditions that email validation brings. The first check ensures
-that the email value is in our JSON, otherwise invoking the second line
-with **jsonData.email** would throw an unexpected token exception (and
-crash our node process) because we would be calling on a variable that
-does not exist. Here is what the code will look like once you are
-finished:
+To use this module, we must import it into out Node.js code and
+then call it. In code step 5, we will “require” the module in
+Node.js, then put some code that will validate if our email address
+has the proper format. We will also need to add some extra code to TCL
+to hand 2 more error conditions that email validation brings. The first
+check ensures that the email value is in our JSON,  the second uses the
+validator module to validate the syntax of the email address. Here is
+what the code will look like once you are finished:
 
 **Code Step 5 Node.js**
 
@@ -409,6 +441,13 @@ finished:
 
    ilx.listen();
 
+You will notice that we check first for the existence of the email property
+in the JSON and then check if the string in the JSON is valid. If you
+attempted to only do the email validation but the email property was not
+present, this would throw an exception for a missing property in the JS
+object and crash Node.
+
+
 **Code Step 5 TCL**
 
 .. code-block:: tcl
@@ -440,18 +479,12 @@ finished:
        }
    }
 
-You will notice that we check first for the existence of the *email*
-property in the JSON and then check if the string in the JSON is valid.
-If you attempted to only do the email validation but the email property
-was not present, this would throw an exception for a missing property in
-the JS object and crash Node.
-
 Both the email property presence check and invalid email error get an
 error code that we pass over to TCL to give the client a useable error
 message. Now we can test these error conditions.
 
-Go to your browser and remove the email property and trailing comma from
-the password property like so:
+Save and reload the workspace. Go to your browser and remove the email
+property and trailing comma from the password property like so:
 
 |image14|
 
@@ -459,7 +492,7 @@ When you press submit, you should see an error like this:
 
 |image15|
 
-Now go back to the form and press Ctrl + F5 to refresh the web form back
+Now go back to the form and refresh the web form back
 to normal. Now remove the “@” symbol the email address:
 
 |image16|

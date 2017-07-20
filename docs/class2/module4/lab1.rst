@@ -4,7 +4,10 @@ iRules LX Streaming
 Creating and Implementing a Streaming LX Plugin
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-In this lab exercise, we
+In this lab we will be loading an LX plugin in streaming mode. To keep
+the lab simple, we will only be loading a plugin that will print the
+client data to hexdump format in the log files.
+
 
 Review the LX Workspace and Install NPM package
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -52,10 +55,10 @@ Just for reference, here is the Node.js code below:
    options.handleServerData = false;
    plugin.start(options); //Start the plugin in streaming mode
 
-As you can see from the code above we are referencing the *hexy* package
-for doing the hexdumps of the buffer chunk. Therefore, we need to
-install this package into the workspace. To do this you will need to SSH
-to the BIG-IP and execute the following commands:
+As you can see from the code above we are loading the hexy package for
+doing the hexdumps of the buffer chunk. Therefore, we need to install
+this package into the workspace. To do this you will need to SSH to the
+BIG-IP and execute the following commands from the BASH prompt:
 
 .. code-block:: console
 
@@ -99,9 +102,10 @@ Assign the iRules LX Profile to Virtual Servers
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Now we need to attach our profile to a virtual server. Go into the
-virtual servers and select the *ilxlab4\_stream \_profile* virtual
-server, then expand the Configuration menu to the advanced setting and
-you will see the iRules LX Profile setting as shown here:
+virtual server *ilxlab4\_stream\_vs* main configuration “properties”
+window (not the resources tab), then expand the Configuration menu
+to the advanced setting and you will see the iRules LX Profile setting
+as shown here:
 
 |image18|
 
@@ -117,8 +121,8 @@ following command:
 
 ``# tail -f  /var/log/ilx/Common. ilxlab4_stream_pl.hexdump``
 
-Then refresh the second tab in the browser (URL http://10.0.0.23) and
-you should see output like this in the SSH terminal:
+Then refresh the page in the browser (URL http://10.0.0.23/ilxlab4stream)
+and you should see output like this in the SSH terminal:
 
 |image19|
 
@@ -127,7 +131,7 @@ Create and Implement an HTTP server LX Plugin
 
 In this lab exercise, we will use the LX plugin as an HTTP server. The
 virtual server that we will use this LX Plugin is the
-*ilxlab4\_http\_vs* virtual server which does not have a pool attached
+*ilxlab4\_http\_vs* (10.0.0.24) virtual server which does not have a pool attached
 to it. This VS does not have an HTTP profile associated with it as use
 of the iRules LX HTTP server requires this configuration.
 
@@ -164,7 +168,7 @@ Create the LX Plugin, Profile and Attach to Virtual Server
 With our code already in a workspace, all we need to do is create our LX
 Plugin and iRules LX profile, and attach the profile to the virtual
 server. Name your LX Plugin *ilxlab4\_http\_pl*. Create the iRules LX
-profile with the name of *ilxlab4\_http\_pl* and attach it to the
+profile with the name of *ilxlab4\_http\_profile* and attach it to the
 *ilxlab4\_http\_vs* virtual server.
 
 Test the ILX HTTP Plugin

@@ -9,7 +9,7 @@ we will apply an LX iRule that will convert the form POST data into JSON
 and change the Content-Type header.
 
 The practicality of this use case could be when you have some type of
-legacy service front end that can only POST data as a standard query
+legacy front end service that can only POST data as a standard query
 string, but a new back end service takes data as JSON. It would be
 pretty impractical to use iRules TCL to perform the translation.
 However, this task is trivial for iRules LX because of the power of

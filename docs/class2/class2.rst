@@ -19,10 +19,16 @@ configured -
 
 |image0|
 
-**HTTP and SSH Access to the BIG-IP**
+**How to Access the Labs**
+You will receive instructions from your proctor on how to access the workstation in the lab.
+On this workstation, you will have the following applications –
 
-You can SSH directly to your SSH Ravello environment with the SSH client
-provided on your workstation.
+- Atom Editor – For viewing lab code with syntax highlighting. When you open up Atom, you will
+  see a list of files that will be used in these labs.
+- Chrome Web Browser – For testing the applications we create and BIG-IP management access.
+  Links are bookmarked just below the address bar.
+- Putty SSH Client – For accessing the BASH and TMSH command line of the BIG-IP. The BIG-IP
+  properties have been saved to the session labeled *BIG-IP*.
 
 .. toctree::
    :maxdepth: 1

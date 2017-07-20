@@ -5,7 +5,7 @@ Test and Review the Existing Configuration
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 In this lab we will be working with the virtual server (10.0.0.22) &
-workspace named *ilxlab2*. The plugin and TCL iRule are already assigned
+workspace named *ilxlab3*. The plugin and TCL iRule are already assigned
 to the virtual server. To start off we have a web application that
 displays a list of users in a database. This web app is configured on
 our BIG-IP at the URL http://10.0.0.22/.
@@ -45,7 +45,7 @@ review the sql query method in our extension code highlighted below:
 You will notice that the function has 2 arguments, the first being the
 text of the actual query. Because this method is asynchronous, the
 second argument is the callback function that will get executed when the
-query answer is received by the BIG-IP.
+query answer is received by Node.js.
 
 To demonstrate asynchronous behavior, we will put logging statements
 before and after the query method as such:
@@ -102,7 +102,7 @@ tail the log contents of the log file again and then refresh the ilxlab3
 web page. You will see that they are in the right order. The callback
 function is executed much later because I/O responses take much longer.
 
-But you might ask, how much later is the callback function executing? TO
+But you might ask, how much later is the callback function executing? To
 answer that question, lets add some more code:
 
 **Code Step 3**
