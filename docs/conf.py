@@ -19,8 +19,13 @@ import os
 import sys
 import time
 import re
+import pkgutil
+import string
 sys.path.insert(0, os.path.abspath('.'))
 import f5_sphinx_theme
+
+year = time.strftime("%Y")
+eventname = "Agility %s Hands-on Lab Guide" % (year)
 
 rst_prolog = """
 .. |classname| replace:: %s
@@ -164,22 +169,37 @@ htmlhelp_basename =  cleanname + 'doc'
 
 # -- Options for LaTeX output ---------------------------------------------
 
+front_cover_image = 'front_cover'
+back_cover_image = 'back_cover'
+
+front_cover_image_path = os.path.join('_static', front_cover_image + '.png')
+back_cover_image_path = os.path.join('_static', back_cover_image + '.png')
+
+latex_additional_files = [front_cover_image_path, back_cover_image_path]
+
+template = string.Template(open('preamble.tex').read())
+
+latex_contents = r"""
+\frontcoverpage
+\contentspage
+"""
+
+backcover_latex_contents = r"""
+\backcoverpage
+"""
+
 latex_elements = {
-    # The paper size ('letterpaper' or 'a4paper').
-    #
-    # 'papersize': 'letterpaper',
+    'papersize': 'letterpaper',
+    'pointsize': '10pt',
+    'fncychap': r'\usepackage[Bjornstrup]{fncychap}',
+    'preamble': template.substitute(eventname=eventname,
+                                    project=project,
+                                    author=author,
+                                    frontcoverimage=front_cover_image,
+                                    backcoverimage=back_cover_image),
 
-    # The font size ('10pt', '11pt' or '12pt').
-    #
-    # 'pointsize': '10pt',
-
-    # Additional stuff for the LaTeX preamble.
-    #
-    # 'preamble': '',
-
-    # Latex figure (float) alignment
-    #
-    # 'figure_align': 'htbp',
+    'tableofcontents': latex_contents,
+    'printindex': backcover_latex_contents
 }
 
 # Grouping the document tree into LaTeX files. List of tuples
@@ -187,9 +207,8 @@ latex_elements = {
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
     (master_doc, '%s.tex' % cleanname, u'%s Documentation' % classname,
-     u'F5 Networks, Inc.', 'manual'),
+     u'F5 Networks, Inc.', 'manual', True),
 ]
-
 
 # -- Options for manual page output ---------------------------------------
 
