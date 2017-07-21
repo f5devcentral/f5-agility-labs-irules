@@ -179,12 +179,12 @@ You should see a web page like this –
 
 |image20|
 
-.. |image18| image:: /_static/class2/image19.png
+.. |image18| image:: /_static/class3/image19.png
    :width: 4.67675in
    :height: 3.65336in
-.. |image19| image:: /_static/class2/image20.png
+.. |image19| image:: /_static/class3/image20.png
    :width: 6.30972in
    :height: 3.47979in
-.. |image20| image:: /_static/class2/image21.png
+.. |image20| image:: /_static/class3/image21.png
    :width: 4.17027in
    :height: 1.29401in
