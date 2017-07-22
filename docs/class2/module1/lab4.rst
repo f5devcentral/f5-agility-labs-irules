@@ -31,7 +31,7 @@ The iRule
            KP { pool majestic_unicorn_pool }
            default { pool northamerica }
        }
-   } 
+   }
 
 For the sake of testing this though, we’ll need to replace
 ``IP::client_addr`` with an ``X-Forwarded-For`` HTTP header that we can
@@ -43,12 +43,12 @@ control, and generally alter the iRule for log display only.
 
    when HTTP_REQUEST {
        set XFF [getfield [lindex [HTTP::header values X-Forwarded-For] 0] "," 1]
-       log local0. "continent: [whereis ${XFF} continent]"   
+       log local0. "continent: [whereis ${XFF} continent]"
        log local0. "country: [whereis ${XFF} country]"
        log local0. "state: [whereis ${XFF} state]"
        log local0. "isp: [whereis ${XFF} isp]"
        log local0. "org: [whereis ${XFF} org]"
-   } 
+   }
 
 Apply this iRule to an HTTP virtual server (VIP).
 
@@ -63,7 +63,7 @@ Analysis
    - ``[whereis [IP::client_addr] country]``: returns the two-letter
      country code
 
-   - ``[whereis [IP::client_addr] <state\|abbrev>]``: returns the state as
+   - ``[whereis [IP::client_addr] <state|abbrev>]``: returns the state as
      word or as two-letter abbreviation
 
    - ``[whereis [IP::client_addr] isp]``: returns the carrier
@@ -123,14 +123,14 @@ that you can maintain in a data group.
            drop
            event disable all
        }
-   } 
-   
+   }
+
    when CLIENT_ACCEPTED {
        if { not ( [class match [whereis [IP::client_addr] country] equals list_of_countries ] )} {
            drop
            event disable all
        }
-   } 
+   }
 
 where the data group is a string-based list of two-letter country codes.
 
