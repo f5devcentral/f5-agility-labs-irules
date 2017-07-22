@@ -65,7 +65,7 @@ Testing
 Just like the geolocation lab, to test this from a command line,
 issue a cURL command and include an ``X-Forwarded-For`` header:
 
-``curl http://198.162.1.10 -H "X-Forwarded-For: 186.64.120.104"``
+``curl http://www.f5test.local -H "X-Forwarded-For: 186.64.120.104"``
 
 Here are a few bad IP addresses to test:
 

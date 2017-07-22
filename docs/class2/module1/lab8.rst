@@ -129,7 +129,7 @@ The iRule
 
    when HTTP_RESPONSE {
        set ckname "mycookie"
-       if { [HTTP::cookie exists $ckanme] } {
+       if { [HTTP::cookie exists $ckname] } {
            HTTP::cookie secure $ckname enable
            HTTP::cookie httponly $ckname enable
        }

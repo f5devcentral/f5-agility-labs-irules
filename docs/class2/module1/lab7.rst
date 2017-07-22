@@ -112,8 +112,8 @@ to inform them that they need to upgrade their browser.
 
    when CLIENTSSL_HANDSHAKE {
        if { ( [SSL::cipher version] equals "TLSV1" ) or ( [SSL::cipher version] equals "SSLv3" ) } {
-           set redirect-to "http://www.mysafe-site.local"
-           SSL::respond "HTTP/1.1 302 Found\r\nLocation: $redirect-to\r\n\r\n"
+           set redirect "http://www.f5test.local/insecure.html"
+           SSL::respond "HTTP/1.1 302 Found\r\nLocation: $redirect\r\n\r\n"
        }
    }
 

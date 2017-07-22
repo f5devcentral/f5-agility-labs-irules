@@ -64,7 +64,7 @@ Testing
 The simplest way to test this code is by creating an http:// URL
 reference in some HTML code in your web application.
 
-``<a href="http://myapplication.com/path/to/something.png">Test Link</a>``
+``<a href="http://www.f5test.local/f5.png">Test Link</a>``
 
 With the above iRule in place, this URL in the HTTP response should
 be rewritten to an HTTPS URL.
