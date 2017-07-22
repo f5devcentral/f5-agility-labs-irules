@@ -47,7 +47,7 @@ certificate embedded in the HPKP header. That header looks like this:
 
 ``pin-sha256="LPJNul+wow4m6DsqxbninhsWHlwfp0JecwQzYpOLmCQ=";``
 
-```report-uri="http://example.com/pkp-report"``
+``report-uri="http://example.com/pkp-report"``
 
 The header name is ``Public-Key-Pins`` and has a similar max-age attribute
 as HSTS. The header can include multiple encoded certificate hashes
@@ -58,7 +58,7 @@ To be most effective, this response header should only be transmitted
 over HTTPS to prevent stripping. To create the encoded value for a given
 certificate, use the following OpenSSL commands:
 
-``openssl x509 –in <cert> -pubkey –noout \| openssl rsa –pubin –outform der \| openssl dgst –sha256 –binary \| openssl enc –base64``
+``openssl x509 –in <cert> -pubkey –noout | openssl rsa –pubin –outform der | openssl dgst –sha256 –binary | openssl enc –base64``
 
 The following iRule demonstrates how to deploy both HSTS and HPKP.
 
@@ -81,7 +81,7 @@ The iRule
 
    when RULE_INIT {
        set static::fqdn_pin1 "X3pGTSOuJeEVw989IJ/cEtXUEmy52zs1TZQrU06KUKg="
-       
+
        # Set max_age to 180 days
        set static::max_age 15552000
    }
@@ -91,7 +91,7 @@ The iRule
        # Insert an HPKP header
        HTTP::header insert Public-Key-Pins "pin-sha256=\"$static::fqdn_pin1\" max-age=$static::max_age; includeSubDomains"
    }
-   
+
 Apply this iRule to an HTTPS virtual server (VIP).
 
 Analysis
