@@ -79,10 +79,10 @@ Create the TCL iRule
 
 Next, we need to create the TCL iRule that will call our Node.js code.
 Click the button *Add iRule* at the bottom of the editor window, name
-the iRule *json\_post* and don’t check the box to Include example code
+the iRule *json\_post* and don’t check the box to include example code
 (we don’t need the example code for this lab). In the Atom editor, locate
-the file named *ilxlab.tcl* a. Copy and paste this into the *json\_post*
-file on our BIG-IP.
+the file named *ilxlab1.tcl* a. Copy and paste this into the *json\_post*
+iRule file.
 
 Just for reference, here is the code.
 
@@ -179,8 +179,7 @@ Export/Import a Workspace
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Go to the *LX Workspaces* list, check the box of our *ilxlab1* workspace and click
-the *Export* button below the list. You will be prompted to download the
-tgz file to your computer. This will save the file to the user’s
+the *Export* button below the list. This will save the file to the user’s
 *Downloads* folder.
 
 Now click the *Import* button on the top right hand corner of the
@@ -191,7 +190,8 @@ When you click the *Import* button you will be taken back to the workspace
 list and you should see the imported workspace now. Feel free to navigate into the
 imported workspace.
 
-You have concluded lab exercise #1.
+You have concluded lab exercise #1. 
+
 
 .. |image1| image:: /_static/class3/image2.png
    :width: 3.27850in
