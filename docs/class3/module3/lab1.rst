@@ -56,6 +56,30 @@ before and after the query method as such:
    :linenos:
    :emphasize-lines: 4, 13, 22
 
+   // Add a method 
+   ilx.addMethod('get_users', function(req, res) {
+     // Perform the query from pool
+     console.log('Starting SQL query');
+     sqlPool.query(
+       'SELECT id, name, grp FROM users_db.users ORDER BY id;',
+       function(err, rows) {
+         if (err) {
+           // MySQL query failed for some reason, send a 2 back to TCK
+           console.error('Error with query: ', err.message);
+           return res.reply(2);
+         }
+         console.log('There are', rows.length,'records in the DB.');
+   
+         // Check array length from sql
+         if (rows.length)
+           res.reply([0, rows]);
+         else
+           res.reply(1); // if 0 return 1 to the Tcl iRule to show no matching records
+       }
+     );
+     console.log('SQL query finished.');
+   });
+   
 Make sure to use the TMSH plugin restart command after you reload the
 workspace. Now tail the log contents of the log file with the following
 BASH command and then refresh the ilxlab3 web page:

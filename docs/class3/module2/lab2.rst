@@ -85,10 +85,11 @@ can be found in the directory */var/log/ilx/* and will be named in the
 format *<partition_name>.<plugin_name>.<ext_name><tmm_id_if_dedicated_mode>*.
 Here are some examples of file names -
 
-.. code-block:: none
-  Common.ilxlab2_pl.ilxlab2_ext
-  Common.ilxlab99_pl.some_ext0
-  Common.ilxlab99_pl.some_ext1
+.. code-block:: console
+
+   Common.ilxlab2_pl.ilxlab2_ext
+   Common.ilxlab99_pl.some_ext0
+   Common.ilxlab99_pl.some_ext1
 
 Exception Handling
 ~~~~~~~~~~~~~~~~~~
@@ -158,26 +159,27 @@ like we did earlier. You will see an text only error like this:
 This error is coming from the iRules TCL code in our “catch” of the ILX
 call. If we look at the logs we will see the following:
 
-``# tail -1 /var/log/ltm
-Jul 11 16:02:15 bigip1 err tmm1[14567]: Rule /Common/ilxlab2_pl/json_parse <HTTP_REQUEST_DATA>: Client - 10.0.0.10, ILX failure: ILX timeout.     invoked from within "ILX::call $handle jsonParse [HTTP::payload]" ``
+..code-block:: console
 
-# tail -1 /var/log/ltm
-Jul 11 16:02:15 bigip1 err tmm1[14567]: Rule /Common/ilxlab2_pl/json_parse <HTTP_REQUEST_DATA>: Client - 10.0.0.10, ILX failure: ILX timeout.     invoked from within "ILX::call $handle jsonParse [HTTP::payload]"
+  # tail -1 /var/log/ltm
+  Jul 11 16:02:15 bigip1 err tmm1[14567]: Rule /Common/ilxlab2_pl/json_parse <HTTP_REQUEST_DATA>: Client - 10.0.0.  10, ILX failure: ILX timeout.     invoked from within "ILX::call $handle jsonParse [HTTP::payload]" ``
+  
+  # tail -1 /var/log/ltm
+  Jul 11 16:02:15 bigip1 err tmm1[14567]: Rule /Common/ilxlab2_pl/json_parse <HTTP_REQUEST_DATA>: Client - 10.0.0.  10, ILX failure: ILX timeout.     invoked from within "ILX::call $handle jsonParse [HTTP::payload]"
 
 The log file for the extension should have some entries similar to this:
 
-``
-# tail -20 /var/log/ilx/Common.ilxlab2_pl.ilxlab2_ext
-Jul 11 16:02:12 pid[15201] undefined:5
-Jul 11 16:02:12 pid[15201] randomtext
-Jul 11 16:02:12 pid[15201] ^
-Jul 11 16:02:12 pid[15201] SyntaxError: Unexpected token w
-Jul 11 16:02:12 pid[15201]     at Object.parse (native)
-Jul 11 16:02:12 pid[15201]     at Object.jsonParse (/var/sdm/plugin_store/plugins/:Common:ilxlab2_pl_62102_2/extensions/ilxlab2_ext/index.js:13:23)
-Jul 11 16:02:12 pid[15201]     at ILXClient.<anonymous> (/var/sdm/plugin_store/plugins/:Common:ilxlab2_pl_62102_2/extensions/ilxlab2_ext/node_modules/f5-nodejs/lib/ilx_server.js:100:46)
-<--------------Rest of output truncated -------------->
+.. code-block:: console
 
-``
+   # tail -20 /var/log/ilx/Common.ilxlab2_pl.ilxlab2_ext
+   Jul 11 16:02:12 pid[15201] undefined:5
+   Jul 11 16:02:12 pid[15201] randomtext
+   Jul 11 16:02:12 pid[15201] ^
+   Jul 11 16:02:12 pid[15201] SyntaxError: Unexpected token w
+   Jul 11 16:02:12 pid[15201]     at Object.parse (native)
+   Jul 11 16:02:12 pid[15201]     at Object.jsonParse (/var/sdm/plugin_store/plugins/:Common:   ilxlab2_pl_62102_2/extensions/ilxlab2_ext/index.js:13:23)
+   Jul 11 16:02:12 pid[15201]     at ILXClient.<anonymous> (/var/sdm/plugin_store/plugins/:Common:   ilxlab2_pl_62102_2/extensions/ilxlab2_ext/node_modules/f5-nodejs/lib/ilx_server.js:100:46)
+   <--------------Rest of output truncated -------------->
 
 As you can see, our bad JSON threw an exception that crashed the Node.js
 process which caused an ILX timeout in TCL. This is the stack track for our exception.
@@ -501,39 +503,39 @@ Then submit the form and you should see the following:
 
 |image17|
 
-.. |image6| image:: /_static/class2/image7.png
+.. |image6| image:: /_static/class3/image7.png
    :width: 3.35047in
    :height: 2.74171in
-.. |image7| image:: /_static/class2/image8.png
+.. |image7| image:: /_static/class3/image8.png
    :width: 3.61001in
    :height: 2.08705in
-.. |image8| image:: /_static/class2/image9.png
+.. |image8| image:: /_static/class3/image9.png
    :width: 3.15999in
    :height: 2.42508in
-.. |image9| image:: /_static/class2/image10.png
+.. |image9| image:: /_static/class3/image10.png
    :width: 4.44534in
    :height: 1.55393in
-.. |image10| image:: /_static/class2/image11.png
+.. |image10| image:: /_static/class3/image11.png
    :width: 5.28966in
    :height: 0.88318in
-.. |image11| image:: /_static/class2/image12.png
+.. |image11| image:: /_static/class3/image12.png
    :width: 3.67347in
    :height: 0.59130in
-.. |image12| image:: /_static/class2/image13.png
+.. |image12| image:: /_static/class3/image13.png
    :width: 3.42615in
    :height: 2.18037in
-.. |image13| image:: /_static/class2/image14.png
+.. |image13| image:: /_static/class3/image14.png
    :width: 5.63090in
    :height: 1.78672in
-.. |image14| image:: /_static/class2/image15.png
+.. |image14| image:: /_static/class3/image15.png
    :width: 2.58703in
    :height: 2.41944in
-.. |image15| image:: /_static/class2/image16.png
+.. |image15| image:: /_static/class3/image16.png
    :width: 5.17619in
    :height: 0.60586in
-.. |image16| image:: /_static/class2/image17.png
+.. |image16| image:: /_static/class3/image17.png
    :width: 2.75043in
    :height: 2.37327in
-.. |image17| image:: /_static/class2/image18.png
+.. |image17| image:: /_static/class3/image18.png
    :width: 5.45094in
    :height: 0.40864in

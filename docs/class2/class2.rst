@@ -1,44 +1,36 @@
-Introduction to iRules LX
-=========================
+Cooking with iRules - Security/SSL
+==================================
 
-In this class we will learn how to use iRules LX with a basic example. We
-will have a web app that has a web form. When we submit the form, the
-page will display our POST data. As part of the lab exercise, we will
-apply an LX iRule that will convert the form POST data into JSON and
-change the Content-Type header.
+Security vulnerabilities are on the rise. In 2015 alone we saw zero-day
+exploits more than double from the previous year (according to
+Symantec’s 2015 Internet Security Threat Report), accounting for roughly
+one new attack each week in 2015. It certainly doesn’t help that, in
+practice, software developers are not classically trained in application
+security. As you’re no doubt aware by now, F5 iRules can often “fix”
+things that are missing or hard to solve in the existing application
+stack. Of course, custom code should never take the place of a good
+security product, but arguably there’s no single security device that
+can address every vulnerability; and malware and other exploits
+generally move faster than software updates and patches. F5 iRules give
+you the power and flexibility to fill those gaps, and these labs provide
+just a taste of some of that power. In the following, you’ll see a
+handful of ways to use iRules to defend and protect against malicious
+activity in your enterprise. We’re presenting this guide in the form of
+a “cookbook” that you can follow in any order, and as needed to solve
+specific problems.
 
-**Using Your Lab Environment**
+Ultimately though, this is an **incomplete** cookbook. There’s simply no
+way to include iRules code for every possible vulnerability, and we’d
+rather not hand you a 500-page document. If you need to fix some
+specific security issue that we haven’t included here, or simply have
+questions, please let the F5 DevCentral community know.
 
-You will be using Ravello for this lab. We will be working with a
-Windows 7 desktop, a BIG-IP 13.0 LTM VE and a server with HTTP and SQL
-services enabled. We will be using the Windows machine as our desktop
-for accessing the applications on the BIG-IP.
+https://devcentral.f5.com
 
-This diagram shows the topology of the network as it is currently
-configured -
-
-|image0|
-
-**How to Access the Labs**
-
-You will receive instructions from your proctor on how to access the workstation in the lab.
-On this workstation, you will have the following applications –
-
-- Atom Editor – For viewing lab code with syntax highlighting. When you open up Atom, you will
-  see a list of files that will be used in these labs.
-- Chrome Web Browser – For testing the applications we create and BIG-IP management access.
-  Links are bookmarked just below the address bar.
-- Putty SSH Client – For accessing the BASH and TMSH command line of the BIG-IP. The BIG-IP
-  properties have been saved to the session labeled *BIG-IP*.
-
-
+**iRules rock!**
 
 .. toctree::
    :maxdepth: 1
    :glob:
 
    module*/module*
-
-.. |image0| image:: /_static/class2/image1.png
-   :width: 7.49583in
-   :height: 3.82917in
