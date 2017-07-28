@@ -93,9 +93,6 @@ Here are a few bots to test:
 - 188.219.154.228
 - 188.241.140.212
 
-.. NOTE:: To lookup geolocation information directly on the BIG-IP you can use
-   geoip_lookup.
-
 Bonus versions
 ~~~~~~~~~~~~~~
 
