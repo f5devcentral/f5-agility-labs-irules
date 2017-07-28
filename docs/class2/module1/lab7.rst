@@ -81,7 +81,8 @@ Testing
 
 #. Apply this iRule to an SSL VIP and test across several browsers and
    platforms. If at all possible, stage this iRule someplace that it can
-   be accessed by a larger audience.
+   be accessed by a larger audience. For the purposes of this lab we can
+   use openssl s_client -connect www.f5test.local:443 {-tls1, -tls1_1, -tls1_2}
 
 #. At any point you can access the data collected in the iStats by
    simply typing the following at the BIG-IP command line:

@@ -93,8 +93,8 @@ of that script.
       curl http://www.f5test.local --write-out "%{http_code}\n" --silent -o /dev/null
    done
    
-Substitute the HTTP URL with your VIP’s address and open a tail of
-the BIG-IP LTM log from the command line.
+Substitute the HTTP URL with your VIP’s fully qualified domain name
+and open a tail of the BIG-IP LTM log from the command line.
 
 ``tail –f /var/log/ltm``
 

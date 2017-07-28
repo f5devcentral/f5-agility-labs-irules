@@ -150,14 +150,13 @@ Analysis
 Testing
 ~~~~~~~
 
-#. Attach this iRule to an HTTPS VIP and include some Set-Cookie logic
-   in your backend application that does not include the secure and
-   httpOnly attributes.
+#. Access HTTPS URL without iRule to see current cookie status.
 
-#. It may be easier to actually see the cookie response by using a
-   command line cURL client.
+   ``curl –vk https://www.f5test.local``	
 
-   ``curl –vk https://www.f5test.local``
+#. Attach the iRule to the HTTPS VIP
+
+#. Access the HTTPS URL to see the change in the cookie information.
 
 A word on cookie security – the ``secure`` and ``httpOnly`` flags are
 exceedingly important for the proper and secure use of HTTP cookies, but

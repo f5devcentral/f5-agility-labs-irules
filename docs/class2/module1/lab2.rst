@@ -218,26 +218,29 @@ Analysis
 Testing
 ~~~~~~~
 
-#. Import the CA certificate to the BIG-IP.
+#. Import the CA certificate to the BIG-IP. (For the purposes of this
+   lab this has been completed for you)
 
-#. Import the server certificate and private key to the BIG-IP.
+#. Import the server certificate and private key to the BIG-IP. (For
+   the purposes of this lab this has been completed for you)
 
 #. Create a client SSL profile and assign the imported server
    certificate and private key in the Certificate and Key options in the
    profile. In the Client Authentication section of the client SSL
    profile, set Client Certificate to ***Require*** (or Request), and
    assign the imported CA certificate to the Trusted Certificate
-   Authorities option.
+   Authorities option. (For the purposes of this lab this has been
+   completed for you)
 
-#. Apply this client SSL profile to a virtual server.
+#. Apply this client SSL profile to a virtual server. (For the purposes of this
+   lab this has been completed for you)
 
 #. Import the client certificate and private key to the client
-   (browser).
+   (browser). (For the purposes of this lab this has been completed for you)
 
 #. Import the CA certificate to the client’s Trusted Roots certificate
-   key store.
+   key store. (For the purposes of this lab this has been completed for you)
 
-#. Test accessing the fully qualified domain name of the HTTPS VIP from
-   the client.  The client browser should prompt you to select a certificate.
-   Upon selecting this certificate, you should be able to pass through to the
-   application.
+#. Test accessing the HTTPS URL from the client.  The client browser should
+   prompt you to select a certificate. Upon selecting this certificate, you 
+   should be able to pass through to the application.
