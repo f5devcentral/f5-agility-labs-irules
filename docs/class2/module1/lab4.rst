@@ -125,13 +125,6 @@ that you can maintain in a data group.
        }
    }
 
-   when CLIENT_ACCEPTED {
-       if { not ( [class match [whereis [IP::client_addr] country] equals list_of_countries ] )} {
-           drop
-           event disable all
-       }
-   }
-
 where the data group is a string-based list of two-letter country codes.
 
 .. code-block:: console

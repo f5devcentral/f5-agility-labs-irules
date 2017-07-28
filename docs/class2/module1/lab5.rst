@@ -41,7 +41,7 @@ The iRule
            set is_reject 1
        }
        if { $is_reject } {
-           log local0. "Attempted access from malicious IP address [IP::client_addr]($iprep_categories) - rejected" 
+           log local0. "Attempted access from malicious IP address [HTTP::header values "X-Forwarded-For"]($iprep_categories) - rejected" 
            HTTP::respond 200 content "<HTML><HEAD><TITLE>Rejected Request</TITLE></HEAD><BODY>The request was rejected   . <BR>Attempted access from malicious IP address</BODY></HTML>"
        }
    }

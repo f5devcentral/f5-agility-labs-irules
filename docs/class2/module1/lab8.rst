@@ -86,7 +86,7 @@ a crucial part in cookie security.
   flag is an excellent option.
 
 - ``httpOnly`` represents a single (no value) flag that tells the
-  browser client to only transmit this cookie back to non-scipted user
+  browser client to only transmit this cookie back to non-scripted user
   agents. In other words, if a JavaScript agent makes a request inside the
   browser, the cookie will not be sent with this request. Many XSS and
   CSRF exploits rely on the ability to grab session cookies with rogue
@@ -157,7 +157,7 @@ Testing
 #. It may be easier to actually see the cookie response by using a
    command line cURL client.
 
-   ``curl –v https://www.f5test.local``
+   ``curl –vk https://www.f5test.local``
 
 A word on cookie security – the ``secure`` and ``httpOnly`` flags are
 exceedingly important for the proper and secure use of HTTP cookies, but

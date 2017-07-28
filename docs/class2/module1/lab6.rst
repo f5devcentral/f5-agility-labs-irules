@@ -15,7 +15,7 @@ the browser, only as needed.
 
 Objectives:
 
--  Deploy and test the example HSTS/HPKP iRule code
+-  Deploy and test the example Streaming iRule code
 
 Lab Requirements:
 

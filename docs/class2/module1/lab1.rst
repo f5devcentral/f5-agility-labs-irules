@@ -20,6 +20,8 @@ Lab Requirements:
 
 -  BIG-IP LTM, web server and client (Linux command line client
    preferred)
+   
+-  HTTP throttling scripts under scripts directory in Cygwin Terminal   
 
 The iRule
 ~~~~~~~~~
@@ -32,8 +34,8 @@ The iRule
         # Defines how long this object exists in the subtable
         set static::maxRate 10
         # This defines how long is the sliding window to count the requests. 
-        # This example allows 10 requests in 3 seconds
-        set static::windowSecs 3
+        # This example allows 10 requests in 10 seconds
+        set static::windowSecs 10
         set static::timeout 30
     }
     when HTTP_REQUEST {
@@ -79,8 +81,8 @@ Testing
 ~~~~~~~
 
 A very simple way to test this iRule implementation is with a cURL
-script from the command line. Here’s a Bash representation of that
-script.
+script from the Cygwin Terminal command line. Here’s a Bash representation
+of that script.
 
 .. code-block:: console
    :linenos:
