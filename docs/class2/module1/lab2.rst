@@ -237,6 +237,7 @@ Testing
 #. Import the CA certificate to the client’s Trusted Roots certificate
    key store.
 
-#. Test accessing the VIP from the client. The client browser should
-   prompt you to select a certificate. Upon selecting this certificate,
-   you should be able to pass through to the application.
+#. Test accessing the fully qualified domain name of the HTTPS VIP from
+   the client.  The client browser should prompt you to select a certificate.
+   Upon selecting this certificate, you should be able to pass through to the
+   application.

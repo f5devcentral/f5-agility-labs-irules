@@ -80,3 +80,6 @@ Here are a few bots to test:
 - 188.120.224.250
 - 188.219.154.228
 - 188.241.140.212
+
+*NOTE: To lookup ip reputation information directly on the BIG-IP you can use
+       iprep_lookup <IP_addr>
