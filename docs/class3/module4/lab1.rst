@@ -62,7 +62,7 @@ BIG-IP and execute the following commands from the BASH prompt:
 
 .. code-block:: console
 
-   # cd /var/ilx/workspaces/Common/streaming_lab_1_ws/extensions/hexdump/
+   # cd /var/ilx/workspaces/Common/ilxlab4_stream/extensions/hexdump/
    # npm install --save hexy
 
 Create the LX Plugin
