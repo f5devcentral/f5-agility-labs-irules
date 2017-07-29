@@ -101,6 +101,7 @@ much. You might, for example, want to block all non-US requests.
 
 .. code-block:: tcl
    :linenos:
+   :emphasize-lines: 2-3
 
    when HTTP_REQUEST {
        set XFF [getfield [lindex [HTTP::header values X-Forwarded-For] 0] "," 1]
@@ -108,18 +109,7 @@ much. You might, for example, want to block all non-US requests.
            drop
            event disable all
        }
-   }
-
-.. code-block:: tcl
-   :linenos:
-   
-   when HTTP_REQUEST {
-       set XFF [getfield [lindex [HTTP::header values X-Forwarded-For] 0] "," 1]
-       if { [whereis ${XFF} country] ne "US" } {
-           drop
-           event disable all
-       }
-   }   
+   }  
        
 Or you might only want to allow access to a small set of countries
 that you can maintain in a data group.
