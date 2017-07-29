@@ -43,11 +43,11 @@ control, and generally alter the iRule for log display only.
 
    when HTTP_REQUEST {
        set XFF [getfield [lindex [HTTP::header values X-Forwarded-For] 0] "," 1]
-       log local0. "continent: [whereis ${XFF} continent]"
-       log local0. "country: [whereis ${XFF} country]"
-       log local0. "state: [whereis ${XFF} state]"
-       log local0. "isp: [whereis ${XFF} isp]"
-       log local0. "org: [whereis ${XFF} org]"
+       log local0. "continent: [whereis $XFF continent]"
+       log local0. "country: [whereis $XFF country]"
+       log local0. "state: [whereis $XFF state]"
+       log local0. "isp: [whereis $XFF isp]"
+       log local0. "org: [whereis $XFF org]"
    }
 
 Apply this iRule to an HTTP virtual server (VIP).
@@ -92,6 +92,10 @@ Here are a few bots to test:
 - 188.120.224.250
 - 188.219.154.228
 - 188.241.140.212
+
+.. NOTE:: Using ``geoip_lookup x.x.x.x``, where x.x.x.x is the IP
+address of interest, on the command line will provide geographic
+location information.
 
 Bonus versions
 ~~~~~~~~~~~~~~

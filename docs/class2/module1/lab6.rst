@@ -41,7 +41,7 @@ The iRule
        # Apply stream profile against text responses from the application
        if { [HTTP::header value Content-Type] contains "text"} {
           # Look for the http:// and replace it with https://
-          STREAM::expression {@http://@https://@}
+          STREAM::expression "@http://@https://@"
           # Enable the stream profile
           STREAM::enable
       }
@@ -81,5 +81,5 @@ also wanted to sanitize Social Security and credit card numbers
 
 .. code-block:: tcl
 
-   STREAM::expression {@\d3-\d2-\d4@***-**-****@ @\d4-\d4-\d4-\d4@xxxx-xxxx-xxxx-xxxx@}
+   STREAM::expression "@\d3-\d2-\d4@***-**-****@ @\d4-\d4-\d4-\d4@xxxx-xxxx-xxxx-xxxx@"
    
