@@ -94,7 +94,7 @@ Here are a few bots to test:
 - 188.241.140.212
 
 .. NOTE:: Using ``geoip_lookup <IP_addr>`` on the BIG-IP command line
-will provide geographic location information.
+   will provide geographic location information.
 
 Bonus versions
 ~~~~~~~~~~~~~~

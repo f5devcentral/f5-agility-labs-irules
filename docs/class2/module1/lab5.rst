@@ -82,4 +82,4 @@ Here are a few bots to test:
 - 188.241.140.212
 
 .. NOTE:: Using ``ip_prep_lookup <IP_addr>`` on the BIG-IP command line
-will provide ip reputation information.
+   will provide ip reputation information.
