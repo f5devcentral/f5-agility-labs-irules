@@ -240,7 +240,7 @@ Testing
 #. Import the CA certificate to the client’s Trusted Roots certificate
    key store.
 
-#. Test accessing the HTTPS URL https://www.f5test.local from the
+#. Test accessing the HTTPS URL from the
    client. The client browser should prompt you to select a certificate.
    Upon selecting this certificate, you should be able to pass through
    to the application.
