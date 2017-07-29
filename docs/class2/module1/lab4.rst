@@ -101,7 +101,6 @@ much. You might, for example, want to block all non-US requests.
 
 .. code-block:: tcl
    :linenos:
-   :emphasize-lines: 2-3
 
    when HTTP_REQUEST {
        set XFF [getfield [lindex [HTTP::header values X-Forwarded-For] 0] "," 1]
