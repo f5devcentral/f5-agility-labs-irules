@@ -118,6 +118,7 @@ that you can maintain in a data group.
 
 .. code-block:: tcl
    :linenos:
+   :emphasize-lines: 4
 
    when HTTP_REQUEST {
        set XFF [getfield [lindex [HTTP::header values X-Forwarded-For] 0] "," 1]
