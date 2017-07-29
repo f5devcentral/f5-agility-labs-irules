@@ -84,7 +84,8 @@ Testing
    be accessed by a larger audience.
    
 .. HINT:: For the purposes of this lab we can use
-   ``openssl s_client -connect www.f5test.local:443 {-tls1, -tls1_1, -tls1_2}''
+   ``openssl s_client -connect www.f5test.local:443 <cipher>``
+   where cipher options could include {-ssl3, -tls1, -tls1_1, -tls1_2}
    to simulate different connections
 
 #. At any point you can access the data collected in the iStats by
