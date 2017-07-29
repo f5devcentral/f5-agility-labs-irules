@@ -81,8 +81,11 @@ Testing
 
 #. Apply this iRule to an SSL VIP and test across several browsers and
    platforms. If at all possible, stage this iRule someplace that it can
-   be accessed by a larger audience. For the purposes of this lab we can
-   use openssl s_client -connect www.f5test.local:443 {-tls1, -tls1_1, -tls1_2}
+   be accessed by a larger audience.
+   
+.. HINT:: For the purposes of this lab we can use
+   ``openssl s_client -connect www.f5test.local:443 {-tls1, -tls1_1, -tls1_2}''
+   to simulate different connections
 
 #. At any point you can access the data collected in the iStats by
    simply typing the following at the BIG-IP command line:
@@ -121,3 +124,7 @@ to inform them that they need to upgrade their browser.
 You’re still allowing SSLv3 and TLSv1 at this point, which is
 definitely bad, but you’re not allowing access to the application
 for anything less than TLSv1.1.
+
+.. HINT:: 
+   #. Change client ssl cipher from ``DEFAULT`` to ``DEFAULT:SSLv3``
+   #. Use ``openssl s_client -connect www.f5test.local:443 -ssl3`` to connect  

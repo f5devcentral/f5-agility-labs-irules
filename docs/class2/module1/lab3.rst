@@ -131,6 +131,7 @@ Testing
    Validation for Pinned Hosts whose validated certificate chain
    terminates at a user-defined trust anchor (rather than a built-in
    trust anchor). This means that for users who imported custom root
-   certificates all pinning violations are ignored."  However, you can
-   use Chrome Developer Tools to see the header being created. 
+   certificates all pinning violations are ignored."
+   
+.. HINT:: You can still use Chrome Developer Tools to see the HPKP header.    
 
