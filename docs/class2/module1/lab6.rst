@@ -66,7 +66,7 @@ reference in some HTML code in your web application.
 
 ``<a href="http://www.f5test.local/f5.png">Test Link</a>``
 
-First, access the HTTPS URL ``https://www.f5test.local/content.html``
+First, access the HTTPS URL https://www.f5test.local/content.html
 without the iRule code.  The href above should be seen as HTTP URL.
 
 With the above iRule in place, this URL in the HTTP response should

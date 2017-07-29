@@ -113,13 +113,13 @@ Testing
 #. Create a separate HTTP (port 80) and HTTPS (port 443) VIPs for the
    same application and apply the above iRule to the HTTPS VIP.
 
-#. Repeatedly navigate to the HTTP URL ``http://www.f5test.local`` to 
+#. Repeatedly navigate to the HTTP URL http://www.f5test.local to 
    verify that you are indeed talking to the HTTP VIP.
 
-#. Navigate to the HTTPS URL ``https://www.f5test.local`` one time to
+#. Navigate to the HTTPS URL https://www.f5test.local one time to
    verify that you can access it.
 
-#. Now attempt to go to the HTTP URL ``http://www.f5test.local`` again.
+#. Now attempt to go to the HTTP URL http://www.f5test.local again.
    Depending on the browser it should immediately go to the HTTPS URL.
 
 #. If you’re using a Chrome browser, you can navigate to
