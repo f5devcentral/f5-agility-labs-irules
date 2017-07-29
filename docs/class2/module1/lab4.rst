@@ -104,7 +104,7 @@ much. You might, for example, want to block all non-US requests.
 
    when HTTP_REQUEST {
        set XFF [getfield [lindex [HTTP::header values X-Forwarded-For] 0] "," 1]
-       if { [whereis ${XFF} country] ne "US" } {
+       if { [whereis $XFF country] ne "US" } {
            drop
            event disable all
        }
@@ -118,8 +118,8 @@ that you can maintain in a data group.
 
    when HTTP_REQUEST {
        set XFF [getfield [lindex [HTTP::header values X-Forwarded-For] 0] "," 1]
-       if { not ( [class match [whereis ${XFF} country] equals list_of_countries ] )} {
-           log local0. "[whereis ${XFF} country] is not a part of accepted countries, traffic is dropped"
+       if { not ( [class match [whereis $XFF country] equals list_of_countries ] )} {
+           log local0. "[whereis $XFF country] is not a part of accepted countries, traffic is dropped"
            drop
            event disable all
        }
