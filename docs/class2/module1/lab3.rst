@@ -113,17 +113,18 @@ Testing
 #. Create a separate HTTP (port 80) and HTTPS (port 443) VIPs for the
    same application and apply the above iRule to the HTTPS VIP.
 
-#. Repeatedly navigate to the HTTP URL to verify that you are indeed
-   talking to the HTTP VIP.
+#. Repeatedly navigate to the HTTP URL ``http://www.f5test.local`` to 
+   verify that you are indeed talking to the HTTP VIP.
 
-#. Navigate to the HTTPS URL one time to verify that you can access it.
+#. Navigate to the HTTPS URL ``https://www.f5test.local`` one time to
+   verify that you can access it.
 
-#. Now attempt to go to the HTTP URL again. Depending on the browser it
-   should immediately go to the HTTPS URL.
+#. Now attempt to go to the HTTP URL ``http://www.f5test.local`` again.
+   Depending on the browser it should immediately go to the HTTPS URL.
 
 #. If you’re using a Chrome browser, you can navigate to
    ``chrome://net-internals/#hsts`` to see this URL value now added to
-   Chromes HSTS list.
+   Chrome's HSTS list.
 
 #. Unfortunately, unless you’re using a server certificate that chains
    up to a public root, you won’t be able to test HPKP here. Per the
