@@ -81,6 +81,5 @@ Here are a few bots to test:
 - 188.219.154.228
 - 188.241.140.212
 
-.. NOTE:: Using ``ip_prep_lookup x.x.x.x``, where x.x.x.x is the IP
-address of interest, on the command line will provide ip reputation
-information.
+.. NOTE:: Using ``ip_prep_lookup <IP_addr>`` on the BIG-IP command line
+will provide ip reputation information.
