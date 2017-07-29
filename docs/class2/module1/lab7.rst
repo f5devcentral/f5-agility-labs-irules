@@ -91,9 +91,9 @@ Testing
 .. HINT:: For the purposes of this lab we can use
    ``openssl s_client -connect www.f5test.local:443 <cipher>``
    where cipher options could include {-ssl3, -tls1, -tls1_1, -tls1_2}
-   to simulate different connections
+   to simulate different connections.
 
-   Here’s an example output:
+Here’s an example output:
 
    .. code-block:: console
 
