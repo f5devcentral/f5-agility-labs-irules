@@ -158,7 +158,7 @@ throttling of specific URLs.
        }
    }
 
-By running the ``http_throttling_bonus`` script we are checking HTTP requests
+By running the ``http_throttling_bonus`` script, you are checking HTTP requests
 limits against the URL paths in the ``URIs_to_throttle`` datagroup. Here’s a 
 Bash representation of that script.
 
