@@ -95,8 +95,7 @@ of that script.
    done
    
 Under Cygwin Terminal, cd to scripts directory and run ``bash http_trottling``.
-To view logging information, open a tail of the BIG-IP LTM log from the BIG-IP
-command line.
+To view logging information, open a tail of the BIG-IP LTM log from command line.
 
 ``tail –f /var/log/ltm``
 
