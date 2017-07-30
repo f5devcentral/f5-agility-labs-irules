@@ -94,8 +94,8 @@ of that script.
       curl http://www.f5test.local --write-out "%{http_code}\n" --silent -o /dev/null
    done
    
-Under Cygwin Terminal cd to scripts directory and run ``bash http_trottling``
-and open a tail of the BIG-IP LTM log from the command line.
+Under Cygwin Terminal, cd to scripts directory and run ``bash http_trottling``.
+To view logging information, open a tail of the BIG-IP LTM log from the command line.
 
 ``tail –f /var/log/ltm``
 
