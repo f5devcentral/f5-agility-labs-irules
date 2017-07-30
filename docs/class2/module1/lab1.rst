@@ -28,6 +28,7 @@ The iRule
 
 .. code-block:: tcl
    :linenos:
+   :emphasize-lines: 13,18
 
     when RULE_INIT {
         # This is the life timer of the subtable object
@@ -41,12 +42,12 @@ The iRule
     when HTTP_REQUEST {
         if { [HTTP::method] eq "GET" } {
             set getCount [table key -count -subtable [IP::client_addr]]
-            #log local0. "getCount=$getCount"
+            log local0. "getCount=$getCount"
             if { $getCount < $static::maxRate } {
                 incr getCount 1
                 table set -subtable [IP::client_addr] $getCount "ignore" $static::timeout     $static::windowSecs
             } else {
-                #log local0. "[IP::client_addr] has exceeded the number of requests allowed."
+                log local0. "[IP::client_addr] has exceeded the number of requests allowed."
                 HTTP::respond 501 content "Request blocked Exceeded requests/sec limit."
                 return
             }
