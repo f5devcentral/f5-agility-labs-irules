@@ -93,7 +93,7 @@ of that script.
       curl http://www.f5test.local --write-out "%{http_code}\n" --silent -o /dev/null
    done
    
-Substitute the HTTP URL with your VIP’s fully qualified domain name
+Under Cygwin Terminal cd to scripts directory and run ``bash http_trottling``
 and open a tail of the BIG-IP LTM log from the command line.
 
 ``tail –f /var/log/ltm``
@@ -156,3 +156,16 @@ throttling of specific URLs.
            }
        }
    }
+
+By running the ``http_throttling_bonus`` script we are checking HTTP requests
+limits against the URL paths in the ``URIs_to_throttle`` datagroup. Here’s a 
+Bash representation of that script.
+
+.. code-block:: console
+   :linenos:
+
+   #!/bin/bash
+   while [ 1 ]
+   do
+      curl http://www.f5test.local/admin --write-out "%{http_code}\n" --silent -o /dev/null
+   done   
