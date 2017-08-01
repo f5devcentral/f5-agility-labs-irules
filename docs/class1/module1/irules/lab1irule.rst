@@ -18,7 +18,7 @@ Using an if / then / else / elseif
 
 Or using a switch statement
 
-..code::
+.. code::
 
   when HTTP_REQUEST {
 	  switch [HTTP::host] {

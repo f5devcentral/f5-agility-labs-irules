@@ -40,14 +40,14 @@ Creating your first HTTP iRule that traffic based upon the value of the Host hea
 
 .. HINT::
 	Basic Hint
-	`If you need a basic hint here is some example code: <../../../../class1/module1/irules/lab1irule.txt>`__
+	`If you need a basic hint here is some example code: <../../class1/module1/irules/lab1irule.html>`__
 
 	Here is a link to DevCentral: https://devcentral.f5.com/wiki/iRules.HTTP__host.ashx
 
 	If you are really stuck, here is what we are looking for:
 
-	#. `When HTTP_Request comes in <../../../../class1/module1/irules/lab1irule_when.txt>`__
- 	#. `Evaluate the HTTP_host name  <../../../../class1/module1/irules/lab1irule_evaluate.txt>`__
- 	#. `If it matches send it to the correct pool. <../../../../class1/module1/irules/lab1irule_pool.txt>`__
- 	#. `Loop through all the host names you want to match on and continue to direct to the correct pools. <../../../../class1/module1/irules/lab1irule_loop.txt>`__
-	#. `Now you should have enough to understand and the majority of code to create the iRule.  If not here is the complete iRule. <../../../../class1/module1/irules/lab1irule_complete.txt>`__
+	#. `When HTTP_Request comes in <../../class1/module1/irules/lab1irule_when.html>`__
+ 	#. `Evaluate the HTTP_host name  <../../class1/module1/irules/lab1irule_evaluate.html>`__
+ 	#. `If it matches send it to the correct pool. <../../class1/module1/irules/lab1irule_pool.html>`__
+ 	#. `Loop through all the host names you want to match on and continue to direct to the correct pools. <../../class1/module1/irules/lab1irule_loop.html>`__
+	#. `Now you should have enough to understand and the majority of code to create the iRule.  If not here is the complete iRule. <../../class1/module1/irules/lab1irule_complete.html>`__

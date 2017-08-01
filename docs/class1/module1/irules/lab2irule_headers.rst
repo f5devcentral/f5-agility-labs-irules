@@ -1,11 +1,11 @@
 #####################################################
-Lab 5 - HTTP Payload Manipulation
+Lab 2 - Log and Change Headers
 #####################################################
 
 
-Set some variables called find and replace
+Here is the HTTP irule event you need to code for the response:
 ------------------------------------------------------------------------------------
 
+.. code::
 
-  set find "Damn"
-  set replace "***"
+  log local0. "Response Headers: [HTTP::header names]"

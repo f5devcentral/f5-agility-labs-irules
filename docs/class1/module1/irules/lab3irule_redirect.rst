@@ -1,11 +1,10 @@
 #####################################################
-Lab 5 - HTTP Payload Manipulation
+Lab 3 - HTTP to HTTPS Redirect
 #####################################################
 
 
-Code to change the version of HTTP and disable compression
+HTTP::redirect to https back to same host and path.
 ------------------------------------------------------------------------------------
+.. code::
 
-
-	HTTP::version 1.0
-	HTTP::header remove Accept-Encoding
+  HTTP::redirect "https://[HTTP::host][HTTP::uri]"

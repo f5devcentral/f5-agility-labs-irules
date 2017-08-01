@@ -37,14 +37,14 @@ Create a Stream Profile to change the body of the DVWA site
 .. HINT::
 
   Basic Hint
-  `if you need a hint here is some example code: <../../../../class1/module1/irules/lab4irule.txt>`__
+  `if you need a hint here is some example code: <../../class1/module1/irules/lab4irule.html>`__
 
   Link to DevCentral: https://devcentral.f5.com/wiki/iRules.STREAM.ashx
 
   If you are really stuck, here is what we are looking for:
 
-  #. `When HTTP_Request comes in <../../../../class1/module1/irules/lab4irule_when.txt>`__
-  #. `Second we need to disable both encoding the stream profile for the request <../../../../class1/module1/irules/lab4irule_disables.txt>`__
-  #. `When HTTP_RESPONSE comes back <../../../../class1/module1/irules/lab4irule_response.txt>`__
-  #. `Next we need to change our stream matching string and turn on the stream profile again. <../../../../class1/module1/irules/lab4irule_stream.txt>`__
-  #. `Now you should have enough to understand and the majority of code to create the iRule.  If not here is the complete iRule. <../../../../class1/module1/irules/lab4irule_complete.txt>`__
+  #. `When HTTP_Request comes in <../../class1/module1/irules/lab4irule_when.html>`__
+  #. `Second we need to disable both encoding the stream profile for the request <../../class1/module1/irules/lab4irule_disables.html>`__
+  #. `When HTTP_RESPONSE comes back <../../class1/module1/irules/lab4irule_response.html>`__
+  #. `Next we need to change our stream matching string and turn on the stream profile again. <../../class1/module1/irules/lab4irule_stream.html>`__
+  #. `Now you should have enough to understand and the majority of code to create the iRule.  If not here is the complete iRule. <../../class1/module1/irules/lab4irule_complete.html>`__

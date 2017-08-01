@@ -1,9 +1,11 @@
 #####################################################
-Lab 5 - HTTP Payload Manipulation
+Lab 2 - Log and Change Headers
 #####################################################
 
 
-Here is the HTTP irule event you need to code for the response data event:
+Here is the code to log to the LTM log file the HTTP::header names:
 ------------------------------------------------------------------------------------
 
-when HTTP_RESPONSE_DATA {
+.. code::
+
+  log local0. "Request Headers: [HTTP::header names]"

@@ -3,7 +3,8 @@ Lab 4 - Stream Profile
 #####################################################
 
 
-Here is the HTTP irule event you need to code for the response:
+Here is the HTTP irule event you need to code first:
 ------------------------------------------------------------------------------------
+.. code::
 
-when HTTP_RESPONSE {
+  when HTTP_REQUEST {

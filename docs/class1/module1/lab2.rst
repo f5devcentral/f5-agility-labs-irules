@@ -43,15 +43,15 @@ Your iRule should log all request headers and all response headers and should re
 .. HINT::
 
   Basic Hint
-  `if you need a hint here is some example code: <../../../../class1/module1/irules/lab2irule.txt>`__
+  `if you need a hint here is some example code: <../../class1/module1/irules/lab2irule.html>`__
 
   Link to DevCentral: https://devcentral.f5.com/wiki/iRules.HTTP__header.ashx
 
   If you are really stuck, here is what we are looking for:
 
-  #. `When HTTP_Request comes in <../../../../class1/module1/irules/lab2irule_when.txt>`__
-  #. `Log the headers from the HTTP_REQUEST <../../../../class1/module1/irules/lab2irule_log.txt>`__
-  #. `When HTTP_RESPONSE comes back <../../../../class1/module1/irules/lab2irule_response.txt>`__
-  #. `Log the response headers <../../../../class1/module1/irules/lab2irule_headers.txt>`__
-  #. `Now remove the HTTP::header named Server <../../../../class1/module1/irules/lab2irule_server.txt>`__
-  #. `Now you should have enough to understand and the majority of code to create the iRule.  If not here is the complete iRule. <../../../../class1/module1/irules/lab2irule_complete.txt>`__
+  #. `When HTTP_Request comes in <../../class1/module1/irules/lab2irule_when.html>`__
+  #. `Log the headers from the HTTP_REQUEST <../../class1/module1/irules/lab2irule_log.html>`__
+  #. `When HTTP_RESPONSE comes back <../../class1/module1/irules/lab2irule_response.html>`__
+  #. `Log the response headers <../../class1/module1/irules/lab2irule_headers.html>`__
+  #. `Now remove the HTTP::header named Server <../../class1/module1/irules/lab2irule_server.html>`__
+  #. `Now you should have enough to understand and the majority of code to create the iRule.  If not here is the complete iRule. <../../class1/module1/irules/lab2irule_complete.html>`__

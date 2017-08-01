@@ -1,9 +1,10 @@
 #####################################################
-Lab 2 - Log and Change Headers
+Lab 5 - HTTP Payload Manipulation
 #####################################################
 
 
-Here is the HTTP irule event you need to code first:
+Here is the HTTP irule event you need to code for the response:
 ------------------------------------------------------------------------------------
+.. code::
 
-when HTTP_REQUEST {
+  when HTTP_RESPONSE {

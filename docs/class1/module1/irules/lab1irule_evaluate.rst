@@ -2,8 +2,8 @@
 Lab 1 - Create an iRule that Parses URI to Route Traffic
 #########################################################
 
-
-Here is the HTTP irule event you need to code first:
+Here is the irule statement you need to use to evaluate the HTTP::host against:
 ------------------------------------------------------------------------------------
+.. code::
 
-when HTTP_REQUEST {
+  if {[HTTP::host] equals "dvwa.f5lab.com"} {

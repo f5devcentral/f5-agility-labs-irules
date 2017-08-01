@@ -1,17 +1,12 @@
 #####################################################
-Lab 4 - Stream Profile
+Lab 3 - HTTP to HTTPS Redirect
 #####################################################
 
 
-Complete iRules
+Example Code to help you on your journey (Not fully functional):
 ------------------------------------------------------------------------------------
+.. code::
 
-when HTTP_REQUEST {
-	HTTP::header remove Accept-Encoding
-	STREAM::disable
-}
-
-when HTTP_RESPONSE {
-	STREAM::expression @Damn@Darn@
-	STREAM::enable
-}
+  when HTTP_REQUEST {
+    HTTP::redirect <redirect to where?>
+  }

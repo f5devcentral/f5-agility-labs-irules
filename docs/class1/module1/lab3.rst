@@ -41,12 +41,12 @@ Create an HTTP to HTTPS redirect. Additionally, when traffic goes to the HTTPS s
 .. HINT::
 
   Basic Hint
-  `if you need a hint here is some example code: <../../../../class1/module1/irules/lab3irule.txt>`__
+  `if you need a hint here is some example code: <../../class1/module1/irules/lab3irule.html>`__
 
   Link to DevCentral: https://devcentral.f5.com/wiki/iRules.HTTP__redirect.ashx
 
   If you are really stuck, here is what we are looking for:
 
-  #. `When HTTP_Request comes in <../../../../class1/module1/irules/lab3irule_when.txt>`__
-  #. `Redirect from HTTP to HTTPS <../../../../class1/module1/irules/lab3irule_redirect.txt>`__
-  #. `Now you should have enough to understand and the majority of code to create the iRule.  If not here is the complete iRule. <../../../../class1/module1/irules/lab3irule_complete.txt>`__
+  #. `When HTTP_Request comes in <../../class1/module1/irules/lab3irule_when.html>`__
+  #. `Redirect from HTTP to HTTPS <../../class1/module1/irules/lab3irule_redirect.html>`__
+  #. `Now you should have enough to understand and the majority of code to create the iRule.  If not here is the complete iRule. <../../class1/module1/irules/lab3irule_complete.html>`__

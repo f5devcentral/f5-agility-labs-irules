@@ -1,9 +1,11 @@
 #####################################################
-Lab 2 - Log and Change Headers
+Lab 4 - Stream Profile
 #####################################################
 
 
-Here is the code to remove the HTTP::header named Server:
+We need to disable encoding and stream on the HTTP_REQUEST
 ------------------------------------------------------------------------------------
+.. code::
 
-HTTP::header remove Server
+	HTTP::header remove Accept-Encoding
+	STREAM::disable

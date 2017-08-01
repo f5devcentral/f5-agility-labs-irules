@@ -3,7 +3,16 @@ Lab 4 - Stream Profile
 #####################################################
 
 
-Here is the HTTP irule event you need to code first:
+Complete iRules
 ------------------------------------------------------------------------------------
+.. code::
 
-when HTTP_REQUEST {
+	when HTTP_REQUEST {
+		HTTP::header remove Accept-Encoding
+		STREAM::disable
+	}
+
+	when HTTP_RESPONSE {
+		STREAM::expression @Damn@Darn@
+		STREAM::enable
+	}

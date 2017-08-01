@@ -1,9 +1,11 @@
 #####################################################
-Lab 5 - HTTP Payload Manipulation
+Lab 2 - Log and Change Headers
 #####################################################
 
 
-Here is the HTTP irule event you need to code first:
+Here is the code to remove the HTTP::header named Server:
 ------------------------------------------------------------------------------------
 
-when HTTP_REQUEST {
+.. code::
+
+  HTTP::header remove Server

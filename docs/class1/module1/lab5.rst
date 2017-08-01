@@ -35,7 +35,7 @@ As in the previous lab replace Damn with Darn, or get creative.
 
   Basic Hint
 
-  `if you need a hint here is some example code: <../../../../class1/module1/irules/lab5irule.txt>`_
+  `if you need a hint here is some example code: <../../class1/module1/irules/lab5irule.html>`_
 
   Link to DevCentral: https://devcentral.f5.com/wiki/iRules.HTTP__collect.ashx
 
@@ -44,11 +44,11 @@ As in the previous lab replace Damn with Darn, or get creative.
 
   If you are really stuck, here is what we are looking for:
 
-  #. `When HTTP_Request comes in <../../../../class1/module1/irules/lab5irule_when.txt>`_
-  #. `Second change the version of HTTP and disable compression for the request <../../../../class1/module1/irules/lab5irule_disables.txt>`_
-  #. `When HTTP_RESPONSE comes back <../../../../class1/module1/irules/lab5irule_response.txt>`_
-  #. `Next we need to collect some HTTP::collect some data. <../../../../class1/module1/irules/lab5irule_collect.txt>`_
-  #. `Now when we get HTTP_RESPONSE_DATA <../../../../class1/module1/irules/lab5irule_response_data.txt>`_
-  #. `Now we will set some find and replace strings. <../../../../class1/module1/irules/lab5irule_set.txt>`_
-  #. `Finally we will Perform a regsub on the payload and replace with new text. <../../../../class1/module1/irules/lab5irule_regsub.txt>`_
-  #. `Now you should have enough to understand and the majority of code to create the iRule.  If not here is the complete iRule. <../../../../class1/module1/irules/lab5irule_complete.txt>`_
+  #. `When HTTP_Request comes in <../../class1/module1/irules/lab5irule_when.html>`_
+  #. `Second change the version of HTTP and disable compression for the request <../../class1/module1/irules/lab5irule_disables.html>`_
+  #. `When HTTP_RESPONSE comes back <../../class1/module1/irules/lab5irule_response.html>`_
+  #. `Next we need to collect some HTTP::collect some data. <../../class1/module1/irules/lab5irule_collect.html>`_
+  #. `Now when we get HTTP_RESPONSE_DATA <../../class1/module1/irules/lab5irule_response_data.html>`_
+  #. `Now we will set some find and replace strings. <../../class1/module1/irules/lab5irule_set.html>`_
+  #. `Finally we will perform a regsub on the payload and replace with new text. <../../class1/module1/irules/lab5irule_regsub.html>`_
+  #. `Now you should have enough to understand and the majority of code to create the iRule.  If not here is the complete iRule. <../../class1/module1/irules/lab5irule_complete.html>`_

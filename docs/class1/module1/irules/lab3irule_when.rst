@@ -1,9 +1,10 @@
 #####################################################
-Lab 5 - HTTP Payload Manipulation
+Lab 3 - HTTP to HTTPS Redirect
 #####################################################
 
 
-Here is the HTTP irule event you need to code for the response:
+Here is the HTTP irule event you need to code first:
 ------------------------------------------------------------------------------------
+.. code::
 
-when HTTP_RESPONSE {
+  when HTTP_REQUEST {

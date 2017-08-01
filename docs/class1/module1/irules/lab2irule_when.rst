@@ -1,10 +1,11 @@
 #####################################################
-Lab 4 - Stream Profile
+Lab 2 - Log and Change Headers
 #####################################################
 
 
-Change stream expression for the response and enable the stream profile .so it catches it
+Here is the HTTP irule event you need to code first:
 ------------------------------------------------------------------------------------
 
-	STREAM::expression @Damn@Darn@
-	STREAM::enable
+.. code::
+
+  when HTTP_REQUEST {

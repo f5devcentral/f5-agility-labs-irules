@@ -3,9 +3,8 @@ Lab 4 - Stream Profile
 #####################################################
 
 
-We need to disable encoding and stream on the HTTP_REQUEST
+Here is the HTTP irule event you need to code for the response:
 ------------------------------------------------------------------------------------
+.. code::
 
-
-	HTTP::header remove Accept-Encoding
-	STREAM::disable
+  when HTTP_RESPONSE {

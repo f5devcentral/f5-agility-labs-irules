@@ -1,13 +1,11 @@
 #####################################################
-Lab 3 - HTTP to HTTPS Redirect
+Lab 5 - HTTP Payload Manipulation
 #####################################################
 
 
-Example Code to help you on your journey (Not fully functional):
+Collect some data
 ------------------------------------------------------------------------------------
-
 .. code::
 
-  when HTTP_REQUEST {
-    HTTP::redirect <redirect to where?>
-  }
+
+	HTTP::collect [expr 1024*1024]

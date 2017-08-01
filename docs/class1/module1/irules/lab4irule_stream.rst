@@ -1,10 +1,11 @@
 #####################################################
-Lab 5 - HTTP Payload Manipulation
+Lab 4 - Stream Profile
 #####################################################
 
 
-Collect some data
+Change stream expression for the response and enable the stream profile
 ------------------------------------------------------------------------------------
+.. code::
 
-
-	HTTP::collect [expr 1024*1024]
+	STREAM::expression @Damn@Darn@
+	STREAM::enable
