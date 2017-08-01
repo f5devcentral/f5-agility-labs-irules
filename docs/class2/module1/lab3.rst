@@ -120,7 +120,7 @@ Testing
    ``chrome://net-internals/#hsts`` to see this URL value now added to
    Chrome's HSTS list.  Under Query Domain, enter ``www.f5test.local`` to 
    Domain: entry box and click Query.  ``Be sure to delete domain before
-   moving on or else you will have an issue with a later lab``
+   moving on or else you will have an issue with a later lab.``
 
 #. Unfortunately, unless you’re using a server certificate that chains
    up to a public root, you won’t be able to test HPKP here. Per the

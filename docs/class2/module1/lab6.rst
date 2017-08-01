@@ -61,21 +61,18 @@ Analysis
 Testing
 ~~~~~~~
 
-The simplest way to test this code is by viewing an http:// URL
-reference in some HTML code in your web application.
-
 #. Access the HTTPS URL https://www.f5test.local/content.html
-without the iRule code.
+   without the iRule code.
 
-#. Click the Test Link which is represented in the page with the href
-code below.
+#. Click the ``Test Link`` which is represented in the page with the href
+   code below.
 
-``<a href="http://www.f5test.local/f5.png">Test Link</a>``
+   ``<a href="http://www.f5test.local/f5.png">Test Link</a>``
 
-The link will open as an HTTP URL.
+   The link will open as an HTTP URL.
 
 #. Add the above iRule to the HTTPS VIP. The Test Link href will be
-rewritten to an HTTPS URL.
+   rewritten to an HTTPS URL.
 
 Bonus version
 ~~~~~~~~~~~~~
