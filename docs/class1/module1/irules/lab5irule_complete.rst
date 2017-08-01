@@ -7,7 +7,7 @@ Complete iRule code:
 ------------------------------------------------------------------------------------
 .. code::
 
-	HTTP_Payload_iRule
+	# HTTP_Payload_iRule
 
 	when HTTP_REQUEST {
 		HTTP::version 1.0

@@ -8,7 +8,7 @@ Complete iRules
 
 .. code::
 
-	#Header_Strip_Log_iRule
+	# Header_Strip_Log_iRule
 
 	when HTTP_REQUEST {
 		log local0. "Request Headers: [HTTP::header names]"

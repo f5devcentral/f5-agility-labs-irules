@@ -7,6 +7,8 @@ Complete iRules
 ------------------------------------------------------------------------------------
 .. code::
 
+	# Stream_iRule
+	
 	when HTTP_REQUEST {
 		HTTP::header remove Accept-Encoding
 		STREAM::disable
