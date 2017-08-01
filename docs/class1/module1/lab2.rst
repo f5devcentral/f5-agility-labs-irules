@@ -32,14 +32,26 @@ Your iRule should log all request headers and all response headers and should re
 #. Click the Finished button
 #. Open the Firefox browser
 #. Click the 3 horizontal line button on the far right of the address bar
-#. Click on HTTPFox and toggle on
-#. Click the Start button on the HTTPFox window
+#. Install HTTPFox and toggle on, or use developer tools in Chrome to view headers
+#. Click the Start button on the HTTPFox window (if using HTTPFox)
 #. Enter http://dvwa.f5lab.com/  and ensure you get there
 #. Now enter http://wackopicko.f5lab.com/
 #. Finally, enter http://peruggia.f5lab.com/ and ensure you can get to that app
 #. Look at the headers for each of your requests. Did you log them all? What is the value of the Server header?
 
+
 .. HINT::
-   `if you need a hint here is some example code: <../../_sources/class1/module1/irules/lab2irule.rst.txt>`__
-   
-   Link to DevCentral: https://devcentral.f5.com/wiki/iRules.HTTP__header.ashx
+
+  Basic Hint
+  `if you need a hint here is some example code: <../../../../class1/module1/irules/lab2irule.txt>`__
+
+  Link to DevCentral: https://devcentral.f5.com/wiki/iRules.HTTP__header.ashx
+
+  If you are really stuck, here is what we are looking for:
+
+  #. `When HTTP_Request comes in <../../../../class1/module1/irules/lab2irule_when.txt>`__
+  #. `Log the headers from the HTTP_REQUEST <../../../../class1/module1/irules/lab2irule_log.txt>`__
+  #. `When HTTP_RESPONSE comes back <../../../../class1/module1/irules/lab2irule_response.txt>`__
+  #. `Log the response headers <../../../../class1/module1/irules/lab2irule_headers.txt>`__
+  #. `Now remove the HTTP::header named Server <../../../../class1/module1/irules/lab2irule_server.txt>`__
+  #. `Now you should have enough to understand and the majority of code to create the iRule.  If not here is the complete iRule. <../../../../class1/module1/irules/lab2irule_complete.txt>`__

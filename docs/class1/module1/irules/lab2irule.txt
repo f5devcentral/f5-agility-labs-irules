@@ -1,5 +1,5 @@
 #####################################################
-Lab 1 - Create iRule that Parses URI to Route Traffic
+Lab 2 - Log and Change Headers
 #####################################################
 
 
@@ -9,15 +9,10 @@ Example Code to help you on your journey (Not fully functional):
 .. code::
 
   when HTTP_REQUEST {
-	  if {[HTTP::host] equals “dvwa.f5lab.com” }{
-		  pool <pool_name>
-	  elseif ….
+    log local0. "Request Headers: [HTTP::header names]"
   }
 
-.. code::
-
-  when HTTP_REQUEST {
-	  switch [HTTP::host] {
-		  “dvwa.f5lab.com” { pool <pool_name>}
-  		  ….
+  when HTTP_RESPONSE {
+    log local0. "Response Headers: [HTTP::header names]""
+    HTTP:: command to remove header
   }

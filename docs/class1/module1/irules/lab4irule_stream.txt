@@ -1,0 +1,10 @@
+#####################################################
+Lab 4 - Stream Profile
+#####################################################
+
+
+Change stream expression for the response and enable the stream profile .so it catches it
+------------------------------------------------------------------------------------
+
+	STREAM::expression @Damn@Darn@
+	STREAM::enable

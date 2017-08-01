@@ -1,6 +1,6 @@
-#####################################################
-Lab 1 - Create iRule that Parses URI to Route Traffic
-#####################################################
+#########################################################
+Lab 1 - Create an iRule that Parses URI to Route Traffic
+#########################################################
 
 
 Creating your first HTTP iRule that traffic based upon the value of the Host header.
@@ -39,6 +39,15 @@ Creating your first HTTP iRule that traffic based upon the value of the Host hea
 
 
 .. HINT::
-   `if you need a hint here is some example code: <../../_sources/class1/module1/irules/lab1irule.rst.txt>`__
-   
-   Link to DevCentral: https://devcentral.f5.com/wiki/iRules.HTTP__host.ashx
+	Basic Hint
+	`If you need a basic hint here is some example code: <../../../../class1/module1/irules/lab1irule.txt>`__
+
+	Here is a link to DevCentral: https://devcentral.f5.com/wiki/iRules.HTTP__host.ashx
+
+	If you are really stuck, here is what we are looking for:
+
+	#. `When HTTP_Request comes in <../../../../class1/module1/irules/lab1irule_when.txt>`__
+ 	#. `Evaluate the HTTP_host name  <../../../../class1/module1/irules/lab1irule_evaluate.txt>`__
+ 	#. `If it matches send it to the correct pool. <../../../../class1/module1/irules/lab1irule_pool.txt>`__
+ 	#. `Loop through all the host names you want to match on and continue to direct to the correct pools. <../../../../class1/module1/irules/lab1irule_loop.txt>`__
+	#. `Now you should have enough to understand and the majority of code to create the iRule.  If not here is the complete iRule. <../../../../class1/module1/irules/lab1irule_complete.txt>`__

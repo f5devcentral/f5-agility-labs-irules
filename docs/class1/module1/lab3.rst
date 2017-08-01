@@ -31,14 +31,22 @@ Create an HTTP to HTTPS redirect. Additionally, when traffic goes to the HTTPS s
 #. Click the Finished button
 #. Open the Firefox browser
 #. Click the 3 horizontal line button on the far right of the address bar
-#. Click on HTTPFox and toggle on
-#. Click the Start button on the HTTPFox window
+#. Click on HTTPFox (and add it as an plugin), and toggle on - alternatively use Chrome developer tools.
+#. Click the Start button on the HTTPFox window (if using HTTPFox)
 #. Enter http://dvwa.f5lab.com/  and ensure you get there and it is HTTPS
 #. Now enter http://wackopicko.f5lab.com/ and ensure you get there via HTTPS
 #. Finally, enter http://peruggia.f5lab.com/ and ensure you can get to that app via HTTPS
 #. Look at the headers for each of your requests. Did you log them all? What is the value of the Server header? None of this should have changed since the last lab.
 
 .. HINT::
-   `if you need a hint here is some example code: <../../_sources/class1/module1/irules/lab3irule.rst.txt>`__
-   
-   Link to DevCentral: https://devcentral.f5.com/wiki/iRules.HTTP__redirect.ashx
+
+  Basic Hint
+  `if you need a hint here is some example code: <../../../../class1/module1/irules/lab3irule.txt>`__
+
+  Link to DevCentral: https://devcentral.f5.com/wiki/iRules.HTTP__redirect.ashx
+
+  If you are really stuck, here is what we are looking for:
+
+  #. `When HTTP_Request comes in <../../../../class1/module1/irules/lab3irule_when.txt>`__
+  #. `Redirect from HTTP to HTTPS <../../../../class1/module1/irules/lab3irule_redirect.txt>`__
+  #. `Now you should have enough to understand and the majority of code to create the iRule.  If not here is the complete iRule. <../../../../class1/module1/irules/lab3irule_complete.txt>`__

@@ -1,0 +1,18 @@
+#####################################################
+Lab 3 - HTTP to HTTPS Redirect
+#####################################################
+
+
+Complete iRules
+------------------------------------------------------------------------------------
+
+HTTP_to_HTTPS_iRule
+
+when HTTP_REQUEST {
+	HTTP::redirect "https://[HTTP::host][HTTP::uri]"
+}
+
+
+when HTTP_REQUEST {
+	HTTP::redirect https://[getfield [HTTP::host] ":" 1][HTTP::uri]
+}
