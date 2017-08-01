@@ -107,12 +107,6 @@ Analysis
 Testing
 ~~~~~~~
 
-#. Replace the ``static::fqdn_pin1`` value with the correct sha256 hash
-   of your CA or server certificate.
-
-#. Create a separate HTTP (port 80) and HTTPS (port 443) VIPs for the
-   same application and apply the above iRule to the HTTPS VIP.
-
 #. Repeatedly navigate to the HTTP URL http://www.f5test.local to 
    verify that you are indeed talking to the HTTP VIP.
 
@@ -124,7 +118,11 @@ Testing
 
 #. If you’re using a Chrome browser, you can navigate to
    ``chrome://net-internals/#hsts`` to see this URL value now added to
-   Chrome's HSTS list.
+   Chrome's HSTS list.  Under Query Domain, enter www.f5test.local to 
+   Domain: entry box and click Query.
+   
+.. NOTE:: Delete the HSTS domain www.f5test.local before exiting out of
+   HSTS page.  This will cause issues with later labs if not removed.
 
 #. Unfortunately, unless you’re using a server certificate that chains
    up to a public root, you won’t be able to test HPKP here. Per the

@@ -217,28 +217,10 @@ Analysis
 
 Testing
 ~~~~~~~
-.. NOTE:: In order to get the most out of the labs, some of the steps
-   have been completed for you. However, we have decided to include them
-   for your future use when implementing on your own.
    
-#. Import the CA certificate to the BIG-IP.
-
-#. Import the server certificate and private key to the BIG-IP.
-
-#. Create a client SSL profile and assign the imported server
-   certificate and private key in the Certificate and Key options in the
-   profile. In the Client Authentication section of the client SSL
-   profile, set Client Certificate to ***Require*** (or Request), and
-   assign the imported CA certificate to the Trusted Certificate
-   Authorities option.
-
-#. Apply this client SSL profile to a virtual server.
-
-#. Import the client certificate and private key to the client
-   (browser).
-
-#. Import the CA certificate to the client’s Trusted Roots certificate
-   key store.
+#. In the Client Authentication section of the client SSL
+   profile ``f5test``, set Client Certificate to ``Require``, and
+   assign ``ca_f5test`` to the Trusted Certificate Authorities option.
 
 #. Test accessing the HTTPS URL https://www.f5test.local from the
    client. The client browser should prompt you to select a certificate.
