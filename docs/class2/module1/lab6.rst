@@ -71,7 +71,7 @@ Testing
 
    The link will open as an HTTP URL.
 
-#. Add the above iRule to the HTTPS VIP. The Test Link href will be
+#. Add the above iRule to the HTTPS VIP. The ``Test Link`` href will be
    rewritten to an HTTPS URL.
 
 Bonus version
