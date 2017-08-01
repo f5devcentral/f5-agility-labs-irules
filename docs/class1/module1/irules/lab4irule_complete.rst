@@ -1,14 +1,11 @@
 #####################################################
-Lab 4 - Stream Profile
+Lab 4 - Complete iRule
 #####################################################
 
-
-Complete iRules
-------------------------------------------------------------------------------------
 .. code::
 
 	# Stream_iRule
-	
+
 	when HTTP_REQUEST {
 		HTTP::header remove Accept-Encoding
 		STREAM::disable

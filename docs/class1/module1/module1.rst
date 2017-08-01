@@ -8,3 +8,4 @@ This is the collection of HTTP Labs.  Here is where you get to prove you listene
    :glob:
 
    lab*
+   iRulesSummary
