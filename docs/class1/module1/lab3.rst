@@ -21,11 +21,8 @@ Create an HTTP to HTTPS redirect. Additionally, when traffic goes to the HTTPS s
 #. Click on the Resources tab
 #. Click Manage button for the iRules section
 
-
-   .. figure:: ./images/iRulesManage.png
+   .. image:: /_static/class1/iRulesManage.png
       :width: 800
-
-   |
 
 #. What should you do here now that we are doing HTTPS?
 #. Click the Finished button

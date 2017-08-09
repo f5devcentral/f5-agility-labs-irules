@@ -23,10 +23,8 @@ Your iRule should log all request headers and all response headers and should re
 #. Click on the Resources tab
 #. Click Manage button for the iRules section
 
-   .. figure:: ./images/iRulesManage.png
-      :width: 1200
-
-   |
+   .. image:: /_static/class1/iRulesManage.png
+      :width: 800
 
 #. Click on Header_Log_Strip_iRule from the Available box and click the << button, thus moving it to the Enabled box, your first and now second iRule should be in the Enabled box.
 #. Click the Finished button

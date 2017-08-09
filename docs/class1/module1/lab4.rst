@@ -23,11 +23,8 @@ Create a Stream Profile to change the body of the DVWA site
 #. Click on the Resources tab
 #. Click Manage button for the iRules section
 
-
-   .. figure:: ./images/iRulesManage.png
+   .. image:: /_static/class1/iRulesManage.png
       :width: 800
-
-   |
 
 #. What should you do here?
 #. Click the Finished button

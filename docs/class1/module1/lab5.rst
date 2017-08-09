@@ -21,10 +21,8 @@ As in the previous lab replace Damn with Darn, or get creative.
 #. Click on the Resources tab
 #. Click Manage button for the iRules section
 
-   .. figure:: ./images/iRulesManage.png
+   .. image:: /_static/class1/iRulesManage.png
       :width: 800
-
-   |
 
 #. What should you do here? (Hint: Remove Stream_iRule)
 #. Click the Finished button

@@ -163,7 +163,7 @@ call. If we look at the logs we will see the following:
 
   # tail -1 /var/log/ltm
   Jul 11 16:02:15 bigip1 err tmm1[14567]: Rule /Common/ilxlab2_pl/json_parse <HTTP_REQUEST_DATA>: Client - 10.0.0.  10, ILX failure: ILX timeout.     invoked from within "ILX::call $handle jsonParse [HTTP::payload]" ``
-  
+
   # tail -1 /var/log/ltm
   Jul 11 16:02:15 bigip1 err tmm1[14567]: Rule /Common/ilxlab2_pl/json_parse <HTTP_REQUEST_DATA>: Client - 10.0.0.  10, ILX failure: ILX timeout.     invoked from within "ILX::call $handle jsonParse [HTTP::payload]"
 
@@ -282,8 +282,7 @@ values returned as a TCL list.
          switch [lindex $result 0] {
            1 { set error_msg "Invalid JSON"}
          }
-         HTTP::respond 400 \
-           content "<html>The following error occured: $error_msg</html>"
+         HTTP::respond 400 content "<html>The following error occured: $error_msg</html>"
        } else {
          #Replace Content-Type header and POST payload
          HTTP::header replace "Content-Type" "application/json"
@@ -472,8 +471,7 @@ object and crash Node.
            2 { set error_msg "Property \"email\" missing from JSON."}
            3 { set error_msg "Property \"email\" not a valid email address."}
          }
-         HTTP::respond 400 \
-           content "<html>The following error occured: $error_msg</html>"
+         HTTP::respond 400 content "<html>The following error occured: $error_msg</html>"
        } else {
          #Replace Content-Type header and POST payload
          HTTP::header replace "Content-Type" "application/json"
