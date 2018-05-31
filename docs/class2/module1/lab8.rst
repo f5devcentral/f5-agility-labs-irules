@@ -1,6 +1,29 @@
 Lab 8 - Securing Cookies
 ------------------------
 
+Scenario
+~~~~~~~~
+
+The security team has done an application scan and found that HTTP cookies are being issued unencrypted.  They have asked the application team to verify all cookies get encrypted at the application tier, but the app team is in the middle of a new deployment and can't move man hours to rewrite the cookie code.  They have asked the F5 team to encrypt the cookies.
+
+Restraints
+~~~~~~~~~~
+
+The following restraints need to be known in order to implement this solution:
+
+- The F5 administrators need to know what the name of the HTTP Cookie or Cookies will be. 
+
+Requirements
+~~~~~~~~~~~~
+
+To meet the business's objectives the iRule must meet the following requirements:
+
+- The iRule must take a HTTP Cookie being sent from the application server and encrypt it.
+
+- The security team also requires that the HTTP Cookie not be sent to Javascript Agents. 
+
+
+
 HTTP cookie misuse represents one of the greatest vulnerability vectors
 known to Internet communications. It’s number 2 on the Open Web
 Application Security Project’s (OWASP) Top Ten list as “weak
