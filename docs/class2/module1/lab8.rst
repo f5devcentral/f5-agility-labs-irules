@@ -23,6 +23,32 @@ To meet the business's objectives the iRule must meet the following requirements
 - The security team also requires that the HTTP Cookie not be sent to Javascript Agents. 
 
 
+Lab Requirements:
+~~~~~~~~~~~~~~~~~
+
+-  BIG-IP LTM, web server, client browser, and SSL server certificate.
+   If you don’t have certificates to test with, you can use the CA
+   certificate and server certificate and private key provided in the
+   Client Certificate Inspection lab.
+
+The iRule
+~~~~~~~~~
+
+.. code-block:: tcl
+   :linenos:
+
+   when HTTP_RESPONSE {
+       set ckname "mycookie"
+       if { [HTTP::cookie exists $ckname] } {
+           HTTP::cookie secure $ckname enable
+           HTTP::cookie httponly $ckname enable
+       }
+   }
+
+Apply this iRule to an HTTPS virtual server (VIP).
+
+Analysis
+~~~~~~~~
 
 HTTP cookie misuse represents one of the greatest vulnerability vectors
 known to Internet communications. It’s number 2 on the Open Web
@@ -133,35 +159,6 @@ write secure code, but if you find yourself in a situation where secure
 cookie coding isn’t happening in the application, then here’s a quick
 and easy way to enable it with F5 iRules.
 
-Objectives:
-
--  Deploy and test the example cookie protection iRule code
-
-Lab Requirements:
-
--  BIG-IP LTM, web server, client browser, and SSL server certificate.
-   If you don’t have certificates to test with, you can use the CA
-   certificate and server certificate and private key provided in the
-   Client Certificate Inspection lab.
-
-The iRule
-~~~~~~~~~
-
-.. code-block:: tcl
-   :linenos:
-
-   when HTTP_RESPONSE {
-       set ckname "mycookie"
-       if { [HTTP::cookie exists $ckname] } {
-           HTTP::cookie secure $ckname enable
-           HTTP::cookie httponly $ckname enable
-       }
-   }
-
-Apply this iRule to an HTTPS virtual server (VIP).
-
-Analysis
-~~~~~~~~
 
 -  In this very simple iRule, we’re triggering an event on the HTTP
    response being sent from the application server, looking for the
