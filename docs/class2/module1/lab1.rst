@@ -1,22 +1,31 @@
 Lab 1 - HTTP Throttling
 -----------------------
 
-There are a number of well-known vulnerabilities that focus on attacking
-HTTP (web servers) with large numbers of requests, or large request
-payloads (ex. Slow Loris, Slow Post) to produce a denial of service. As
-mentioned in the introduction, custom code should never replace a solid
-security product that can handle these types of vulnerabilities, and
-indeed F5’s Application Security Manager (ASM) is well-versed at
-protecting against HTTP attacks. That said, you may still want to do
-some HTTP request throttling in an iRule, if only for a specific URL,
-request method, or any number of other HTTP attributes. Here’s an
-example of what that might look like.
+Scenario:
+~~~~~~~~~
 
-Objectives:
+Your company has setup a new web application and not had the time to develop an ASM policy.  Due to your companies profile several bad actors have threatened to attack using SlowLoris and SlowPost attacks to create a denial of service.  Although ASM can handle this very easily and would be the best tool to use, we are going to use an iRule to help with throttling the number of requests coming into the application.
 
--  Deploy and test the example HTTP throttling iRule code
+Restraints:
+~~~~~~~~~~~
+
+The following restraints complicate the request to implement the throttling of HTTP requests:
+
+-  You need to understand how many requests may be coming from a single IP address.
+
+-  Some requests may be coming from companies using a single proxy IP address to make the request.  Throttling those requests to only 10 per 10 seconds could impact the ability of a partner company to access the site.  
+
+Requirements:
+~~~~~~~~~~~~~
+
+To meet the business's objectives the iRule must meet the following requirements:
+
+-  The rule must keep a single client from making too many HTTP requests to a single VIP thus stopping a SlowLoris or SlowPost attack.
+
+-  The rule should be able to be adjusted to take into account multiple customers coming through a proxy IP address.
 
 Lab Requirements:
+~~~~~~~~~~~~~~~~~
 
 -  BIG-IP LTM, web server and client (Linux command line client
    preferred)
