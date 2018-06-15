@@ -23,14 +23,7 @@ To meet the business's objectives the iRule must meet the following requirements
 -  The rule must keep a single client from making too many HTTP requests to a single VIP thus stopping a SlowLoris or SlowPost attack.
 
 -  The rule should be able to be adjusted to take into account multiple customers coming through a proxy IP address.
-
-Lab Requirements:
-~~~~~~~~~~~~~~~~~
-
--  BIG-IP LTM, web server and client (Linux command line client
-   preferred)
-   
--  HTTP throttling scripts under scripts directory in Cygwin Terminal   
+ 
 
 The iRule
 ~~~~~~~~~
