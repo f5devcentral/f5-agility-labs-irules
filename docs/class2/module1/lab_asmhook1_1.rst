@@ -63,6 +63,7 @@ The iRule:
 
 
 .. code-block:: tcl 
+   :linenos:
 
    when ASM_REQUEST_DONE {
       set asm1_debug_verb 1
@@ -118,9 +119,9 @@ Analysis:
 
 ASM Event/Command Details:
 
-- **ASM_REQUEST_DONE** event is triggered after ASM has finished processing the request and found all violations of the ASM policy.
-- **[ASM::violations]** command will return the list of violations found in the request or response with details on each violation
-- **ASM::unblock** command overrides the blocking action for a request that had blocking violation
+- ``ASM_REQUEST_DONE`` event is triggered after ASM has finished processing the request and found all violations of the ASM policy.
+- ``[ASM::violations]`` command will return the list of violations found in the request or response with details on each violation
+- ``ASM::unblock`` command overrides the blocking action for a request that had blocking violation
 
 Rule Details:
 ~~~~~~~~~~~~~
@@ -137,7 +138,7 @@ The rule does the following:
 Testing:
 ~~~~~~~~
 
-- From BIG-IP Configuration Utility, open **Local Traffic -> Virtual Servers**, select Hackazon_protected_virtual, click the Resources tab, in the iRules section, click Manage.  Move sec_irules_asm_hook_1 from Available section to the Enabled section, then click the Finished button.
+- From BIG-IP Configuration Utility, open **Local Traffic -> Virtual Servers**, select Hackazon_protected_virtual, click the Resources tab, in the iRules section, click Manage.  Move **sec_irules_asm_hook_1** from Available section to the Enabled section, then click the Finished button.
 - From the Jump Station, open the Terminal application and SSH to the BIG-IP: ssh root@10.1.10.10.
    .. code-block:: console
       
@@ -154,14 +155,13 @@ Testing:
  - Examine requests for [HTTP] /product/view
  - Check icon on request, then click All Details in the request detail to verify the Request Status is unblocked
 
-- Test additional conditions:
+**Test additional conditions:**
    
- - From Chrome Window, modify the request to include an additional violation, http://hackazon.f5demo.com/product/view?id<script>=72%00
+- From Chrome Window, modify the request to include an additional violation, http://hackazon.f5demo.com/product/view?id<script>=72%00
 
-  - This request should receive a block page, b/c it contains violations which have not been approved per override request
+ - This request should receive a block page, b/c it contains violations which have not been approved per override request
 
- - From Chrome window, send requests for additional URLs matching the override pattern, http://hackazon.f5demo.com/product/view?id=73%00, http://hackazon.f5demo.com/product/view?id=7%00
-
+- From Chrome window, send requests for additional URLs matching the override pattern, http://hackazon.f5demo.com/product/view?id=73%00, http://hackazon.f5demo.com/product/view?id=7%00
 
 
 Review:
