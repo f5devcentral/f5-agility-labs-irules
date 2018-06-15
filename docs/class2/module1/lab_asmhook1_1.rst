@@ -138,11 +138,12 @@ The rule does the following:
 Testing:
 ~~~~~~~~
 
-- From BIG-IP Configuration Utility, open **Local Traffic -> Virtual Servers**, select Hackazon_protected_virtual, click the Resources tab, in the iRules section, click Manage.  Move **sec_irules_asm_hook_1** from Available section to the Enabled section, then click the Finished button.
+- From BIG-IP Configuration Utility, open **Local Traffic -> Virtual Servers**, select Hackazon_protected_virtual, click the Resources tab, in the iRules section, click Manage.  Move sec_irules_asm_hook_1 from Available section to the Enabled section, then click the Finished button.
 - From the Jump Station, open the Terminal application and SSH to the BIG-IP: ssh root@10.1.10.10.
+
    .. code-block:: console
       
-      f5student@xjumpbox~$ tail -f /var/log/ltm
+      [root@bigipo01:Active:Standalone] config # tail -f /var/log/ltm
 
 - From the Jump Station, re-open the Chrome window used in the Baseline Testing section, and again browse to http://hackazon.f5demo.com/product/view?id=72%00  
  
