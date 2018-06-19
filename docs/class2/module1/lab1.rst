@@ -46,12 +46,12 @@ The iRule
     when HTTP_REQUEST {
 	# The iRule allows throttling for only sepecific URIs.  You list the URIs_to_throttle
 	# in a datagroup.  URIs_to_throttle or Methods_to_throttle.
-	# if you need to throttle by Method use an statement like this:
+	# if you need to throttle by URI use an statement like this:
 	#                               if { [class match [HTTP::uri] equals URIs_to_throttle] }
 	# Note: a URI is everything after the hostname: e.g. /path1/login.aspx?name=user1
 	#  
  
-        if { [class match [HTTP::uri] equals URIs_to_throttle] } {
+        if { [class match [HTTP::uri] equals Methods_to_throttle] } {
  
            # The following expects the IP addresses in multiple X-forwarded-for headers.  It picks the first one.
            if { [HTTP::header exists X-forwarded-for] } {
