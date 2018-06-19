@@ -30,7 +30,6 @@ The iRule
 
 .. code-block:: tcl
    :linenos:
-   :emphasize-lines: 13,18
 
    when RULE_INIT {
     # This defines the maximum requests to be served within the timing interval defined by the static::timeout variable below. 
