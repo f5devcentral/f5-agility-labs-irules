@@ -42,9 +42,9 @@ The iRule
     # counting starts over.
     # Making this timeout large increases memory usage.  Making it too small negatively affects performance.  
     set static::timeout 30;
-}
+    }
  
-when HTTP_REQUEST {
+    when HTTP_REQUEST {
 	# The iRule allows throttling for only sepecific URIs.  You list the URIs_to_throttle
 	# in a datagroup.  URIs_to_throttle or Methods_to_throttle.
 	# if you need to throttle by Method use an statement like this:
@@ -52,17 +52,17 @@ when HTTP_REQUEST {
 	# Note: a URI is everything after the hostname: e.g. /path1/login.aspx?name=user1
 	#  
  
-   if { [class match [HTTP::uri] equals URIs_to_throttle] } {
+        if { [class match [HTTP::uri] equals URIs_to_throttle] } {
  
-        # The following expects the IP addresses in multiple X-forwarded-for headers.  It picks the first one.
-        if { [HTTP::header exists X-forwarded-for] } {
-            set client_IP_addr [getfield [lindex  [HTTP::header values X-Forwarded-For]  0] "," 1]
-        } else {
-            set client_IP_addr [IP::client_addr]
-        }
-        # The matching below expects a datagroup named: Throttling_Whitelist_IPs
-        # The Condition of the if statement is true if the IP address is NOT in the whitelist.
-        if { not ([class match $client_IP_addr equals Throttling_Whitelist_IPs ] )} {
+           # The following expects the IP addresses in multiple X-forwarded-for headers.  It picks the first one.
+           if { [HTTP::header exists X-forwarded-for] } {
+              set client_IP_addr [getfield [lindex  [HTTP::header values X-Forwarded-For]  0] "," 1]
+           } else {
+              set client_IP_addr [IP::client_addr]
+           }
+           # The matching below expects a datagroup named: Throttling_Whitelist_IPs
+           # The Condition of the if statement is true if the IP address is NOT in the whitelist.
+           if { not ([class match $client_IP_addr equals Throttling_Whitelist_IPs ] )} {
                set getcount [table lookup -notouch $client_IP_addr]
                if { $getcount equals "" } {
                    table set $client_IP_addr "1" $static::timeout $static::timeout
@@ -79,11 +79,11 @@ when HTTP_REQUEST {
                                 <body>Your HTTP requests are being throttled.</body>
                                 </html>
                            }
-                     }
-               }
+                      }
+                }
+           }
         }
-   }
-}
+     }
 
 
 Apply this iRule to an HTTP virtual server (VIP).
