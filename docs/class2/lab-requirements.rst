@@ -22,15 +22,18 @@ Requirements from Geolocation lab:
 - Base Template Blueprint discussed for Agility Labs (lbr-oscrc-f5-v13.1.0.3a-bp-180427)
 - BIG-IP version 13.1.0.x (latest build we plan to use for Agility)
 - Install and update geolocation databases
-- Install base iRule to insert XFF headers (slight modification to XFF_mixed_attacker_good_iRule included in BP which sets XFF for jump station traffic)
 - Pre-configure BIG-IP w/ the following:
    - Provision ASM/LTM
    - Create virtual server to pick up traffic destined to hackazon web site
-   - Create DoS Profile with following properties:
+   - Create DoS Profile (iRules_Sec) with following properties:
     - Enable Application Security
     - Enable Trigger iRule option
-    - Enable Proactive Bot Defense, set condition under which bots are detected and blocked to "During Attacks"
+    - Disable Proactive Bot Detection
      - Set Grace Period = 10secs
+    - Enable TPS protections, and tweak Source IP thresholds to 3/3
    - Create local logging profile that with DoS Protection and Bot Defense enabled and logs all requests locally.
-- Apply DoS Profile to the test virtual server
-- create geo-based-pbdswitcher irule based on lab guide
+   - Apply DoS Profile to the test virtual server
+   - create geo-based-pbdswitcher irule based on lab guide
+- Add Modify HTTP Headers Add-On to Firefox on the jumpbox
+ - create rule to inject X-Forwarded-For header = 5.16.0.1 to URL = http://hackazon.f5demo.com
+
