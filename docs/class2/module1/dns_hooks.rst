@@ -54,8 +54,7 @@ If no, then check if the response is from DNS Express...if it is, allow an answe
 If not from DNS Express, check to see if it matches the admin_datagroup created for recursive allowed networks
 If it does not match both conditions, then drop.
 
-.. code-block:: tcl
-   :linenos:
+.. code-block:: console
 
 when DNS_REQUEST {
 if { [DNS::question type] eq "ANY" } {
