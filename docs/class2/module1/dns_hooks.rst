@@ -72,7 +72,7 @@ DNS::drop
 }
 }
 }
-::
+
 
 *TCP VIP iRule*
 ~~~~~~~~~~~~~
@@ -88,7 +88,7 @@ DNS::drop
 }
 }
 }
-::
+
 
 Testing:
 ~~~~~~~~
