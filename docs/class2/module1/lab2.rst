@@ -221,11 +221,12 @@ Analysis
 Testing
 ~~~~~~~
 
-#. In the Client Authentication section of the client SSL
+-  In the Client Authentication section of the client SSL
    profile ``f5test``, set Client Certificate to ``Require``, and
    assign ``ca_f5test`` to the Trusted Certificate Authorities option.
 
-#. Test accessing the HTTPS URL https://www.f5test.local from the
+
+-  Test accessing the HTTPS URL https://www.f5test.local from the
    client. The client browser should prompt you to select a certificate.
    Upon selecting this certificate, you should be able to pass through
    to the application.
