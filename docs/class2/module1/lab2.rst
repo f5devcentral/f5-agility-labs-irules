@@ -1,5 +1,5 @@
 Lab 2 - Client Certificate Inspection
--------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The use of smart card technology to perform client certificate
 authentication is, arguably, one of the most secure and reliable
@@ -12,10 +12,12 @@ The following iRule is a very simple, but very power example of some of
 that capability.
 
 Objectives:
+~~~~~~~~~~~
 
 -  Deploy and test the example client certificate inspection iRule code
 
 Lab Requirements:
+~~~~~~~~~~~~~~~~~
 
 -  BIG-IP LTM, web server, client browser, SSL server and client
    certificates
@@ -30,7 +32,7 @@ The iRule
        set static::debug 1
    }
    when CLIENTSSL_CLIENTCERT {
-       # Example subject: 
+       # Example subject:
        # C=US, O=f5test.local, OU=User Certificate, CN=user/emailAddress=user@f5test.local
        set subject_dn [X509::subject [SSL::cert 0]]
        if { $subject_dn != "" } {
@@ -217,7 +219,7 @@ Analysis
 
 Testing
 ~~~~~~~
-   
+
 #. In the Client Authentication section of the client SSL
    profile ``f5test``, set Client Certificate to ``Require``, and
    assign ``ca_f5test`` to the Trusted Certificate Authorities option.
