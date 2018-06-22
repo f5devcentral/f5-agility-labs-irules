@@ -19,7 +19,7 @@ Here we see an example of an DNS Amplification attack using an open DNS resolver
 
 Figure 2:
 ~~~~~~~~~
-.. image:: images/DNS_AMP_Attack.gif
+.. image:: images/amplification_attack.gif
 
 
 Restraints:
@@ -40,6 +40,7 @@ Prior to defining a solution, validate the issue by testing DNS answers UDP “A
 
 The iRule:
 ~~~~~~~~~~
+
 The iRule on the UDP VIP checks to see if the query type is "ANY" and, if so, it responds with a truncated message which will force the legitimate client to use TCP.
 This iRule also requires you to create a data group (called "admin_datagroup" in this iRule) that lists the networks that are allowed to do recursive lookups.
 If the DNS response is not from DNS Express and does not match the admin datagroup then the response gets dropped.
@@ -72,6 +73,7 @@ DNS::drop
 }
 }
 }
+
 TCP VIP iRule
 ~~~~~~~~~~~~~
 
