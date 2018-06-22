@@ -8,7 +8,18 @@ More specifically, DNS amplification attacks are a popular type of a Distributed
 a target system with DNS response traffic.  One other key piece to this puzzle is that DNS uses the User Datagram Protocol (UDP) to send requests and responses.
 An attacker floods your DNS system with an "ANY" query that returns all known information about a DNS zone in a single request.
 
+Figure 1:
+~~~~~~~~~
+.. image:: DNS_Resolver.gif
 
+.. image:: open_DNS_Resolver.gif
+
+
+Here we see an example of an DNS Amplification attack using an open DNS resolver:
+
+Figure 2:
+~~~~~~~~~
+.. image:: DNS_AMP_Attack.gif
 
 
 Restraints:
@@ -43,8 +54,7 @@ If no, then check if the response is from DNS Express...if it is, allow an answe
 If not from DNS Express, check to see if it matches the admin_datagroup created for recursive allowed networks
 If it does not match both conditions, then drop.
 
-.. code-block:: tcl
-   :linenos:
+.. code-block:: console
 
 when DNS_REQUEST {
 if { [DNS::question type] eq "ANY" } {
@@ -69,8 +79,7 @@ Simple logic to check and see if the response is from DNS Express or a part of t
 If not from DNS Express, check to see if it matches the admin_datagroup created for recursive allowed networks
 If it does not match both conditions, then drop
 
-.. code-block:: tcl
-   :linenos:
+.. code-block:: console
 
 when DNS_RESPONSE {
 if { [DNS::origin] ne "DNSX" } {
