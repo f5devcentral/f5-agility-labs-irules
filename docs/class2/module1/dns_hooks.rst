@@ -45,9 +45,14 @@ Prior to defining a solution, validate the issue by testing DNS answers UDP “A
 The iRule:
 ~~~~~~~~~~
 
-*UDP VIP iRule*
+UDP VIP iRule
 
-This first part checks if the DNS query type is "ANY" and responds with a truncated header
+This first part checks if the DNS query type is "ANY" and responds with a truncated header.
+The second part checks to see if the response packet is built from the first logic (origin = TCL)
+If yes, then exit and do not process further
+If no, then check if the response is from DNS Express...if it is, allow an answer for non "ANY" type
+If not from DNS Express, check to see if it matches the admin_datagroup created for recursive allowed networks
+If it does not match both conditions, then drop.
 
 .. code-block:: console
 when DNS_REQUEST {
@@ -57,12 +62,6 @@ DNS::header tc 1
 DNS::return
 }
 }
-This part checks to see if the response packet is built from the first logic (origin = TCL)
-If yes, then exit and do not process further
-If no, then check if the response is from DNS Express...if it is, allow an answer for non "ANY" type
-If not from DNS Express, check to see if it matches the admin_datagroup created for recursive allowed networks
-If it does not match both conditions, then drop
-
 when DNS_RESPONSE {
 if { [DNS::origin] eq "TCL" } {
 return
@@ -74,13 +73,13 @@ DNS::drop
 }
 
 
-*TCP VIP iRule*
-~~~~~~~~~~~~~
+TCP VIP iRule
+
 Simple logic to check and see if the response is from DNS Express or a part of the admin_datagroup
 If not from DNS Express, check to see if it matches the admin_datagroup created for recursive allowed networks
 If it does not match both conditions, then drop
 
-.. code-block:: console
+..code-block:: console
 when DNS_RESPONSE {
 if { [DNS::origin] ne "DNSX" } {
   if { not [class match [IP::client_addr] eq "admin_datagroup" ] } {
