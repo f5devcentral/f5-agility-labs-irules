@@ -56,6 +56,7 @@ If it does not match both conditions, then drop.
 
 .. code-block:: javascript
    :linenos:
+
 when DNS_REQUEST {
 if { [DNS::question type] eq "ANY" } {
 DNS::answer clear
