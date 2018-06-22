@@ -59,8 +59,7 @@ If no, then check if the response is from DNS Express...if it is, allow an answe
 If not from DNS Express, check to see if it matches the admin_datagroup created for recursive allowed networks
 If it does not match both conditions, then drop.
 
-.. code-block:: tcl
-
+.. code-block:: console
 when DNS_REQUEST {
 if { [DNS::question type] eq "ANY" } {
 DNS::answer clear
@@ -86,7 +85,6 @@ If not from DNS Express, check to see if it matches the admin_datagroup created 
 If it does not match both conditions, then drop
 
 .. code-block:: console
-
 when DNS_RESPONSE {
 if { [DNS::origin] ne "DNSX" } {
   if { not [class match [IP::client_addr] eq "admin_datagroup" ] } {
