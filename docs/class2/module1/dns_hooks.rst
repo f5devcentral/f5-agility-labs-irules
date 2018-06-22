@@ -10,9 +10,9 @@ An attacker floods your DNS system with an "ANY" query that returns all known in
 
 Figure 1:
 ~~~~~~~~~
-.. image:: DNS_Resolver.gif
+.. image:: /images/DNS_Resolver.gif
 
-.. image:: open_DNS_Resolver.gif
+.. image:: /imageopen_DNS_Resolver.gif
 
 
 Here we see an example of an DNS Amplification attack using an open DNS resolver:
