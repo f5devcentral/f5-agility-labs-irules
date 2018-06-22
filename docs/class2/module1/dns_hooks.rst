@@ -12,14 +12,14 @@ Figure 1:
 ~~~~~~~~~
 .. image:: images/DNS_Resolver.gif
 
-.. image:: imageopen_DNS_Resolver.gif
+.. image:: images/open_DNS_Resolver.gif
 
 
 Here we see an example of an DNS Amplification attack using an open DNS resolver:
 
 Figure 2:
 ~~~~~~~~~
-.. image:: DNS_AMP_Attack.gif
+.. image:: images/DNS_AMP_Attack.gif
 
 
 Restraints:
