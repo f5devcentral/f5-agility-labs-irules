@@ -25,8 +25,8 @@ Lab Requirements:
 The iRule
 ~~~~~~~~~
 
-.. code-block:: tcl
-   :linenos:
+.. code-block:: console
+
    when RULE_INIT {
        set static::debug 1
    }
@@ -50,8 +50,10 @@ The iRule
        }
    }
 
+
 Certificates:
 ~~~~~~~~~~~~~
+
 Certificates and keys are provided for you in the lab, but here are test
 certificates and private keys.
 
