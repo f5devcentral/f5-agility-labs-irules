@@ -79,7 +79,7 @@ Simple logic to check and see if the response is from DNS Express or a part of t
 If not from DNS Express, check to see if it matches the admin_datagroup created for recursive allowed networks
 If it does not match both conditions, then drop
 
-..code-block:: console
+.. code-block:: console
 when DNS_RESPONSE {
 if { [DNS::origin] ne "DNSX" } {
   if { not [class match [IP::client_addr] eq "admin_datagroup" ] } {
