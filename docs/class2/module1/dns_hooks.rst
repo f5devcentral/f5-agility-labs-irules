@@ -45,9 +45,8 @@ Prior to defining a solution, validate the issue by testing DNS answers UDP “A
 The iRule:
 ~~~~~~~~~~
 
-.. code-block:: console
-UDP VIP iRule
-~~~~~~~~~~~~~
+*UDP VIP iRule*
+
 This first part checks if the DNS query type is "ANY" and responds with a truncated header
 
 .. code-block:: console
@@ -73,14 +72,15 @@ DNS::drop
 }
 }
 }
+::
 
-TCP VIP iRule
+*TCP VIP iRule*
 ~~~~~~~~~~~~~
 Simple logic to check and see if the response is from DNS Express or a part of the admin_datagroup
 If not from DNS Express, check to see if it matches the admin_datagroup created for recursive allowed networks
 If it does not match both conditions, then drop
 
-
+.. code-block:: console
 when DNS_RESPONSE {
 if { [DNS::origin] ne "DNSX" } {
   if { not [class match [IP::client_addr] eq "admin_datagroup" ] } {
@@ -88,7 +88,7 @@ DNS::drop
 }
 }
 }
-
+::
 
 Testing:
 ~~~~~~~~
