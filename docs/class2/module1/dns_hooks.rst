@@ -23,12 +23,16 @@ Figure 2:
 
 
 Restraints:
+~~~~~~~~~~~
+
 The following restraints complicate the request from the business to relax the enforced security posture:
 -	Respond to queries from any source, even open resolvers.
 - Respond to DNS queries over both TCP and UDP.
 
 
 Requirements:
+~~~~~~~~~~~~~
+
 To meet the business’s objectives while maintaining a strong security policy, an iRule solution must meet the following requirements:
 -	checks to see if the query type is "ANY" and, if so, it responds with a truncated message which will force the legitimate client to use TCP.
 -	Allows for flexible updatable list of networks allowed to do recursive lookups.
@@ -55,7 +59,7 @@ If no, then check if the response is from DNS Express...if it is, allow an answe
 If not from DNS Express, check to see if it matches the admin_datagroup created for recursive allowed networks
 If it does not match both conditions, then drop.
 
-.. code-block:: console
+.. code-block:: TCL
 
 when DNS_REQUEST {
 if { [DNS::question type] eq "ANY" } {
