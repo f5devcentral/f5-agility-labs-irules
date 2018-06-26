@@ -19,7 +19,7 @@ Here we see an example of an DNS Amplification attack using an open DNS resolver
 
 Figure 2:
 ~~~~~~~~~
-.. image:: images/amplification_attack.gif
+.. image:: docs/_static/clas2/amplification_attack.gif
 
 
 Restraints:
