@@ -37,7 +37,7 @@ Prior to defining a solution, validate the issue by testing the application to v
 - The result of the test should look similar to below, with grep returning no match, and the object response size ~64k
 
 
-   .. image:: /_static/class2/pbd_baseline_test1.png
+   .. image:: docs/_static/class2/pbd_baseline_test1.png
       :width: 1000
 
 
@@ -175,7 +175,7 @@ Testing:
 
 - Response should look similar to below image.  You should see that PBD has injected a javascript challenge, and the response body should be ~5.8K
 
-   .. image:: /_static/class2/pbd_test1.png
+   .. image:: docs/_static/class2/pbd_test1.png
       :width: 1000
 
 - From Terminal, run the same command but change the value of the ``X-forwarded-for`` header to be 2.2.2.2
