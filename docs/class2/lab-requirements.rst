@@ -17,6 +17,7 @@ Requirements from HTTP Throttling Lab:
 -  BIG-IP LTM, web server and client (Linux command line client
    preferred)
 -  HTTP throttling scripts under scripts directory in Cygwin Terminal  
+-  Need to add Methods_to_throttle String Datagroup with GET in the list of strings
 
 Requirements from Geolocation lab:
 - Base Template Blueprint discussed for Agility Labs (lbr-oscrc-f5-v13.1.0.3a-bp-180427)
