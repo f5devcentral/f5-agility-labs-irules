@@ -1,20 +1,25 @@
 Lab 2 - Client Certificate Inspection
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The use of smart card technology to perform client certificate
-authentication is, arguably, one of the most secure and reliable
-two-factor authentication systems in use today. Even without a physical
-smart card, software-based client certificates still offer an advantage
-over many other authentication mechanisms. F5 iRules have complete
-access to the x509 properties of a client certificate during that
-authentication, so there is almost no limit to what can be done here.
-The following iRule is a very simple, but very power example of some of
-that capability.
+Scenario:
+~~~~~~~~~
 
-Objectives:
-~~~~~~~~~~~
+Your company uses smart cards for two-factor authentication.  Users access different resources from a single url and
+need to be given access to the different resources based on the properties of the client certificate. Users have physical
+smart cards and software-based client certificates and authentication decisions will need to be made based on certificate attributes.
 
--  Deploy and test the example client certificate inspection iRule code
+Requirements:
+~~~~~~~~~~~~~
+
+To meet the business’s objectives while still maintaining a strong security policy, an iRule solution must meet the following requirements:
+
+- inspect certificate attribute to give access to correct resource
+
+Baseline Testing:
+~~~~~~~~~~~~~~~~~
+Prior to defining a solution, validate that users do not have the correct access.
+- from the client work station open a browser to https://www.f5test.local.  You should have full access to the url.
+
 
 Lab Requirements:
 ~~~~~~~~~~~~~~~~~
@@ -25,7 +30,10 @@ Lab Requirements:
 The iRule
 ~~~~~~~~~
 
-.. code-block:: console
+F5 iRules have complete access to the x509 properties of a client certificate during that
+authentication and can look at the attribute of the certificate to make decisions.
+
+.. code-block:: tcl
 
    when RULE_INIT {
        set static::debug 1

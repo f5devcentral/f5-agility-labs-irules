@@ -1,5 +1,9 @@
-DNS Hooks: Amplification Attach
+Lab X - DNS Hooks: Amplification Attach
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 Scenario:
+~~~~~~~~~
+
 You have F5 DNS deployed servicing DNS queries for external DNS.  To meet the business requirements, you must allow DNS queries from any DNS resolver.
 Basic DNSSEC has been implemented as part of your GTM deployment.  As your DNS deployment expands for more applications you experience a DNS Amplification attach.
 A DNS amplification attack takes advantage of features that allow a very small request to return a much larger response.
@@ -10,9 +14,9 @@ An attacker floods your DNS system with an "ANY" query that returns all known in
 
 Figure 1:
 ~~~~~~~~~
-.. image:: images/DNS_Resolver.gif
+.. image:: docs/_static/clas2/DNS_Resolver.gif
 
-.. image:: images/open_DNS_resolver.gif
+.. image:: docs/_static/clas2/open_DNS_resolver.gif
 
 
 Here we see an example of an DNS Amplification attack using an open DNS resolver:
@@ -54,7 +58,7 @@ If no, then check if the response is from DNS Express...if it is, allow an answe
 If not from DNS Express, check to see if it matches the admin_datagroup created for recursive allowed networks
 If it does not match both conditions, then drop.
 
-.. code-block:: console
+.. code-block:: tcl
 
 when DNS_REQUEST {
 if { [DNS::question type] eq "ANY" } {
@@ -80,7 +84,7 @@ Simple logic to check and see if the response is from DNS Express or a part of t
 If not from DNS Express, check to see if it matches the admin_datagroup created for recursive allowed networks
 If it does not match both conditions, then drop
 
-.. code-block:: console
+.. code-block:: tcl
 
 when DNS_RESPONSE {
 if { [DNS::origin] ne "DNSX" } {
