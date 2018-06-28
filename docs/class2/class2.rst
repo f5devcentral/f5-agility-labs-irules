@@ -1,7 +1,7 @@
 Cooking with iRules - Security/SSL
 ==================================
 
-Security vulnerabilities are on the rise. In 2015 alone we saw zero-day
+Security vulnerabilities are on the rise. In 2015 alone, zero-day
 exploits more than double from the previous year (according to
 Symantec’s 2015 Internet Security Threat Report), accounting for roughly
 one new attack each week in 2015. It certainly doesn’t help that, in
