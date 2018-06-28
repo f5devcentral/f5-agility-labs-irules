@@ -15,13 +15,11 @@ generally move faster than software updates and patches. F5 iRules give
 you the power and flexibility to fill those gaps, and these labs provide
 just a taste of some of that power. In the following, you’ll see a
 handful of ways to use iRules to defend and protect against malicious
-activity in your enterprise. We’re presenting this guide in the form of
-a “cookbook” that you can follow in any order, and as needed to solve
-specific problems.
+activity in your enterprise.
 
-Ultimately though, this is an **incomplete** cookbook. There’s simply no
+Ultimately though, this is **incomplete**. There’s simply no
 way to include iRules code for every possible vulnerability, and we’d
-rather not hand you a 500-page document. If you need to fix some
+rather not hand you a 500-page guide. If you need to fix some
 specific security issue that we haven’t included here, or simply have
 questions, please let the F5 DevCentral community know.
 
