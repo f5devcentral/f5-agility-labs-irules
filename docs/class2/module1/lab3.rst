@@ -71,8 +71,7 @@ certificate, use the following OpenSSL commands:
    Preload option is used by browser vendors to hard code this information into future browser updates. You must separately 
    submit the URL to the vendors' preload lists. They will check that the preload option is set before hard coding your URL.
    
-   A word of warning: once browser vendors hard code this URL into new versions, it is practically impossible to remove it. 
-   Make sure this is exactly what you want and that no "mixed" content (HTTP and HTTPS) exists for this URL.
+   A word of warning: once browser vendors hard code this URL into new versions, it is practically impossible to remove it, so make sure this is exactly what you want and that no "mixed" content (HTTP and HTTPS) exists for this URL.
 
 
 The following iRule demonstrates how to deploy both HSTS and HPKP.
