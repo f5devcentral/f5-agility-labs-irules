@@ -130,7 +130,9 @@ for anything less than TLSv1.1.
    #. Change client ssl cipher from ``DEFAULT`` to ``DEFAULT:SSLv3``
    #. Use ``openssl s_client -connect www.f5demolabs.com:443 -ssl3`` to connect
    
-.. NOTE:: Lab Notes:
+.. NOTE:: 
+   Lab Notes:
+   
    #. Use the Chrome browser to manage the BIG-IP.
    #. Use the Firefox browser to perform access testing.
       - Modify Firefox's TLS version by navigating to about:config and modifying the "security.tls.version.max" value.
