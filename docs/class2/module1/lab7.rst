@@ -128,4 +128,4 @@ for anything less than TLSv1.1.
 
 .. HINT:: 
    #. Change client ssl cipher from ``DEFAULT`` to ``DEFAULT:SSLv3``
-   #. Use ``openssl s_client -connect www.f5test.local:443 -ssl3`` to connect  
+   #. Use ``openssl s_client -connect www.f5demolabs.com:443 -ssl3`` to connect  
