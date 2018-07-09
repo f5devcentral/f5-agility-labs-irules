@@ -140,10 +140,10 @@ for anything less than TLSv1.1.
       - 2 = TLSv1.1
       - 3 = TLSv1.2 
    - The test site URL is https://www.f5demolabs.com. A hosts file entry is already applied to the lab desktop.
-   - Use a command line client to also test access
+   - Use a command line client to also test access:
       - curl -vk https://www.f5demolabs.com --[tlsv1|tlsv1.0|tlsv1.2]
       - openssl s_client -connect www.f5demolabs.com:443 -[tls1|tls1_1|tls1_2]
-   - Three TLS version control iRules are provided
+   - Three TLS version control iRules are provided:
       - Basic istats capture
       - Redirect to insecure page if TLSv1 or SSLv3
       - Provide David Holmes' iRules and access to the /sslversions URL.
