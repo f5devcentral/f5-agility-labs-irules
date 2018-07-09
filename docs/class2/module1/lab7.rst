@@ -115,11 +115,11 @@ to inform them that they need to upgrade their browser.
 .. code-block:: tcl
    :linenos:
 
-   when CLIENTSSL_HANDSHAKE {
-       if { ( [SSL::cipher version] equals "TLSV1" ) or ( [SSL::cipher version] equals "SSLv3" ) } {
-           set redirect "http://www.f5demolabs.com/insecure.html"
-           SSL::respond "HTTP/1.1 302 Found\r\nLocation: $redirect\r\n\r\n"
-       }
+   when HTTP_REQUEST {
+       if { (( [SSL::cipher version] equals "TLSv1" ) or ( [SSL::cipher version] equals "SSLv3" )) and not ( [HTTP::uri] equals "/insecure.html" ) } {
+           set redirect "https://www.f5demolabs.com/insecure.html"
+           HTTP::respond 302 Location "${redirect}"
+      }
    }
 
 You’re still allowing SSLv3 and TLSv1 at this point, which is
