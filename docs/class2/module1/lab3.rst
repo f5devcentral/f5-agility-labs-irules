@@ -60,11 +60,13 @@ certificate, use the following OpenSSL commands:
 
 ``openssl x509 –in <cert> -pubkey –noout | openssl rsa –pubin –outform der | openssl dgst –sha256 –binary | openssl enc –base64``
 
-.. NOTE:: Prior to BIG-IP LTM version 13.0, HSTS was implemented with an iRule (see below). As of v13, HSTS is simply enabled  
+.. NOTE:: 
+
+   Prior to BIG-IP LTM version 13.0, HSTS was implemented with an iRule (see below). As of v13, HSTS is simply enabled  
    within an HTTP profile.
 
-   #. Create an HTTP profile.
-   #. Under the new "HTTP Strict Transport Security" section (bottom), set Mode to enabled (checked), set a maximum age in 
+   1. Create an HTTP profile.
+   2. Under the new "HTTP Strict Transport Security" section (bottom), set Mode to enabled (checked), set a maximum age in 
    seconds, and check the "Include Subdomains" option if you want the HSTS header to be sent for subdomains of this URL. The 
    Preload option is used by browser vendors to hard code this information into future browser updates. You must separately 
    submit the URL to the vendors' preload lists. They will check that the preload option is set before hard coding your URL.
