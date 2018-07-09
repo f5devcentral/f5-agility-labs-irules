@@ -89,7 +89,7 @@ Testing
    ``istats dump``
 
 .. HINT:: For the purposes of this lab we can use
-   ``openssl s_client -connect www.f5test.local:443 <cipher>``
+   ``openssl s_client -connect www.f5demolabs.com:443 <cipher>``
    where cipher options could include {-ssl3, -tls1, -tls1_1, -tls1_2}
    to simulate different connections.
 
@@ -117,7 +117,7 @@ to inform them that they need to upgrade their browser.
 
    when CLIENTSSL_HANDSHAKE {
        if { ( [SSL::cipher version] equals "TLSV1" ) or ( [SSL::cipher version] equals "SSLv3" ) } {
-           set redirect "http://www.f5test.local/insecure.html"
+           set redirect "http://www.f5demolabs.com/insecure.html"
            SSL::respond "HTTP/1.1 302 Found\r\nLocation: $redirect\r\n\r\n"
        }
    }
