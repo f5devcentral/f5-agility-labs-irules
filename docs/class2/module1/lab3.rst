@@ -64,12 +64,13 @@ certificate, use the following OpenSSL commands:
    within an HTTP profile.
 
    #. Create an HTTP profile.
-   #. Under the new "HTTP Strict Transport Security" section (bottom), set Mode to enabled (checked), set a maximum age in
-   seconds, and check the "Include Subdomains" option if you want the HSTS header to be sent for subdomains of this URL. The
-   Preload option is used by browser vendors to hard code this information into future browser updates. You must separately
+   #. Under the new "HTTP Strict Transport Security" section (bottom), set Mode to enabled (checked), set a maximum age in 
+   seconds, and check the "Include Subdomains" option if you want the HSTS header to be sent for subdomains of this URL. The 
+   Preload option is used by browser vendors to hard code this information into future browser updates. You must separately 
    submit the URL to the vendors' preload lists. They will check that the preload option is set before hard coding your URL.
    
-   A word of warning: once browser vendors hard code this URL into new versions, it is practically impossible to remove it. Make sure this is exactly what you want and that no "mixed" content (HTTP and HTTPS) exists for this URL.
+   A word of warning: once browser vendors hard code this URL into new versions, it is practically impossible to remove it. 
+   Make sure this is exactly what you want and that no "mixed" content (HTTP and HTTPS) exists for this URL.
 
 
 The following iRule demonstrates how to deploy both HSTS and HPKP.
