@@ -131,17 +131,17 @@ for anything less than TLSv1.1.
    #. Use ``openssl s_client -connect www.f5demolabs.com:443 -ssl3`` to connect
    
 .. NOTE:: Lab Notes:
-   - Use the Chrome browser to manage the BIG-IP.
-   - Use the Firefox browser to perform access testing.
+   #. Use the Chrome browser to manage the BIG-IP.
+   #. Use the Firefox browser to perform access testing.
       - Modify Firefox's TLS version by navigating to about:config and modifying the "security.tls.version.max" value.
       - 1 = TLSv1.0
       - 2 = TLSv1.1
       - 3 = TLSv1.2 
-   - Use a command line client to also test access
+   #. Use a command line client to also test access
       - curl -vk https://www.f5demolabs.com --[tlsv1|tlsv1.0|tlsv1.2]
       - openssl s_client -connect www.f5demolabs.com:443 -[tls1|tls1_1|tls1_2]
-   - The test site URL is https://www.f5demolabs.com. A hosts file entry is already applied to the lab desktop.
-   - Three TLS version control iRules are provided
+   #. The test site URL is https://www.f5demolabs.com. A hosts file entry is already applied to the lab desktop.
+   #. Three TLS version control iRules are provided
       - Basic istats capture
       - Redirect to insecure page if TLSv1 or SSLv3
       - Provide David Holmes' iRules and access to the /sslversions URL.
