@@ -3,6 +3,3 @@ media/
 *.docx
 .DS_Store
 pdf/
-.Python/
-lib/python2.7/
-/docs/conf.py
