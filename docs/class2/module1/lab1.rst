@@ -4,7 +4,7 @@ Lab 1 - HTTP Throttling
 Scenario:
 ~~~~~~~~~
 
-Your company has setup a new web application and not had the time to develop an ASM policy.  Due to your companies profile several bad actors have threatened to attack using SlowLoris and SlowPost attacks to create a denial of service.  Although ASM can handle this very easily and would be the best tool to use, we are going to use an iRule to help with throttling the number of requests coming into the application.
+Your company has setup a new web application and not had the time to develop an ASM policy.  Due to your companies profile, several bad actors have threatened to attack using SlowLoris and SlowPost attacks to create a denial of service.  Although ASM can handle this very easily and would be the best tool to use, we don't have the resources available to test implementing the policy.  We are going to use an iRule to help with throttling the number of requests coming into the application.
 
 Restraints:
 ~~~~~~~~~~~
@@ -44,14 +44,14 @@ The iRule
     }
  
     when HTTP_REQUEST {
-	# The iRule allows throttling for only sepecific URIs.  You list the URIs_to_throttle
+	# The iRule allows throttling for only sepecific Methods.  You list the Methods_to_throttle
 	# in a datagroup.  URIs_to_throttle or Methods_to_throttle.
 	# if you need to throttle by URI use an statement like this:
 	#                               if { [class match [HTTP::uri] equals URIs_to_throttle] }
 	# Note: a URI is everything after the hostname: e.g. /path1/login.aspx?name=user1
 	#  
  
-        if { [class match [HTTP::uri] equals Methods_to_throttle] } {
+        if { [class match [HTTP::method] equals Methods_to_throttle] } {
  
            # The following expects the IP addresses in multiple X-forwarded-for headers.  It picks the first one.
            if { [HTTP::header exists X-forwarded-for] } {
@@ -122,7 +122,7 @@ of that script.
    #!/bin/bash
    while [ 1 ]
    do
-      curl http://www.f5test.local --write-out "%{http_code}\n" --silent -o /dev/null
+      curl http://www.f5demolabs.com --write-out "%{http_code}\n" --silent -o /dev/null
    done
    
 Under Cygwin Terminal, cd to scripts directory and run ``bash http_trottling``.
@@ -199,5 +199,5 @@ Bash representation of that script.
    #!/bin/bash
    while [ 1 ]
    do
-      curl http://www.f5test.local/admin --write-out "%{http_code}\n" --silent -o /dev/null
+      curl http://www.f5demolabs.com/admin --write-out "%{http_code}\n" --silent -o /dev/null
    done   
