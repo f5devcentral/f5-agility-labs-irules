@@ -89,7 +89,7 @@ Testing
    ``istats dump``
 
 .. HINT:: For the purposes of this lab we can use
-   ``openssl s_client -connect www.f5test.local:443 <cipher>``
+   ``openssl s_client -connect www.f5demolabs.com:443 <cipher>``
    where cipher options could include {-ssl3, -tls1, -tls1_1, -tls1_2}
    to simulate different connections.
 
@@ -115,11 +115,11 @@ to inform them that they need to upgrade their browser.
 .. code-block:: tcl
    :linenos:
 
-   when CLIENTSSL_HANDSHAKE {
-       if { ( [SSL::cipher version] equals "TLSV1" ) or ( [SSL::cipher version] equals "SSLv3" ) } {
-           set redirect "http://www.f5test.local/insecure.html"
-           SSL::respond "HTTP/1.1 302 Found\r\nLocation: $redirect\r\n\r\n"
-       }
+   when HTTP_REQUEST {
+       if { (( [SSL::cipher version] equals "TLSv1" ) or ( [SSL::cipher version] equals "SSLv3" )) and not ( [HTTP::uri] equals "/insecure.html" ) } {
+           set redirect "https://www.f5demolabs.com/insecure.html"
+           HTTP::respond 302 Location "${redirect}"
+      }
    }
 
 You’re still allowing SSLv3 and TLSv1 at this point, which is
@@ -128,4 +128,22 @@ for anything less than TLSv1.1.
 
 .. HINT:: 
    #. Change client ssl cipher from ``DEFAULT`` to ``DEFAULT:SSLv3``
-   #. Use ``openssl s_client -connect www.f5test.local:443 -ssl3`` to connect  
+   #. Use ``openssl s_client -connect www.f5demolabs.com:443 -ssl3`` to connect
+   
+.. NOTE:: 
+   Lab Notes:
+   
+   - Use the Chrome browser to manage the BIG-IP.
+   - Use the Firefox browser to perform access testing.
+      - Modify Firefox's TLS version by navigating to about:config and modifying the "security.tls.version.max" value.
+      - 1 = TLSv1.0
+      - 2 = TLSv1.1
+      - 3 = TLSv1.2 
+   - The test site URL is https://www.f5demolabs.com. A hosts file entry is already applied to the lab desktop.
+   - Use a command line client to also test access:
+      - curl -vk https://www.f5demolabs.com --[tlsv1|tlsv1.0|tlsv1.2]
+      - openssl s_client -connect www.f5demolabs.com:443 -[tls1|tls1_1|tls1_2]
+   - Three TLS version control iRules are provided:
+      - Basic istats capture
+      - Redirect to insecure page if TLSv1 or SSLv3
+      - Provide David Holmes' iRules and access to the /sslversions URL.

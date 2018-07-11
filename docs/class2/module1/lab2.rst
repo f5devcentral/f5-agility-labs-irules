@@ -1,21 +1,28 @@
 Lab 2 - Client Certificate Inspection
--------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The use of smart card technology to perform client certificate
-authentication is, arguably, one of the most secure and reliable
-two-factor authentication systems in use today. Even without a physical
-smart card, software-based client certificates still offer an advantage
-over many other authentication mechanisms. F5 iRules have complete
-access to the x509 properties of a client certificate during that
-authentication, so there is almost no limit to what can be done here.
-The following iRule is a very simple, but very power example of some of
-that capability.
+Scenario:
+~~~~~~~~~
 
-Objectives:
+Your company uses smart cards for two-factor authentication.  Users access different resources from a single url and
+need to be given access to the different resources based on the properties of the client certificate. Users have physical
+smart cards and software-based client certificates and authentication decisions will need to be made based on certificate attributes.
 
--  Deploy and test the example client certificate inspection iRule code
+Requirements:
+~~~~~~~~~~~~~
+
+To meet the business’s objectives while still maintaining a strong security policy, an iRule solution must meet the following requirements:
+
+- inspect certificate attribute to give access to correct resource
+
+Baseline Testing:
+~~~~~~~~~~~~~~~~~
+Prior to defining a solution, validate that users do not have the correct access.
+- from the client work station open a browser to https://www.f5test.local.  You should have full access to the url.
+
 
 Lab Requirements:
+~~~~~~~~~~~~~~~~~
 
 -  BIG-IP LTM, web server, client browser, SSL server and client
    certificates
@@ -23,14 +30,16 @@ Lab Requirements:
 The iRule
 ~~~~~~~~~
 
+F5 iRules have complete access to the x509 properties of a client certificate during that
+authentication and can look at the attribute of the certificate to make decisions.
+
 .. code-block:: tcl
-   :linenos:
 
    when RULE_INIT {
        set static::debug 1
    }
    when CLIENTSSL_CLIENTCERT {
-       # Example subject: 
+       # Example subject:
        # C=US, O=f5test.local, OU=User Certificate, CN=user/emailAddress=user@f5test.local
        set subject_dn [X509::subject [SSL::cert 0]]
        if { $subject_dn != "" } {
@@ -48,6 +57,10 @@ The iRule
            }
        }
    }
+
+
+Certificates:
+~~~~~~~~~~~~~
 
 Certificates and keys are provided for you in the lab, but here are test
 certificates and private keys.
@@ -217,12 +230,13 @@ Analysis
 
 Testing
 ~~~~~~~
-   
-#. In the Client Authentication section of the client SSL
+
+-  In the Client Authentication section of the client SSL
    profile ``f5test``, set Client Certificate to ``Require``, and
    assign ``ca_f5test`` to the Trusted Certificate Authorities option.
 
-#. Test accessing the HTTPS URL https://www.f5test.local from the
+
+-  Test accessing the HTTPS URL https://www.f5test.local from the
    client. The client browser should prompt you to select a certificate.
    Upon selecting this certificate, you should be able to pass through
    to the application.
