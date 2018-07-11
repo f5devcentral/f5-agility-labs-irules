@@ -172,13 +172,13 @@ Testing
 
 #. Access HTTPS URL without iRule to see current cookie status.
 
-   ``curl –vk https://www.f5test.local``	
+   ``curl –vk https://www.f5demolabs.com``	
 
 #. Attach the iRule to the HTTPS VIP
 
 #. Access the HTTPS URL to see the change in the cookie information.
 
-   ``curl -vk https://www.f5test.local``
+   ``curl -vk https://www.f5demolabs.com``
 
 A word on cookie security – the ``secure`` and ``httpOnly`` flags are
 exceedingly important for the proper and secure use of HTTP cookies, but
