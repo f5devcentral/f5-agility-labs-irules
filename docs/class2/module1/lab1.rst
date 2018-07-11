@@ -4,7 +4,7 @@ Lab 1 - HTTP Throttling
 Scenario:
 ~~~~~~~~~
 
-Your company has setup a new web application and not had the time to develop an ASM policy.  Due to your companies profile several bad actors have threatened to attack using SlowLoris and SlowPost attacks to create a denial of service.  Although ASM can handle this very easily and would be the best tool to use, we are going to use an iRule to help with throttling the number of requests coming into the application.
+Your company has setup a new web application and not had the time to develop an ASM policy.  Due to your companies profile, several bad actors have threatened to attack using SlowLoris and SlowPost attacks to create a denial of service.  Although ASM can handle this very easily and would be the best tool to use, we don't have the resources available to test implementing the policy.  We are going to use an iRule to help with throttling the number of requests coming into the application.
 
 Restraints:
 ~~~~~~~~~~~
