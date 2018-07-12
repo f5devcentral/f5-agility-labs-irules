@@ -1,5 +1,5 @@
 Lab 1 - Creating and Implementing an LX iRule
--------------------------------------
+---------------------------------------------
 
 Test and Review the Existing Configuration
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

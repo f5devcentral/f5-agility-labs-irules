@@ -37,7 +37,7 @@ Prior to defining a solution, validate the issue by testing the application to v
 - The result of the test should look similar to below, with grep returning no match, and the object response size ~64k
 
 
-   .. image:: _static/class2/pbd_baseline_test1.png
+   .. image:: /_static/class2/pbd_baseline_test1.png
       :width: 1000
 
 
@@ -169,13 +169,14 @@ Testing:
 
 
 - On original Terminal Application tab, run the following command:
+ 
  .. code-block:: console
     
     f5student@xjumpbox~$ curl -k http://hackazon.f5demo.com/ -H "X-forwarded-for: 5.16.0.1" | grep -i ?type=
 
 - Response should look similar to below image.  You should see that PBD has injected a javascript challenge, and the response body should be ~5.8K
 
-   .. image:: _static/class2/pbd_test1.png
+   .. image:: /_static/class2/pbd_test1.png
       :width: 1000
 
 - From Terminal, run the same command but change the value of the ``X-forwarded-for`` header to be 2.2.2.2
@@ -204,7 +205,8 @@ Testing:
 
 
 .. NOTE::
-Bot Defense is inactive, because the request wasnt sourced from "Russia", and we have disabled PBD.
+
+   Bot Defense is inactive, because the request wasnt sourced from "Russia", and we have disabled PBD.
 
 - Return to Firefox, and right click the Firefox Modify Header Add-on on the right-side of the screen
 

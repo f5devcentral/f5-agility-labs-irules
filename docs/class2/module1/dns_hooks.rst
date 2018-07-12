@@ -1,5 +1,5 @@
 Lab X - DNS Hooks: Amplification Attach
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+---------------------------------------
 
 Scenario:
 ~~~~~~~~~
@@ -14,18 +14,19 @@ An attacker floods your DNS system with an "ANY" query that returns all known in
 
 Figure 1:
 ~~~~~~~~~
-.. image:: docs/_static/clas2/DNS_Resolver.gif
+.. image:: /_static/class2/DNS_Resolver.gif
+   :scale: 50 %
 
-.. image:: docs/_static/clas2/open_DNS_resolver.gif
-
+.. image:: /_static/class2/open_DNS_resolver.gif
+   :scale: 50 %
 
 Here we see an example of an DNS Amplification attack using an open DNS resolver:
 
 Figure 2:
 ~~~~~~~~~
-.. image:: docs/_static/clas2/amplification_attack.gif
-
-
+.. image:: /_static/class2/amplification_attack.gif
+   :scale: 50 %
+   
 Restraints:
 ~~~~~~~~~~~
 
@@ -60,22 +61,22 @@ If it does not match both conditions, then drop.
 
 .. code-block:: tcl
 
-when DNS_REQUEST {
-if { [DNS::question type] eq "ANY" } {
-DNS::answer clear
-DNS::header tc 1
-DNS::return
-}
-}
-when DNS_RESPONSE {
-if { [DNS::origin] eq "TCL" } {
-return
-} elseif { [DNS::origin] ne "DNSX" } {
-if { not [class match [IP::client_addr] eq "admin_datagroup" ] } {
-DNS::drop
-}
-}
-}
+   when DNS_REQUEST {
+     if { [DNS::question type] eq "ANY" } {
+        DNS::answer clear
+        DNS::header tc 1
+        DNS::return
+     }
+   }
+   when DNS_RESPONSE {
+     if { [DNS::origin] eq "TCL" } {
+        return
+     } elseif { [DNS::origin] ne "DNSX" } {
+         if { not [class match [IP::client_addr] eq "admin_datagroup" ] } {
+           DNS::drop
+         }
+     }
+   }
 
 
 TCP VIP iRule
@@ -86,13 +87,13 @@ If it does not match both conditions, then drop
 
 .. code-block:: tcl
 
-when DNS_RESPONSE {
-if { [DNS::origin] ne "DNSX" } {
-  if { not [class match [IP::client_addr] eq "admin_datagroup" ] } {
-DNS::drop
-}
-}
-}
+   when DNS_RESPONSE {
+    if { [DNS::origin] ne "DNSX" } {
+      if { not [class match [IP::client_addr] eq "admin_datagroup" ] } {
+         DNS::drop
+      }
+    }
+   }
 
 
 Testing:
