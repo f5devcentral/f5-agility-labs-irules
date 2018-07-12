@@ -1,4 +1,4 @@
-Module 3: Asynchronous Programming
+Asynchronous Programming
 =========================================
 
 In this lab we will demonstrate the concept of asynchronous programing
