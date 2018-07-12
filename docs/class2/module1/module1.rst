@@ -1,4 +1,4 @@
-Module 1: Security/SSL iRules Labs
+Security/SSL iRules Labs
 ==================================
 
 .. toctree::

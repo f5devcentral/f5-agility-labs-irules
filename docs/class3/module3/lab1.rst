@@ -1,4 +1,4 @@
-Asynchronous Programming
+Lab 1 - Asynchronous Programming
 ------------------------
 
 Test and Review the Existing Configuration

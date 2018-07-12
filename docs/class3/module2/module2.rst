@@ -1,4 +1,4 @@
-Module 2: NPM and Exception Handling
+NPM and Exception Handling
 ============================================
 
 In this lab exercise, we will cover two topics. In the first topic we

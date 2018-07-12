@@ -1,4 +1,4 @@
-Module 4: iRules LX Streaming
+iRules LX Streaming
 ====================================
 
 In this lab exercise, you will learn how to create LX plugins that can be

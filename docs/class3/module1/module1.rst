@@ -1,4 +1,4 @@
-Module 1: Creating and Implementing an LX iRule
+Creating and Implementing an LX iRule
 ================================================
 
 In this lab we will learn how to use iRules LX with a basic example to
