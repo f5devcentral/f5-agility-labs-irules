@@ -3,3 +3,12 @@ media/
 *.docx
 .DS_Store
 pdf/
+bin/*
+include/*
+objects/*
+lib/*
+f5-sphinx-theme/*
+hooks/*
+refs/*
+logs/*
+info/*
