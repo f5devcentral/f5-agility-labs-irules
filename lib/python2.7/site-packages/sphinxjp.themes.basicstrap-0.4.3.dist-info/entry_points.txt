@@ -1,0 +1,7 @@
+
+        [sphinx_themes]
+        path = sphinxjp.themes.basicstrap:get_path
+
+        [sphinx_directives]
+        setup = sphinxjp.themes.basicstrap:setup
+    
