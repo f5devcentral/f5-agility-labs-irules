@@ -4,7 +4,7 @@ Lab 4 - Geolocation
 Scenario:
 ~~~~~~~~~
 
-All of your critical applications are protected by F5 Advanced Web Application Firewall (AWAF), and leverage F5's Layer 7 DoS feature to mitigate bot activity, and protect application resources from layer 7 volumetric attacks.  To simplify the initial deployment, the application security team elected to disable F5's Proactive Bot Defense (PBD) feature.  Recently, the business analysis team has noticed a significant increase in application traffic from Russia, and believe much of this traffic to be bot related activity.  Because this traffic is having an negative impact on the business's ability to analyze data, and increasing load on the server infrastructure, the business is requesting that more aggressive action be taken on traffic sourced from Russia.  The security team would like to leverage Proactive Bot Defense for this traffic to block simple automated bot activity.
+All of your critical applications are protected by F5 Advanced Web Application Firewall (AWAF), and leverage F5's Layer 7 DoS feature to mitigate bot activity and protect application resources from layer 7 volumetric attacks.  To simplify the initial deployment, the application security team elected to disable F5's Proactive Bot Defense (PBD) feature.  Recently, the business analysis team has noticed a significant increase in application traffic from Russia, and believe much of this traffic to be bot related activity.  Because this traffic is having an negative impact on the business's ability to analyze data, and increasing load on the server infrastructure, the business is requesting that more aggressive action be taken on traffic sourced from Russia.  The security team would like to leverage Proactive Bot Defense for this traffic to block simple automated bot activity.
 
 Restraints:
 ~~~~~~~~~~~
@@ -23,6 +23,7 @@ To meet the business’s objectives while still maintaining a strong security po
 Baseline Testing:
 ~~~~~~~~~~~~~~~~~
 Prior to defining a solution, validate the issue by testing the application to validate AWAF's current behavior:
+
 - RDP to the lab jump station 
 - From the jump station
  
@@ -41,7 +42,7 @@ Prior to defining a solution, validate the issue by testing the application to v
       :width: 1000
 
 
-- PBD is not active, and not responding to HTTP request with javascript challenge
+- PBD is not active and not responding to HTTP request with javascript challenge
 - From Terminal, run the same command but change the value of the ``X-forwarded-for`` header to be 2.2.2.2
 - Currently, there are no on-going L7 DoS attacks, so the behavior for traffic sourced from Russia should match the behavior of all other geolocations, and no proactive bot defense challenges should be issued.
 

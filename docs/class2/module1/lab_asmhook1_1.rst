@@ -138,7 +138,7 @@ The rule does the following:
 Testing:
 ~~~~~~~~
 
-- From BIG-IP Configuration Utility, open **Local Traffic -> Virtual Servers**, select Hackazon_protected_virtual, click the Resources tab, in the iRules section, click Manage.  Move sec_irules_asm_hook_1 from Available section to the Enabled section, then click the Finished button.
+- From BIG-IP Configuration Utility, open **Local Traffic -> Virtual Servers**, select ``Hackazon_protected_virtual``, click the Resources tab, in the iRules section, click Manage.  Move ``sec_irules_asm_hook_1`` from Available section to the Enabled section, then click the Finished button.
 - From the Jump Station, open the Terminal application and SSH to the BIG-IP: ssh root@10.1.10.10.
 
    .. code-block:: console
