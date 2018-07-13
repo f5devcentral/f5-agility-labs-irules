@@ -1,18 +1,18 @@
 Lab 4 - Geolocation
 -------------------
 
-Scenario:
+Scenario
 ~~~~~~~~~
 
 All of your critical applications are protected by F5 Advanced Web Application Firewall (AWAF), and leverage F5's Layer 7 DoS feature to mitigate bot activity and protect application resources from layer 7 volumetric attacks.  To simplify the initial deployment, the application security team elected to disable F5's Proactive Bot Defense (PBD) feature.  Recently, the business analysis team has noticed a significant increase in application traffic from Russia, and believe much of this traffic to be bot related activity.  Because this traffic is having an negative impact on the business's ability to analyze data, and increasing load on the server infrastructure, the business is requesting that more aggressive action be taken on traffic sourced from Russia.  The security team would like to leverage PBD for this traffic to block simple automated bot activity.
 
-Restraints:
+Restraints
 ~~~~~~~~~~~
 The following restraints complicate this request from the business:
 
 - AWAF DoS Profile allows you to whitelist/blacklist geolocations globally across the DoS profile, and allows for specific thresholds to be defined for geolocations for Transaction Per Second (TPS) and Stress-based protections.  However, it does not allow for per geolocation enabling/disabling of PBD.
 
-Requirements:
+Requirements
 ~~~~~~~~~~~~~
 To meet the business’s objectives, while still maintaining a strong security policy, an iRule solution must meet the following requirements:
 
@@ -20,7 +20,7 @@ To meet the business’s objectives, while still maintaining a strong security p
 - Bot Signature protection should remain enforced for all traffic
 - Selectively enabling PBD should **not** affect any of the existing L7DoS protections currently enforced.
 
-Baseline Testing:
+Baseline Testing
 ~~~~~~~~~~~~~~~~~
 Prior to defining a solution, validate the issue by testing the application to validate AWAF's current behavior:
 
@@ -45,7 +45,7 @@ Prior to defining a solution, validate the issue by testing the application to v
 - Traffic sourced from Russia should match the behavior of all other geolocations, and no proactive bot defense challenges are being issued.
 
 
-The iRule:
+The iRule
 ~~~~~~~~~~~
 
 .. code-block:: tcl 
@@ -91,7 +91,7 @@ The iRule:
    }
 
 
-Analysis:
+Analysis
 ~~~~~~~~~
 Event/Command details:
 
@@ -116,7 +116,7 @@ Event/Command details:
 - ``BOTDEFENSE::reason`` returns the reason the for the bot defense action
 - ``BOTDEFENSE::action`` returns the action to be taken by bot defense feature
 
-Rule Details:
+Rule Details
 ~~~~~~~~~~~~~
 This rule does the following:
 
@@ -130,7 +130,7 @@ This rule does the following:
 
 
 
-Testing:
+Testing
 ~~~~~~~~~
 - From BIG-IP UI:
 - Navigate to Security -> DoS Protection -> DoS Profiles -> iRules_Sec -> Application Security Tab
@@ -205,12 +205,12 @@ Testing:
  - Reason = No Valid Cookie: Challenge is possible (on request for first object), and Valid Cookie: No need to review on subsequent requests
 
 
-Review:
+Review
 ~~~~~~~
 Geolocation, while not foolproof, is often an important piece of context about a user or device.  Proactive Bot Defense is a very powerful feature for mitigating bot and automated activity, but sometimes challenging to implement in a single broad stroke.  In the above lab, we have used iRules to take advantage of additional context gained through the iRule geolocation commands to leverage, in a targeted manner, a very powerful security feature.  This is precisely the kind of challenge iRules are best suited for, stitching together pieces of information and features to deliver a solution customized to solve a business challenge.
 
 
-Bonus Activity:
+Bonus Activity
 ~~~~~~~~~~~~~~~
 One of our existing requirements was to not change any of our existing L7DoS protections.  In the lab, we demonstrated, changes via iRule didnt affect Bot Signatures.  As a bonus, you can also verify the iRule enforced PBD for Russian sources also doesn't impair the pre-existing L7DoS protections configured in the DoS profile.
 
