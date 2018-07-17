@@ -96,12 +96,12 @@ Testing:
 In the BIG-IP, 
 
 - Add the above iRule to the HTTPS VIP
-- Access the HTTPS URL https://www.f5test.local/content.html
+- Access the HTTPS URL https://www.f5demolabs.com/content.html
 - The ``Test Link`` href will be rewritten to an HTTPS URL
 - Click the ``Test Link`` which is represented in the page with the href
    code below
 
-   ``<a href="https://www.f5test.local/f5.png">Test Link</a>``
+   ``<a href="https://www.f5demolabs.com/images/f5logo.gif">Test Link</a>``
 
    The link will open as an HTTPS URL
 
