@@ -1,4 +1,4 @@
-Security/SSL iRules Additional Labs
+Additional Labs
 ==================================
 
 .. toctree::
