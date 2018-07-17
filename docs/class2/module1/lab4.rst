@@ -1,145 +1,135 @@
-Lab 4 - Geolocation
--------------------
+Lab 4 - Content Rewrite
+-----------------------
 
-Attacks can come from anywhere, but there are definitely times when it
-can be tracked from specific regions. Geolocation is a powerful tool
-that allows iRules to access and make decisions based upon IP location
-intelligence information, and there are any number of uses for this
-capability. The below iRule example very simply redirects application
-traffic to different pools of resources based on where the client is
-coming from.
-
-Objectives:
-
--  Deploy and test the example geolocation iRule code
-
-Lab Requirements:
-
--  BIG-IP LTM, web server, client (command line cURL)
-
-The iRule
+Scenario:
 ~~~~~~~~~
 
+It probably goes without saying that many application developers aren’t
+aware of (or at least good at) secure coding practices. How many
+applications in your environment have mixed HTTP and HTTPS content?
+iRule content rewrite solutions have been around for a long time, so you
+may have actually seen some of this code before. And yes, in the case of
+mixed content HSTS does prevent this sort of oversight. But it’s also
+important to understand that HSTS is a chainsaw when you may only need a
+butter knife. Once you’ve enabled HSTS in the browser, if you actually
+have legitimate HTTP content, you’ll most definitely break user access.
+The tried and tested example below is a perfect way to force HTTPS upon
+the browser, only as needed.
+
+Restraints:
+~~~~~~~~~~~
+
+Requirements:
+~~~~~~~~~~~~~
+-  BIG-IP LTM, web server, client browser, and SSL server certificate.
+   If you don’t have certificates to test with, you can use the CA
+   certificate and server certificate and private key provided in the
+   Client Certificate Inspection lab.
+
+-  A stream profile attached to the virtual server.
+
+Baseline Testing:
+~~~~~~~~~~~~~~~~~
+#. Access the HTTPS URL https://www.f5test.local/content.html
+
+#. Click the ``Test Link`` which is represented in the page with the href
+   code below.
+
+   ``<a href="http://www.f5test.local/f5.png">Test Link</a>``
+
+   The link will open as an HTTP URL.
+
+
+The iRule:
+~~~~~~~~~~
 .. code-block:: tcl
    :linenos:
-
-   when CLIENT_ACCEPTED {
-       switch [whereis [IP::client_addr] country] {
-           US { pool usa_pool }
-           CA { pool canada_pool }
-           MX { pool mexico_pool }
-           KP { pool majestic_unicorn_pool }
-           default { pool northamerica }
-       }
-   }
-
-For the sake of testing this though, we’ll need to replace
-``IP::client_addr`` with an ``X-Forwarded-For`` HTTP header that we can
-control, and generally alter the iRule for log display only.
-
-.. code-block:: tcl
-   :linenos:
-   :emphasize-lines: 3-7
-
+   
    when HTTP_REQUEST {
-       set XFF [getfield [lindex [HTTP::header values X-Forwarded-For] 0] "," 1]
-       log local0. "continent: [whereis $XFF continent]"
-       log local0. "country: [whereis $XFF country]"
-       log local0. "state: [whereis $XFF state]"
-       log local0. "isp: [whereis $XFF isp]"
-       log local0. "org: [whereis $XFF org]"
+       # Explicitly disable the stream profile for each request so it doesn’t stay
+       # enabled for subsequent HTTP requests on the same TCP connection.
+       STREAM::disable
+       HTTP::header remove "Accept-Encoding"
    }
-
-Apply this iRule to an HTTP virtual server (VIP).
-
-Analysis
-~~~~~~~~
-
--  The iRules ``whereis`` command can take several options, including:
-
-   - ``[whereis [IP::client_addr] continent]``: returns the three-letter
-     continent
-
-   - ``[whereis [IP::client_addr] country]``: returns the two-letter
-     country code
-
-   - ``[whereis [IP::client_addr] <state|abbrev>]``: returns the state as
-     word or as two-letter abbreviation
-
-   - ``[whereis [IP::client_addr] isp]``: returns the carrier
-
-   - ``[whereis [IP::client_addr] org]``: returns the registered
-     organization
-
-Testing
-~~~~~~~
-
-To test this from a command line, issue a cURL command and include an
-X-Forwarded-For header:
-
-``curl http://www.f5test.local -H "X-Forwarded-For: 186.64.120.104"``
-
-Here are a few bad IP addresses to test:
-
-- 103.4.52.150
-- 101.200.81.187
-- 103.19.89.118
-- 103.230.84.239
-
-Here are a few bots to test:
-
-- 187.174.252.247
-- 188.120.224.250
-- 188.219.154.228
-- 188.241.140.212
-
-.. NOTE:: Using ``geoip_lookup <IP_addr>`` on the BIG-IP command line
-   will provide geographic location information.
-
-Bonus versions
-~~~~~~~~~~~~~~
-
-From a security perspective, the above iRule example doesn’t do
-much. You might, for example, want to block all non-US requests.
-
-.. code-block:: tcl
-   :linenos:
-
-   when HTTP_REQUEST {
-       set XFF [getfield [lindex [HTTP::header values X-Forwarded-For] 0] "," 1]
-       if { [whereis $XFF country] ne "US" } {
-           drop
-           event disable all
-       }
-   }  
-       
-Or you might only want to allow access to a small set of countries
-that you can maintain in a data group.
-
-.. code-block:: tcl
-   :linenos:
-   :emphasize-lines: 4-5
-
-   when HTTP_REQUEST {
-       set XFF [getfield [lindex [HTTP::header values X-Forwarded-For] 0] "," 1]
-       if { not ( [class match [whereis $XFF country] equals list_of_countries ] )} {
-           log local0. "[whereis $XFF country] is not a part of accepted countries, traffic is dropped"
-           drop
-           event disable all
-       }
-   }
-
-where the data group is a string-based list of two-letter country codes.
-
-.. code-block:: console
-   :linenos:
-
-   ltm data-group list_of_countries {
-      type string
-      members {
-           US {}
-           CA {}
-           IN {}
-           LB {}
+   
+   when HTTP_RESPONSE {
+       # Apply stream profile against text responses from the application
+       if { [HTTP::header value Content-Type] contains "text"} {
+          # Look for the http:// and replace it with https://
+          STREAM::expression "@http://@https://@"
+          # Enable the stream profile
+          STREAM::enable
       }
    }
+
+Analysis:
+~~~~~~~~~
+Event/Command details:
+
+- HTTP_REQUEST event is triggered when there is a request for web page
+- HTTP_RESPONSE event is triggered when the servers send a web page in response to a request
+- STREAM::disable command disables the stream profile attached to the Virtual Server
+- STREAM::enable command enables the stream profile attached to the Virtual Server. STREAM::expression command always precedes it
+- HTTP::header remove "Accept-Encoding" command removes "Accept-Enoding" from the http header
+- HTTP::header value Content-Type command returns the type of content present in the payload.
+- STREAM::expression command is used to search and replace the first argument with the second argument in the data stream
+
+please check the user guide or wiki guide for iRules API in DevCentral at https://devcentral.f5.com/wiki/irules.homepage.ashx for additional info
+
+
+Rule Details:
+~~~~~~~~~~~~~
+This rule does the following:
+
+- Disables the stream filter attached to the virtual server for every incoming HTTP request
+- Removes the support for encoding in the HTTP header for every incoming HTTP request
+- Replaces every occurance of "http://" with "https://" in the payload returned in the 
+  HTTP response when the content type is in the text format
+
+.. NOTE::
+
+   The STREAM command requires a stream profile attached to the virtual server 
+
+
+Testing:
+~~~~~~~~
+In the BIG-IP, 
+
+- Add the above iRule to the HTTPS VIP
+- Access the HTTPS URL https://www.f5test.local/content.html
+- The ``Test Link`` href will be rewritten to an HTTPS URL
+- Click the ``Test Link`` which is represented in the page with the href
+   code below
+
+   ``<a href="https://www.f5test.local/f5.png">Test Link</a>``
+
+   The link will open as an HTTPS URL
+
+
+Review:
+~~~~~~~
+Some of the application developers are going to continue to include HTTP object references 
+in their HTML code no matter how many times you’ve told them not to. In the above lab, we 
+have used iRules to find and replace these references.  In the iRule, we used the very
+powerful ``STREAM`` command to effortlessly sweep through the response payload 
+and replace any instance of http://. 
+
+Please note that this string matching and replacing is not just limited to http://. It can 
+be applied to any type of text.
+
+Bonus Activity:
+~~~~~~~~~~~~~~~
+Needless to say, ``STREAM`` is an incredibly powerful command, and a
+very useful tool in your security arsenal. For example, what if you
+also wanted to sanitize Social Security and credit card numbers
+
+.. code-block:: tcl
+
+   STREAM::expression "@\d3-\d2-\d4@***-**-****@ @\d4-\d4-\d4-\d4@xxxx-xxxx-xxxx-xxxx@"
+
+Please refer to https://devcentral.f5.com/wiki/irules.stream.ashx for more details on the 
+STREAM feature and its commands. You can also find some examples that show the application 
+of the STREAM feature under each command.
+
+
+   
