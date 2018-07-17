@@ -30,12 +30,12 @@ Requirements:
 
 Baseline Testing:
 ~~~~~~~~~~~~~~~~~
-#. Access the HTTPS URL https://www.f5test.local/content.html
+#. Access the HTTPS URL https://www.f5demolabs.com/content.html
 
 #. Click the ``Test Link`` which is represented in the page with the href
    code below.
 
-   ``<a href="http://www.f5test.local/f5.png">Test Link</a>``
+   ``<a href="http://www.f5demolabs.com/images/f5logo.gif">Test Link</a>``
 
    The link will open as an HTTP URL.
 
