@@ -13,7 +13,7 @@ In general, this protection is well advised and does not cause issues for most o
 Restraints
 ~~~~~~~~~~~
 
-The following restraints complicate this request from the business team:
+The following restraints complicate the request from the business team:
 
 - In ASM, the change to relax protection for null byte injection attacks is a global policy setting, and it is enforced across all requests for all users.  Disabling this protection weakens your security policy at a more global level than you are comfortable.
 - This baseline policy is deployed across a number of applications and is ingested by the DevOps team when deploying new applications.  The impact of a policy modification may have broader impact than intended.
