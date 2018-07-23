@@ -7,37 +7,37 @@ Scenario:
 It probably goes without saying that many application developers aren’t
 aware of (or at least good at) secure coding practices. How many
 applications in your environment have mixed HTTP and HTTPS content?
-iRule content rewrite solutions have been around for a long time, so you
-may have actually seen some of this code before. And yes, in the case of
-mixed content HSTS does prevent this sort of oversight. But it’s also
-important to understand that HSTS is a chainsaw when you may only need a
-butter knife. Once you’ve enabled HSTS in the browser, if you actually
-have legitimate HTTP content, you’ll most definitely break user access.
+iRule content rewrite solutions have been around for a long time. So you
+may have actually seen some of this code before.
+
+And yes, in the case of mixed content HSTS does prevent this sort of 
+oversight. But it’s also important to understand that HSTS is a chainsaw 
+when you may only need a butter knife. Once you’ve enabled HSTS in the 
+browser and if you actually have legitimate HTTP content, you’ll most 
+definitely break user access. 
+
 The tried and tested example below is a perfect way to force HTTPS upon
 the browser, only as needed.
-
-Restraints:
-~~~~~~~~~~~
 
 Requirements:
 ~~~~~~~~~~~~~
 -  BIG-IP LTM, web server, client browser, and SSL server certificate.
    If you don’t have certificates to test with, you can use the CA
    certificate and server certificate and private key provided in the
-   Client Certificate Inspection lab.
+   Client Certificate Inspection lab from Additional labs section.
 
 -  A stream profile attached to the virtual server.
 
 Baseline Testing:
 ~~~~~~~~~~~~~~~~~
-#. Access the HTTPS URL https://www.f5demolabs.com/content.html
+- Access the HTTPS URL https://www.f5demolabs.com/content.html
 
-#. Click the ``Test Link`` which is represented in the page with the href
-   code below.
+- Click the ``Test Link`` which is represented in the page with the href
+  code below.
 
-   ``<a href="http://www.f5demolabs.com/images/f5logo.gif">Test Link</a>``
+  ``<a href="http://www.f5demolabs.com/images/f5logo.gif">Test Link</a>``
 
-   The link will open as an HTTP URL.
+The link will open as an HTTP URL.
 
 
 The iRule:
@@ -69,12 +69,16 @@ Event/Command details:
 - HTTP_REQUEST event is triggered when there is a request for web page
 - HTTP_RESPONSE event is triggered when the servers send a web page in response to a request
 - STREAM::disable command disables the stream profile attached to the Virtual Server
-- STREAM::enable command enables the stream profile attached to the Virtual Server. STREAM::expression command always precedes it
+- STREAM::enable command enables the stream profile attached to the Virtual Server. 
+
+.. NOTE::
+   The STREAM::expression command always precedes the STREAM::enable command
+
 - HTTP::header remove "Accept-Encoding" command removes "Accept-Enoding" from the http header
 - HTTP::header value Content-Type command returns the type of content present in the payload.
 - STREAM::expression command is used to search and replace the first argument with the second argument in the data stream
 
-please check the user guide or wiki guide for iRules API in DevCentral at https://devcentral.f5.com/wiki/irules.homepage.ashx for additional info
+please check the wiki guide for iRules API in DevCentral at https://devcentral.f5.com/wiki/irules.homepage.ashx for additional info
 
 
 Rule Details:
@@ -97,13 +101,12 @@ In the BIG-IP,
 
 - Add the above iRule to the HTTPS VIP
 - Access the HTTPS URL https://www.f5demolabs.com/content.html
-- The ``Test Link`` href will be rewritten to an HTTPS URL
 - Click the ``Test Link`` which is represented in the page with the href
    code below
 
    ``<a href="https://www.f5demolabs.com/images/f5logo.gif">Test Link</a>``
 
-   The link will open as an HTTPS URL
+- Check that the link will open as an HTTPS URL
 
 
 Review:
@@ -112,7 +115,7 @@ Some of the application developers are going to continue to include HTTP object 
 in their HTML code no matter how many times you’ve told them not to. In the above lab, we 
 have used iRules to find and replace these references.  In the iRule, we used the very
 powerful ``STREAM`` command to effortlessly sweep through the response payload 
-and replace any instance of http://. 
+and replace any instance of http:// with https://. 
 
 Please note that this string matching and replacing is not just limited to http://. It can 
 be applied to any type of text.
