@@ -4,14 +4,14 @@ Lab 3 - HTTP Throttling
 Scenario:
 ~~~~~~~~~
 
-Your company has setup a new web application and not had the time to develop an ASM policy.  Due to your companies profile, several bad actors have threatened to attack using SlowLoris and SlowPost attacks to create a denial of service.  Although ASM can handle this very easily and would be the best tool to use, we don't have the resources available to test implementing the policy.  We are going to use an iRule to help with throttling the number of requests coming into the application.
+Your company has setup a new web application and did not have the time to develop an ASM policy.  Due to your companies profile, several bad actors have threatened to attack using SlowLoris and SlowPost attacks to create a denial of service.  Although ASM can handle this very easily and would be the best tool to use, we don't have the resources available to test implementing the policy.  In this lab, we are going to use an iRule that throttles the number of requests coming into the application.
 
 Restraints:
 ~~~~~~~~~~~
 
 The following restraints complicate the request to implement the throttling of HTTP requests:
 
--  You need to understand how many requests may be coming from a single IP address.
+-  You need to understand the number of the requests that would be coming from a single IP address.
 
 -  Some requests may be coming from companies using a single proxy IP address to make the request.  Throttling those requests to only 10 per 10 seconds could impact the ability of a partner company to access the site.  
 
@@ -22,7 +22,7 @@ To meet the business's objectives the iRule must meet the following requirements
 
 -  The rule must keep a single client from making too many HTTP requests to a single VIP thus stopping a SlowLoris or SlowPost attack.
 
--  The rule should be able to be adjusted to take into account multiple customers coming through a proxy IP address.
+-  The rule should be able to adjust to the multiple customers coming through a proxy IP address.
  
 
 The iRule
@@ -91,8 +91,7 @@ Analysis
 ~~~~~~~~
 
 -  Notice that RULE\_INIT sets up a set of variables that respectively
-   define the maximum rate of requests, the sliding window for timing
-   the rate, and a separate timeout value. Alter these values according
+   define the maximum rate of requests and a timeout value. Alter these values according
    to your local preferences.
 
 -  The iRule creates an internal table for each client source address,
@@ -104,6 +103,8 @@ Analysis
 
 -  If the request exceeds the maxRate threshold, the iRule returns an
    HTTP error response to the client.
+
+- **Dont see WindowSecs variable in the iRule. Looks like it needs to be fixed.**
 
 -  The **WindowSecs** static variable defines an idle timeout for each
    request entry, and the **timeout** static variable defines a total
@@ -125,15 +126,17 @@ of that script.
       curl http://www.f5demolabs.com --write-out "%{http_code}\n" --silent -o /dev/null
    done
    
-Under Cygwin Terminal, cd to scripts directory and run ``bash http_trottling``.
-To view logging information, open a tail of the BIG-IP LTM log from command line.
+- Under Cygwin Terminal, cd to scripts directory and run ``bash http_trottling``.
+- To view logging information, open a tail of the BIG-IP LTM log from command line.
 
 ``tail –f /var/log/ltm``
 
 The script will make repeated HTTP GET requests. When it exceeds the
 threshold the iRule will generate a 501 error response and prevent
 access to the web server until the **timeout** static variable time
-is reached. Use the CTRL-C keyboard combination to stop the script.
+is reached. 
+
+- Use the CTRL-C keyboard combination to stop the script.
 
 Bonus version
 ~~~~~~~~~~~~~
