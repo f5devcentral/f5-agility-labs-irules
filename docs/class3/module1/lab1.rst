@@ -23,7 +23,7 @@ header and POST data values. Here is an example of the response to a POST.
 Create the LX Workspace
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-The first thing we need to do is create an LX Workspace. On the desktop,
+The first thing we need to do is create an LX Workspace. On the BIG-IP,
 navigate over to the LX workspaces menu in the tab located at *Local
 Traffic > iRules > LX Workspaces*. Then select the create button at the
 top right of the table and name the workspace ilxlab1. You will now have
