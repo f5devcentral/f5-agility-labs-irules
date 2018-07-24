@@ -1,55 +1,58 @@
 Lab 1 - TLS Version Control 
 ---------------------------
 
+Scenario
+~~~~~~~~
+
 If you care about security at all, then you also need to care about SSL
-and TLS. These are the protocols that provide encryption to Internet
-traffic. It’s the "S" in HTTPS, and FTPS, and IMAPS, and you get the
-picture. Without encryption, all communication between a client and
-server is visible for any third party to see, and that can have some
-pretty devastating effects. Encryption is a cornerstone of network
-security, but if you’ve been paying attention to the news the last few
-years, you’re probably also aware that SSL and TLS are not without their
-own flaws. Exploits like BEAST, Heartbleed, and POODLE take advantage of
+and TLS. These are the protocols that provide encryption to the Internet
+traffic. It’s the "S" in HTTPS, FTPS, and IMAPS. You get the picture!
+
+Without encryption, all communication between a client and server is 
+visible for any third party to see and this can have some pretty 
+devastating effects. Encryption is a cornerstone of network security. 
+If you’ve been paying attention to the news the last few years, you’re 
+probably also aware that SSL and TLS are not without their own flaws. 
+Exploits like BEAST, Heartbleed, and POODLE take advantage of
 specific holes in the SSL and TLS protocols. To stay ahead of these
 vulnerabilities, industry best practices suggest that we avoid some
-versions of these protocols, specifically SSLv2, SSLv3, and now TLSv1.
-This also applies to certain ciphers, like MD5, RC4, and eventually even
-the RSA key exchange. The F5 BIG-IP platforms makes it extremely easy to
-control and enforce these protocols and ciphers, but at the same time
-you may not simply want to "break" some users. If your income depends on
-Internet commerce, for example, the last thing you may want to do is
-block customers from buying from you because they have a slightly
-out-of-date browser. Eventually most of those older browsers will go
-away, or at least enough of them that you can justify disabling lower
-encryption protocols and ciphers. But then how do you know? F5 iRules
-have access to everything in OSI layers 3 to 7, which includes some
-pretty rich information about SSL and TLS. Let’s take a look at an iRule
+versions of these protocols specifically SSLv2, SSLv3, and now TLSv1.
+This also applies to certain ciphers such as MD5, RC4, and eventually 
+the RSA key exchange. 
+
+The F5 BIG-IP platforms make it extremely easy to control and enforce 
+these protocols and ciphers but at the same time, you may not simply 
+want to "break" some users. If your income depends on Internet commerce, 
+the last thing you may want to do is block customers from buying from you 
+because they have a slightly out-of-date browser. Eventually, most of these
+older browsers will go away or at least enough of them that you can justify 
+disabling lower encryption protocols and ciphers. But, how do you know? 
+
+F5 iRules have access to everything in the OSI layers from 3 to 7 that includes 
+some pretty rich information about SSL and TLS. Let’s take a look at an iRule 
 that will catalog the SSL/TLS versions that clients are using.
 
-.. NOTE:: A word on "mixed content" – All too often developers or development
+.. NOTE:: A word on "mixed content" – All too often, developers or development
    platforms provide access to both HTTP and HTTPS content within the same
    application. This is referred to as "mixed content" and can have some
    significant security implications. For example, an application may
    redirect a user to an HTTPS URL to authenticate, but then switch back to
    HTTP after authentication to access normal application content. At the
    very least, the HTTPS authentication is very likely going to set up a
-   "session" with the user, which will also very likely be maintained by an
+   "session" with the user, which will also very likely to be maintained by an
    HTTP cookie in the browser. If the application session is now
    communicating via HTTP, all of that user session information is in the
    clear. Long story short, don’t allow mixed content in your applications.
    If there is *anything* in your application worth protecting with
-   encryption, it is best practice to encrypt *everything*.
+   encryption, it is a best practice to encrypt *everything*.
 
-Objectives:
+Requirements
+~~~~~~~~~~~~
 
--  Deploy and test the example TLS Version iRule code
-
-Lab Requirements:
-
--  BIG-IP LTM, web server, client browser, and SSL server certificate.
+-  BIG-IP LTM, web server, client browser, and a SSL server certificate.
    If you don’t have certificates to test with, you can use the CA
-   certificate and server certificate and private key provided in the
-   Client Certificate Inspection lab.
+   certificate, server certificate, and private key provided in the
+   Client Certificate Inspection lab from Additional labs section.
 
 The iRule
 ~~~~~~~~~
@@ -60,8 +63,6 @@ The iRule
    when CLIENTSSL_HANDSHAKE {
        ISTATS::incr "ltm.virtual [virtual name] c [SSL::cipher version]" 1
    }
-
-Apply this iRule to an SSL virtual server (VIP).
 
 Analysis
 ~~~~~~~~
@@ -79,17 +80,19 @@ Analysis
 Testing
 ~~~~~~~
 
-#. Apply this iRule to an SSL VIP and test across several browsers and
-   platforms. If at all possible, stage this iRule someplace that it can
-   be accessed by a larger audience.
+- Apply this iRule to an SSL VIP and test across several browsers and platforms. 
+  If at all possible, stage this iRule at someplace that it can be accessed by a 
+  larger audience.
    
-#. At any point you can access the data collected in the iStats by
-   simply typing the following at the BIG-IP command line:
+- At any point you can access the data collected in the iStats by
+  simply typing the following at the BIG-IP command line:
 
    ``istats dump``
 
-.. HINT:: For the purposes of this lab we can use
+.. HINT:: For the purpose of this lab we can use
+
    ``openssl s_client -connect www.f5demolabs.com:443 <cipher>``
+
    where cipher options could include {-ssl3, -tls1, -tls1_1, -tls1_2}
    to simulate different connections.
 
@@ -107,8 +110,8 @@ Bonus version
 
 Now that you have a better idea of what protocols are being used on
 your site, you may now want to ease your customers into a better
-security posture, versus simply denying access with no warning. To
-do this we’ll first test the SSL/TLS version, and if it’s below our
+security posture than simply denying access with no warning. To
+do this, we’ll first test the SSL/TLS version. if it’s below our
 security threshold, we’ll redirect the user to another page or site
 to inform them that they need to upgrade their browser.
 
