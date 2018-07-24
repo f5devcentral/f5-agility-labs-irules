@@ -4,8 +4,9 @@ Lab 3 - DNS Hooks: Amplification Attach
 Scenario:
 ~~~~~~~~~
 
-You have F5 DNS deployed servicing DNS queries for external DNS.  To meet the business requirements, you must allow DNS queries from any DNS resolver.
-Basic DNSSEC has been implemented as part of your GTM deployment.  As your DNS deployment expands for more applications you experience a DNS Amplification attach.
+You have a F5 DNS deployed to service DNS queries for external DNS.  To meet the business requirements, you must allow DNS queries from any DNS resolver.
+Basic DNSSEC has been implemented as part of your GTM deployment.  As your DNS deployment expands for more applications, you experience a DNS Amplification attack.
+
 A DNS amplification attack takes advantage of features that allow a very small request to return a much larger response.
 These attacks also rely on the fact that the attacker can request these large responses on behalf of someone else (the victim).
 More specifically, DNS amplification attacks are a popular type of a Distributed Denial of Service (DDoS) attack in which attackers use publicly accessible open DNS resolvers to flood
@@ -20,18 +21,18 @@ Figure 1:
 .. image:: /_static/class2/open_DNS_resolver.gif
    :scale: 50 %
 
-Here we see an example of an DNS Amplification attack using an open DNS resolver:
-
 Figure 2:
 ~~~~~~~~~
 .. image:: /_static/class2/amplification_attack.gif
    :scale: 50 %
+Here we see an example of an DNS Amplification attack using an open DNS resolver
    
 Restraints:
 ~~~~~~~~~~~
 
 The following restraints complicate the request from the business to relax the enforced security posture:
--	Respond to queries from any source, even open resolvers.
+
+- Respond to queries from any source, even open resolvers.
 - Respond to DNS queries over both TCP and UDP.
 
 
@@ -39,25 +40,20 @@ Requirements:
 ~~~~~~~~~~~~~
 
 To meet the business’s objectives while maintaining a strong security policy, an iRule solution must meet the following requirements:
--	checks to see if the query type is "ANY" and, if so, it responds with a truncated message which will force the legitimate client to use TCP.
--	Allows for flexible updatable list of networks allowed to do recursive lookups.
--	The only host allowed to do recursive lookups is 10.1.10.20
+
+- Checks to see if the query type is "ANY" and responds with a truncated message which will force the legitimate client to use TCP.
+- Allows for a flexible and updatable list of networks allowed to do recursive lookups.
+- The only host allowed to do recursive lookups is 10.1.10.20
 
 
 Baseline Testing:
-Prior to defining a solution, validate the issue by testing DNS answers UDP “ANY” requests and that any resolver can do recursive lookups.
+~~~~~~~~~~~~~~~~~
+Prior to defining a solution, validate the issue by testing that the DNS answers UDP “ANY” requests and that any resolver can do recursive lookups.
 
 The iRule:
 ~~~~~~~~~~
 
 UDP VIP iRule
-
-This first part checks if the DNS query type is "ANY" and responds with a truncated header.
-The second part checks to see if the response packet is built from the first logic (origin = TCL)
-If yes, then exit and do not process further
-If no, then check if the response is from DNS Express...if it is, allow an answer for non "ANY" type
-If not from DNS Express, check to see if it matches the admin_datagroup created for recursive allowed networks
-If it does not match both conditions, then drop.
 
 .. code-block:: tcl
 
@@ -81,10 +77,6 @@ If it does not match both conditions, then drop.
 
 TCP VIP iRule
 
-Simple logic to check and see if the response is from DNS Express or a part of the admin_datagroup
-If not from DNS Express, check to see if it matches the admin_datagroup created for recursive allowed networks
-If it does not match both conditions, then drop
-
 .. code-block:: tcl
 
    when DNS_RESPONSE {
@@ -95,6 +87,25 @@ If it does not match both conditions, then drop
     }
    }
 
+Rule Details:
+~~~~~~~~~~~~~
+
+UDP VIP iRule
+
+This first part checks if the DNS query type is "ANY" and responds with a truncated header.
+The second part checks to see if the response packet is built from the first logic (origin = TCL).
+If yes, then exit and do not process further.
+If no, then check if the response is from DNS Express. if it is, allow an answer for non "ANY" type.
+If it is not from DNS Express, check to see if it matches the admin_datagroup created for recursive allowed networks.
+If it does not match both conditions, then drop.
+
+
+TCP VIP iRule
+
+
+Simple logic to check and see if the response is from DNS Express or a part of the admin_datagroup.
+If it is not from DNS Express, check to see if it matches the admin_datagroup created for recursive allowed networks.
+If it does not match both conditions, then drop.
 
 Testing:
 ~~~~~~~~
