@@ -4,14 +4,14 @@ Lab 2- Securing Cookies
 Scenario
 ~~~~~~~~
 
-The security team has done an application scan and found that HTTP cookies are being issued unencrypted.  They have asked the application team to verify all cookies get encrypted at the application tier, but the app team is in the middle of a new deployment and can't move man hours to rewrite the cookie code.  They have asked the F5 team to encrypt the cookies.
+The security team has done an application scan and found that the HTTP cookies are being issued unencrypted. They have asked the application team to verify that all the cookies get encrypted at the application tieri. But, the app team is in the middle of a new deployment and can't reallocate resources to rewrite the cookie code.  So, they have asked the F5 team to encrypt the cookies.
 
 Restraints
 ~~~~~~~~~~
 
-The following restraints need to be known in order to implement this solution:
+The following restraints prevent from implementing this solution:
 
-- The F5 administrators need to know what the name of the HTTP Cookie or Cookies will be. 
+- The F5 administrators need to know the name of the HTTP Cookie or Cookies that are being used. 
 
 Requirements
 ~~~~~~~~~~~~
@@ -22,14 +22,13 @@ To meet the business's objectives the iRule must meet the following requirements
 
 - The security team also requires that the HTTP Cookie not be sent to Javascript Agents. 
 
-
 Lab Requirements:
 ~~~~~~~~~~~~~~~~~
 
 -  BIG-IP LTM, web server, client browser, and SSL server certificate.
    If you don’t have certificates to test with, you can use the CA
-   certificate and server certificate and private key provided in the
-   Client Certificate Inspection lab.
+   certificate, server certificate and the private key provided in the
+   Client Certificate Inspection lab from Additional Labs section.
 
 The iRule
 ~~~~~~~~~
@@ -45,7 +44,6 @@ The iRule
        }
    }
 
-Apply this iRule to an HTTPS virtual server (VIP).
 
 Analysis
 ~~~~~~~~
@@ -57,22 +55,26 @@ authentication and session management”
 (https://www.owasp.org/index.php/OWASP_Top_Ten_Cheat_Sheet), and also
 touches other top ten list items, including XSS, security
 misconfiguration, sensitive data exposure, and cross site request
-forgery. So why do we use cookies if they’re so easy to get wrong? Well,
+forgery. 
+
+So why do we use cookies if they’re so easy to get wrong? Well,
 as it turns out, HTTP as a “stateless” protocol doesn’t provide its own
-session management mechanism, so cookies are basically the best and
-potentially only way to maintain information about a user session across
+session management mechanism. So cookies are basically the best and
+potentially the only way to maintain information about a user session across
 multiple HTTP requests and responses. Too often, however, applications
 employ mixed content (HTTP and HTTPS in the same application), or worse,
-store too much information in that cookie. If an HTTP cookie is being
-used to maintain an authentication application session, it’s always best
-practice to encrypt every part of that application. And it is never best
-practice to store anything more than an identifier (some seemingly
-random and unpredictable blob of characters) in a cookie. There are two
-built-in mechanisms defined in RFC 6265 that can help. But first, let’s
-first understand what an HTTP cookie is. An HTTP cookie is essentially
+store too much information in that cookie. 
+
+If an HTTP cookie is being used to maintain an authentication application 
+session, it’s always a best practice to encrypt every part of that application. 
+And it is never a best practice to store anything more than an identifier 
+(some seemingly random and unpredictable blob of characters) in a cookie. 
+
+There are two built-in mechanisms defined in RFC 6265 that can help. But first, 
+let’s first understand what an HTTP cookie is. An HTTP cookie is essentially
 an HTTP header that is sent from the server to the client, and then sent
-back to the server in each and every subsequent request. To send a
-cookie, the server will format the header like this:
+back to the server in each and every subsequent request. To send a cookie, 
+the server will format the header as given below:
 
 ``Set-Cookie: foo=bar; path=/; domain=domain.com; expires=Sat, 02 May 2009 23:38:35 GMT``
 
@@ -134,6 +136,7 @@ a crucial part in cookie security.
   host. If you’re encrypting the entire application, the secure cookie
   flag is an excellent option.
 
+
 - ``httpOnly`` represents a single (no value) flag that tells the
   browser client to only transmit this cookie back to non-scripted user
   agents. In other words, if a JavaScript agent makes a request inside the
@@ -143,14 +146,15 @@ a crucial part in cookie security.
   instances where a JavaScript agent needs to send the cookie, like in
   side-channel Ajax requests, but if not, this flag is highly useful.
 
+
 So putting these attributes together might look something like this:
 
 ``Set-Cookie: foo=bar; path=/; secure; httponly``
 
-I’ve removed the **expires** attribute because file-based cookies are
-almost always a bad idea. And I removed the **domain** attribute because
+we have removed the **expires** attribute because file-based cookies are
+almost always a bad idea. And we removed the **domain** attribute because
 there are better and more secure ways to do single sign-on. So in this
-example, I’m setting a cookie called “foo” with a value of “bar”, that
+example, we are setting a cookie called “foo” with a value of “bar”, that
 is scoped to all paths within this host (path=/), and will only be
 transmitted over HTTPS and only to non-script agents. As I mentioned a
 few times, there’s simply no substitute for a good security product (ie.
@@ -162,21 +166,22 @@ and easy way to enable it with F5 iRules.
 
 -  In this very simple iRule, we’re triggering an event on the HTTP
    response being sent from the application server, looking for the
-   cookie ``mycookie``, and if it exists, enabling the ``secure`` and
+   cookie ``mycookie``. If it exists, enables the ``secure`` and
    ``httpOnly`` flags. This command effectively includes the ``secure``
    and ``httpOnly`` flags in the ``Set-Cookie`` header being sent to the
    client.
 
 Testing
 ~~~~~~~
+In the BIG-IP, 
 
-#. Access HTTPS URL without iRule to see current cookie status.
+- Access HTTPS URL without iRule to see current cookie status.
 
    ``curl –vk https://www.f5demolabs.com``	
 
-#. Attach the iRule to the HTTPS VIP
+- Attach the iRule to the HTTPS VIP
 
-#. Access the HTTPS URL to see the change in the cookie information.
+- Access the HTTPS URL to see the change in the cookie information.
 
    ``curl -vk https://www.f5demolabs.com``
 
