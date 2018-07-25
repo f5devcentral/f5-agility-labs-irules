@@ -179,7 +179,7 @@ In the BIG-IP,
 
    ``curl –vk https://www.f5demolabs.com``	
 
-- Attach the iRule to the HTTPS VIP
+- Attach the iRule to the generic app HTTPS VIP
 
 - Access the HTTPS URL to see the change in the cookie information.
 
