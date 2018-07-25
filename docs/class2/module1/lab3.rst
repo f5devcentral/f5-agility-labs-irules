@@ -32,57 +32,57 @@ The iRule
    :linenos:
 
    when RULE_INIT {
-    # This defines the maximum requests to be served within the timing interval defined by the static::timeout variable below. 
-    set static::maxReqs 4;
- 
-    # Timer Interval in seconds within which only static::maxReqs Requests are allowed.  
-    # (i.e: 10 req per 2 sec == 5 req per sec) 
-    # If this timer expires, it means that the limit was not reached for this interval and the request 
-    # counting starts over.
-    # Making this timeout large increases memory usage.  Making it too small negatively affects performance.  
-    set static::timeout 30;
-    }
- 
-    when HTTP_REQUEST {
-	# The iRule allows throttling for only sepecific Methods.  You list the Methods_to_throttle
-	# in a datagroup.  URIs_to_throttle or Methods_to_throttle.
-	# if you need to throttle by URI use an statement like this:
-	#                               if { [class match [HTTP::uri] equals URIs_to_throttle] }
-	# Note: a URI is everything after the hostname: e.g. /path1/login.aspx?name=user1
-	#  
- 
-        if { [class match [HTTP::method] equals Methods_to_throttle] } {
- 
-           # The following expects the IP addresses in multiple X-forwarded-for headers.  It picks the first one.
-           if { [HTTP::header exists X-forwarded-for] } {
-              set client_IP_addr [getfield [lindex  [HTTP::header values X-Forwarded-For]  0] "," 1]
-           } else {
-              set client_IP_addr [IP::client_addr]
-           }
-           # The matching below expects a datagroup named: Throttling_Whitelist_IPs
-           # The Condition of the if statement is true if the IP address is NOT in the whitelist.
-           if { not ([class match $client_IP_addr equals Throttling_Whitelist_IPs ] )} {
-               set getcount [table lookup -notouch $client_IP_addr]
-               if { $getcount equals "" } {
-                   table set $client_IP_addr "1" $static::timeout $static::timeout
-                   # record of this session does not exist, starting new record, request is allowed.
-                } else {
-                      if { $getcount < $static::maxReqs } {
-                          # log local0. "Request Count for $client_IP_addr is $getcount"  
-                          table incr -notouch $client_IP_addr
-                          # record of this session exists but request is allowed.
-                      } else {
-                           HTTP::respond 403 content {
-                                <html>
-                                <head><title>HTTP Request denied</title></head>
-                                <body>Your HTTP requests are being throttled.</body>
-                                </html>
-                           }
-                      }
-                }
-           }
+      # This defines the maximum requests to be served within the timing interval defined by the static::timeout variable below.
+      set static::maxReqs 4;
+
+      # Timer Interval in seconds within which only static::maxReqs Requests are allowed.
+      # (i.e: 10 req per 2 sec == 5 req per sec)
+      # If this timer expires, it means that the limit was not reached for this interval and the request
+      # counting starts over.
+      # Making this timeout large increases memory usage.  Making it too small negatively affects performance.
+      set static::timeout 30;
+   }
+
+   when HTTP_REQUEST {
+     # The iRule allows throttling for only sepecific Methods.  You list the Methods_to_throttle
+     # in a datagroup.  URIs_to_throttle or Methods_to_throttle.
+     # if you need to throttle by URI use an statement like this:
+     #                               if { [class match [HTTP::uri] equals URIs_to_throttle] }
+     # Note: a URI is everything after the hostname: e.g. /path1/login.aspx?name=user1
+     #
+
+     if { [class match [HTTP::method] equals Methods_to_throttle] } {
+
+        # The following expects the IP addresses in multiple X-forwarded-for headers.  It picks the first one.
+        if { [HTTP::header exists X-forwarded-for] } {
+           set client_IP_addr [getfield [lindex  [HTTP::header values X-Forwarded-For]  0] "," 1]
+        } else {
+           set client_IP_addr [IP::client_addr]
         }
-     }
+        # The matching below expects a datagroup named: Throttling_Whitelist_IPs
+        # The Condition of the if statement is true if the IP address is NOT in the whitelist.
+        if { not ([class match $client_IP_addr equals Throttling_Whitelist_IPs ] )} {
+            set getcount [table lookup -notouch $client_IP_addr]
+            if { $getcount equals "" } {
+                table set $client_IP_addr "1" $static::timeout $static::timeout
+                # record of this session does not exist, starting new record, request is allowed.
+             } else {
+                   if { $getcount < $static::maxReqs } {
+                       log local0. "Request Count for $client_IP_addr is $getcount"
+                       table incr -notouch $client_IP_addr
+                       # record of this session exists but request is allowed.
+                   } else {
+                        HTTP::respond 403 content {
+                             <html>
+                             <head><title>HTTP Request denied</title></head>
+                             <body>Your HTTP requests are being throttled.</body>
+                             </html>
+                        }
+                   }
+            }
+         }
+      }
+   }
 
 
 Apply this iRule to an HTTP virtual server (VIP).
@@ -104,18 +104,13 @@ Analysis
 -  If the request exceeds the maxRate threshold, the iRule returns an
    HTTP error response to the client.
 
-- **Dont see WindowSecs variable in the iRule. Looks like it needs to be fixed.**
-
--  The **WindowSecs** static variable defines an idle timeout for each
-   request entry, and the **timeout** static variable defines a total
-   lifetime for that table entry, irrespective of the idle time.
 
 Testing
 ~~~~~~~
 
 A very simple way to test this iRule implementation is with a cURL
-script from the Cygwin Terminal command line. Here’s a Bash representation
-of that script.
+script from the Terminal command line. Here’s a Bash representation
+of that script.  We have already put the script on the jumpbox and instructions follow the sameple code below.
 
 .. code-block:: console
    :linenos:
@@ -126,13 +121,24 @@ of that script.
       curl http://www.f5demolabs.com --write-out "%{http_code}\n" --silent -o /dev/null
    done
    
-- Under Cygwin Terminal, cd to scripts directory and run ``bash http_trottling``.
-- To view logging information, open a tail of the BIG-IP LTM log from command line.
+#. Under Cygwin Terminal, cd to scripts directory and run ``bash http_trottling``.
+#. Notice that you are getting 200 responses from each request.  We will now add the iRule to the VIP.
+#. Login to Bigip01 from Chrome browser.
+#. Go to Local->Virtual Servers and select the generic-app-http virtual server.
+#. Select the resources tab and select Manage for iRules.
+#. Select the sec_http_throttling irule and move it into Enabled.
+#. Select Finished.
+#. To view logging information on the F5 BIG-IP follow these instruction:
+#. Modify the iRule on the F5 to uncomment the line that states:
+    ``log local0. "Request Count for $client_IP_addr is $getcount"``
+#. Click on Update on the iRule.
+#. Open putty and connect to Bigip01.
+#. Run a tail of the BIG-IP LTM log from command line as follows:
 
-``tail –f /var/log/ltm``
+   ``tail –f /var/log/ltm``
 
 The script will make repeated HTTP GET requests. When it exceeds the
-threshold the iRule will generate a 501 error response and prevent
+threshold the iRule will generate a 403 error response and prevent
 access to the web server until the **timeout** static variable time
 is reached. 
 
@@ -177,7 +183,7 @@ throttling of specific URLs.
                # Request is allowed.
            } else {
                if { $getcount < $static::maxReqs } {
-                   # log local0. "Request Count for $cIP_addr is $getcount"  
+                   log local0. "Request Count for $cIP_addr is $getcount"  
                    table incr -notouch $cIP_addr
                    # record of this session exists but request is allowed.
                } else {
