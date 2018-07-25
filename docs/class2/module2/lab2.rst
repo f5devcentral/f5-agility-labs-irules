@@ -4,7 +4,7 @@ Lab 2- Securing Cookies
 Scenario
 ~~~~~~~~
 
-The security team has done an application scan and found that the HTTP cookies are being issued unencrypted. They have asked the application team to verify that all the cookies get encrypted at the application tieri. But, the app team is in the middle of a new deployment and can't reallocate resources to rewrite the cookie code.  So, they have asked the F5 team to encrypt the cookies.
+The security team has done an application scan and found that the HTTP cookies are being issued unencrypted. They have asked the application team to verify that all the cookies get encrypted at the application tiers. But, the app team is in the middle of a new deployment and can't reallocate resources to rewrite the cookie code.  So, they have asked the F5 team to encrypt the cookies.
 
 Restraints
 ~~~~~~~~~~
