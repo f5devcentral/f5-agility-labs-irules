@@ -121,7 +121,7 @@ of that script.  We have already put the script on the jumpbox and instructions 
       curl http://www.f5demolabs.com --write-out "%{http_code}\n" --silent -o /dev/null
    done
    
-#. Under Cygwin Terminal, cd to scripts directory and run ``bash http_trottling``.
+#. In Terminal, cd to scripts directory and run ``bash http_trottling``.
 #. Notice that you are getting 200 responses from each request.  We will now add the iRule to the VIP.
 #. Login to Bigip01 from Chrome browser.
 #. Go to Local->Virtual Servers and select the generic-app-http virtual server.
