@@ -25,12 +25,12 @@ Requirements
 
 To meet the business’s objectives while still maintaining a strong security policy, an iRule solution must meet the following requirements:
 
-- Any modifications to the application security policy must only affect the relevant business partner, and only for the in-scope application
+- Any modifications to the application security policy must only affect the relevant business partner, and only for the in-scope application:
  
    - Partner IP = 10.1.10.51
    - URL = http://hackazon.f5demo.com/product/view?id=[0-100]%00
 
-- If request contains violations other than the violation identified above, the request should be blocked.
+- If a request contains violations other than the violation identified above, the request should be blocked.
 - Direct modifications to the ASM security policy are not allowed
 - Prior to releasing the in-scope requests to the application server, the request must be sanitized by removing the “%00” null byte string terminating partners request.
 
@@ -47,7 +47,7 @@ Prior to defining a solution, validate the issue by testing the application to v
 - Curl http://hackazon.f5demo.com/product/view?id=72%00
 - Verify the content returned is a block page from ASM
 
-- Open another Chrome window, and launch BIG-IP Configuration Utility (https://10.1.10.10)
+- Open another Chrome window, and launch BIG-IP Configuration Utility (https://10.1.1.245)
 - From BIG-IP, verify violation in event logs:
 
  - Click **Security -> Application Security -> Event Logs -> Application -> Requests**
@@ -136,7 +136,7 @@ Testing
 ~~~~~~~~
 
 - From BIG-IP Configuration Utility, open **Local Traffic -> Virtual Servers** and select ``Hackazon_protected_virtual``. Click the Resources tab. In the iRules section, click Manage.  Move ``sec_irules_asm_hook_1`` from Available section to the Enabled section and click the Finished button.
-- From the Jump Station, open the Terminal application and SSH to the BIG-IP: ssh root@10.1.10.10.
+- From the Jump Station, open the Terminal application and SSH to the BIG-IP: ssh root@10.1.1.245.
 
    .. code-block:: console
       
@@ -155,7 +155,7 @@ Testing
 
 **Test additional conditions:**
    
-- From Chrome Window, modify the request to include an additional violation: http://hackazon.f5demo.com/product/view?id<script>=72%00
+- From Chrome Window, modify the request to include an additional violation: http://hackazon.f5demo.com/product/view<script>?id=72%00
 
 - This request should receive a block page because it contains violations that were not approved per override request
 
