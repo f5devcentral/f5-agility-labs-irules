@@ -5,59 +5,17 @@ Scenario:
 ~~~~~~~~~
 
 Your company uses smart cards for two-factor authentication.  Users access different resources from a single url and
-need to be given access to the different resources based on the properties of the client certificate. Users have physical
+need to be given access to those resources based on the properties of a client certificate. Users have physical
 smart cards and software-based client certificates and authentication decisions will need to be made based on certificate attributes.
 
 Requirements:
-~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~
+
+-  BIG-IP LTM, web server, client browser, SSL server and client certificates
 
 To meet the business’s objectives while still maintaining a strong security policy, an iRule solution must meet the following requirements:
 
 - inspect certificate attribute to give access to correct resource
-
-Baseline Testing:
-~~~~~~~~~~~~~~~~~
-Prior to defining a solution, validate that users do not have the correct access.
-- from the client work station open a browser to https://www.f5test.local.  You should have full access to the url.
-
-
-Lab Requirements:
-~~~~~~~~~~~~~~~~~
-
--  BIG-IP LTM, web server, client browser, SSL server and client
-   certificates
-
-The iRule
-~~~~~~~~~
-
-F5 iRules have complete access to the x509 properties of a client certificate during that
-authentication and can look at the attribute of the certificate to make decisions.
-
-.. code-block:: tcl
-
-   when RULE_INIT {
-       set static::debug 1
-   }
-   when CLIENTSSL_CLIENTCERT {
-       # Example subject:
-       # C=US, O=f5test.local, OU=User Certificate, CN=user/emailAddress=user@f5test.local
-       set subject_dn [X509::subject [SSL::cert 0]]
-       if { $subject_dn != "" } {
-           if { $static::debug } { log "Client Certificate received: $subject_dn" }
-       }
-   }
-   when HTTP_REQUEST {
-       if { [HTTP::uri] starts_with "/" } {
-           if { $subject_dn contains "CN=Whitfield Diffe" } {
-               HTTP::uri /whitfielddiffe/index.html
-           } elseif { $subject_dn contains "CN=Martin Hellman" } {
-                   HTTP::uri /martinhellman/index.html
-           } {
-                   reject
-           }
-       }
-   }
-
 
 Certificates:
 ~~~~~~~~~~~~~
@@ -91,6 +49,7 @@ CA certificate (f5test.local)
    FpLnQcaLIOsNChX/MbOQ2m9A0AFKYWKl4uyK2LxItxF1nld3gQYLEKJkRwy45TxR
    4tNLuR5MCYspKEKkdZFs97xZhQyHkQhBekwthNg=
    -----END CERTIFICATE-----
+
 
 Server certificate (www.f5test.local)
 
@@ -219,6 +178,46 @@ Client private key
    xj1IK+ZEQQewJ4TifT4CtskkUYDoGz21vsqlBJGXzq/mQPjbyYmeE43jxik7hZ1E
    M33AhM3mAkOT6tnFoD78DNZn8HlHKuaqtlljYCCCiH7tkA59Cuw=
    -----END RSA PRIVATE KEY-----
+
+Baseline Testing:
+~~~~~~~~~~~~~~~~~
+Prior to defining a solution, validate that users do not have the correct access.
+
+- From the client work station open a browser to https://www.f5test.local.
+- You should have full access to the url.
+
+
+The iRule
+~~~~~~~~~
+
+F5 iRules have complete access to the x509 properties of a client certificate during that
+authentication and can look at the attribute of the certificate to make decisions.
+
+.. code-block:: tcl
+
+   when RULE_INIT {
+       set static::debug 1
+   }
+   when CLIENTSSL_CLIENTCERT {
+       # Example subject:
+       # C=US, O=f5test.local, OU=User Certificate, CN=user/emailAddress=user@f5test.local
+       set subject_dn [X509::subject [SSL::cert 0]]
+       if { $subject_dn != "" } {
+           if { $static::debug } { log "Client Certificate received: $subject_dn" }
+       }
+   }
+   when HTTP_REQUEST {
+       if { [HTTP::uri] starts_with "/" } {
+           if { $subject_dn contains "CN=Whitfield Diffe" } {
+               HTTP::uri /whitfielddiffe/index.html
+           } elseif { $subject_dn contains "CN=Martin Hellman" } {
+                   HTTP::uri /martinhellman/index.html
+           } {
+                   reject
+           }
+       }
+   }
+
 
 Analysis
 ~~~~~~~~
