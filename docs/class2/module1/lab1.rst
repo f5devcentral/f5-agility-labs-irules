@@ -132,6 +132,7 @@ for anything less than TLSv1.1.
 .. HINT:: 
    #. Change client ssl cipher from ``DEFAULT`` to ``DEFAULT:SSLv3``
    #. Use ``openssl s_client -connect www.f5demolabs.com:443 -ssl3`` to connect
+   #. Move bonus version of irule, sec_irules_tls_version_control_2, to the selected list of iRules on the generic-app HTTPS virtual server
    
 .. NOTE:: 
    Lab Notes:
@@ -144,7 +145,7 @@ for anything less than TLSv1.1.
       - 3 = TLSv1.2 
    - The test site URL is https://www.f5demolabs.com. A hosts file entry is already applied to the lab desktop.
    - Use a command line client to also test access:
-      - curl -vk https://www.f5demolabs.com --[tlsv1|tlsv1.0|tlsv1.2]
+      - curl -vk https://www.f5demolabs.com --[tlsv1.0|tlsv1.1|tlsv1.2]
       - openssl s_client -connect www.f5demolabs.com:443 -[tls1|tls1_1|tls1_2]
    - Three TLS version control iRules are provided:
       - Basic istats capture
