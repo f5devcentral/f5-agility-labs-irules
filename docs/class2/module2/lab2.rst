@@ -4,7 +4,7 @@ Lab 2- Securing Cookies
 Scenario
 ~~~~~~~~
 
-The security team has done an application scan and found that the HTTP cookies are being issued unencrypted. They have asked the application team to verify that all the cookies get encrypted at the application tieri. But, the app team is in the middle of a new deployment and can't reallocate resources to rewrite the cookie code.  So, they have asked the F5 team to encrypt the cookies.
+The security team has done an application scan and found that the HTTP cookies are being issued unsecured. They have asked the application team to verify that all the cookies get the Security and httpOnly flags set at the application tier. But, the app team is in the middle of a new deployment and can't reallocate resources to rewrite the cookie code.  So, they have asked the F5 team to set the flags on the cookies.
 
 Restraints
 ~~~~~~~~~~
@@ -18,7 +18,7 @@ Requirements
 
 To meet the business's objectives the iRule must meet the following requirements:
 
-- The iRule must take a HTTP Cookie being sent from the application server and encrypt it.
+- The iRule must take a HTTP Cookie being sent from the application server and set the Secure flag and the HTTPOnly flag.
 
 - The security team also requires that the HTTP Cookie not be sent to Javascript Agents. 
 
