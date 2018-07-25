@@ -4,20 +4,22 @@ Lab 5 - Geolocation
 Scenario
 ~~~~~~~~~
 
-All of your critical applications are protected by F5 Advanced Web Application Firewall (AWAF), and leverage F5's Layer 7 DoS feature to mitigate bot activity and protect application resources from layer 7 volumetric attacks.  To simplify the initial deployment, the application security team elected to disable F5's Proactive Bot Defense (PBD) feature.  Recently, the business analysis team has noticed a significant increase in application traffic from Russia, and believe much of this traffic to be bot related activity.  Because this traffic is having an negative impact on the business's ability to analyze data, and increasing load on the server infrastructure, the business is requesting that more aggressive action be taken on traffic sourced from Russia.  The security team would like to leverage PBD for this traffic to block simple automated bot activity.
+All of your critical applications are protected by F5 Advanced Web Application Firewall (AWAF), and leverage F5's Layer 7 DoS feature to mitigate bot activity and protect application resources from layer 7 volumetric attacks.  To simplify the initial deployment, the application security team elected to disable F5's Proactive Bot Defense (PBD) feature.  
+
+Recently, the business analysis team has noticed a significant increase in the application traffic from Russia and believe much of this traffic to be a bot related activity. Since this traffic is having a negative impact on the business's ability to analyze data and increasing load on the server infrastructure, the business is requesting you to take a more aggressive action on traffic sourced from Russia.  The security team would like to leverage PBD for this traffic to block the simple automated bot activity.
 
 Restraints
 ~~~~~~~~~~~
 The following restraints complicate this request from the business:
 
-- AWAF DoS Profile allows you to whitelist/blacklist geolocations globally across the DoS profile, and allows for specific thresholds to be defined for geolocations for Transaction Per Second (TPS) and Stress-based protections.  However, it does not allow for per geolocation enabling/disabling of PBD.
+- AWAF DoS Profile allows you to whitelist/blacklist geolocations globally across the DoS profile and allows for specific thresholds to be defined for geolocations for Transaction Per Second (TPS) and Stress-based protections.  However, it does not allow for per geolocation enabling/disabling of PBD.
 
 Requirements
 ~~~~~~~~~~~~~
 To meet the business’s objectives, while still maintaining a strong security policy, an iRule solution must meet the following requirements:
 
-- Proactive Bot Defense should be enabled for all traffic from Russia, but disabled for traffic initiated from everywhere else
-- Bot Signature protection should remain enforced for all traffic
+- Proactive Bot Defense should be enabled for all traffic from Russia, but disabled for traffic initiated from everywhere else.
+- Bot Signature protection should remain enforced for all traffic.
 - Selectively enabling PBD should **not** affect any of the existing L7DoS protections currently enforced.
 
 Baseline Testing
@@ -128,11 +130,10 @@ This rule does the following:
 
    This rule uses the DoS Profile, iRules_Sec, which has been created for you as part of the lab setup 
 
-
-
 Testing
 ~~~~~~~~~
-- From BIG-IP UI:
+From BIG-IP UI:
+
 - Navigate to Security -> DoS Protection -> DoS Profiles -> iRules_Sec -> Application Security Tab
 - Click the Proactive Bot Defense button, and set the Operation Mode to Always
 - Click Update
@@ -148,13 +149,11 @@ Testing
     
     f5student@xjumpbox~$ ssh root@10.1.1.245
 
-
 - From BIG-IP console run the following command:
  
  .. code-block:: console 
     
     f5student@xjumpbox~$ tail -f /var/log/ltm 
-
 
 - On original Terminal Application tab, run the following command:
  
@@ -172,18 +171,23 @@ Testing
 - This request is not issued from a Russian source, so PBD does not issue a challenge.  The response is missing the challenge, and the response body is ~64K. 
 
 - From BIG-IP UI, view the Bot Defense logs:
+
 - Security -> Event Logs -> Bot Defense -> Requests
+
 - In this log, look at requests from ``5.16.0.1`` and ``2.2.2.2``
-- You will see both requests are properly classified as bots, but only requests from ``5.16.0.1`` are challenged 
+- You will see both requests are properly classified as bots, but only requests from ``5.16.0.1`` are challenged
 
 - On Xubuntu Jumpbox, open another Firefox tab
+
 - browse to http://hackazon.f5demo.com/
 
 - Return to BIG-IP Bot Defense log
+
 - Notice browser issued requests will source from 10.1.10.51, and will show the following:
- - Request Status = Legal
- - Action = allow
- - Reason =  Bot Defense Inactive
+
+  - Request Status = Legal
+  - Action = allow
+  - Reason =  Bot Defense Inactive
 
 
 .. NOTE::
@@ -191,38 +195,66 @@ Testing
    Bot Defense is inactive, because the request wasnt sourced from "Russia", and we have disabled PBD.
 
 - Return to Firefox, and right click the Firefox Modify Header Add-on on the right-side of the screen
+
 - Select Open options page
-- Scroll all the way to buttom of options screen, and click the disable box in the rule for http://hackazon.f5demo.com, verify the box turns blue.  This enables insertion of X-Forwarded-For header in browser request
+
+- Scroll all the way to buttom of options screen and click the disable box in the rule for http://hackazon.f5demo.com 
+
+- verify the box turns blue.  This enables insertion of X-Forwarded-For header in browser request
+
 - Again, browse to http://hackazon.f5demo.com
 
-
 - Return to BIG-IP Bot Defense log
+
 - Notice browser issued requests will source from 5.16.0.1, and will show the following:
 
- - Geolocation = RU
- - Request Status = Legal
- - Action = browser_challenged (on request for first object), and allow on subsequent requests
- - Reason = No Valid Cookie: Challenge is possible (on request for first object), and Valid Cookie: No need to review on subsequent requests
+  - Geolocation = RU
+  - Request Status = Legal
+  - Action = browser_challenged (on request for first object), and allow on subsequent requests
+  - Reason = No Valid Cookie: Challenge is possible (on request for first object), and Valid Cookie: No need to review on subsequent requests
 
 
 Review
 ~~~~~~~
-Geolocation, while not foolproof, is often an important piece of context about a user or device.  Proactive Bot Defense is a very powerful feature for mitigating bot and automated activity, but sometimes challenging to implement in a single broad stroke.  In the above lab, we have used iRules to take advantage of additional context gained through the iRule geolocation commands to leverage, in a targeted manner, a very powerful security feature.  This is precisely the kind of challenge iRules are best suited for, stitching together pieces of information and features to deliver a solution customized to solve a business challenge.
+Geolocation, while not foolproof, is often an important piece of context about a user or device. 
+Proactive Bot Defense is a very powerful feature for mitigating bot and automated activity but 
+sometimes, it is challenging to implement in a single broad stroke. 
+
+In the above lab, we have used iRules to take advantage of the additional context gained 
+through the iRule geolocation commands to leverage a very powerful security feature in a 
+targeted manner.  This is precisely the kind of challenge iRules are best suited for, 
+stitching together pieces of information and features to deliver a solution customized 
+to solve a business challenge.
 
 
 Bonus Activity
 ~~~~~~~~~~~~~~~
-One of our existing requirements was to not change any of our existing L7DoS protections.  In the lab, we demonstrated, changes via iRule didnt affect Bot Signatures.  As a bonus, you can also verify the iRule enforced PBD for Russian sources also doesn't impair the pre-existing L7DoS protections configured in the DoS profile.
+One of our existing requirements was to not change any of our existing L7DoS protections.
+In the lab, we demonstrated that changes via iRule didnt affect Bot Signatures. As a bonus, 
+you can also verify the iRule enforced PBD for the Russian sources also doesn't impair the 
+pre-existing L7DoS protections configured in the DoS profile.
 
-- Return to Firefox, and right-click the Firefox Modify Header Add-on on the right-side of the screen
-- Click the Disable button, this time turning it gray
-- From browser tab opened to http://hackazon.f5demo.com, click the refresh icon rapidly for ~30 seconds
-- You will see requests beginning to fail.  This is the L7DoS protection kicking in and rate limiting requests from non-Russian sources.
+- Return to Firefox and right-click the Firefox Modify Header Add-on on the right-side of the screen
+
+- Click the Disable button. This time turning it gray
+
+- From the browser tab, open http://hackazon.f5demo.com
+  
+- Click the refresh icon rapidly for ~30 seconds
+
+- You will see the requests beginning to fail. This is the L7DoS protection kicking in and rate limiting requests from non-Russian sources
+
 - Return to BIG-IP UI
+
 - Navigate to Security -> Event Logs -> DoS -> Application Events
+
 - You should see a L7DoS attack has been triggered and detected by Source IP TPS
-- Repeat same steps, but after re-enabling the X-Forwarded-For header in browser add-on
+
+- Repeat same steps, but after re-enabling the X-Forwarded-For header in the browser add-on
+
 - You should be able to trigger an attack, but this time using a Russian source.
 
-With the above steps, you have demonstrated that you can inject PBD challenges from sources from a given geolocation, while maintaining all pre-existing protections.  We have just used more context, to enable more security, using an iRule!
+With the above steps, you have demonstrated that you can inject PBD challenges for sources 
+from a given geolocation while maintaining all pre-existing protections. We have just used 
+more context to enable more security using an iRule!
  
