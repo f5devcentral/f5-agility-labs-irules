@@ -1,241 +1,260 @@
-Lab 4 - Client Certificate Inspection
--------------------------------------
+Lab 4 - Geolocation
+-------------------
 
-Scenario:
+Scenario
 ~~~~~~~~~
 
-Your company uses smart cards for two-factor authentication.  Users access different resources from a single url and
-need to be given access to those resources based on the properties of a client certificate. Users have physical
-smart cards and software-based client certificates and authentication decisions will need to be made based on certificate attributes.
+All of your critical applications are protected by F5 Advanced Web Application Firewall (AWAF), and leverage F5's Layer 7 DoS feature to mitigate bot activity and protect application resources from layer 7 volumetric attacks.  To simplify the initial deployment, the application security team elected to disable F5's Proactive Bot Defense (PBD) feature.  
 
-Requirements:
-~~~~~~~~~~~~~~~~~
+Recently, the business analysis team has noticed a significant increase in the application traffic from Russia and believe much of this traffic to be a bot related activity. Since this traffic is having a negative impact on the business's ability to analyze data and increasing load on the server infrastructure, the business is requesting you to take a more aggressive action on traffic sourced from Russia.  The security team would like to leverage PBD for this traffic to block the simple automated bot activity.
 
--  BIG-IP LTM, web server, client browser, SSL server and client certificates
+Restraints
+~~~~~~~~~~~
+The following restraints complicate this request from the business:
 
-To meet the business’s objectives while still maintaining a strong security policy, an iRule solution must meet the following requirements:
+- AWAF DoS Profile allows you to whitelist/blacklist geolocations globally across the DoS profile and allows for specific thresholds to be defined for geolocations for Transaction Per Second (TPS) and Stress-based protections.  However, it does not allow for per geolocation enabling/disabling of PBD.
 
-- inspect certificate attribute to give access to correct resource
-
-Certificates:
+Requirements
 ~~~~~~~~~~~~~
+To meet the business’s objectives, while still maintaining a strong security policy, an iRule solution must meet the following requirements:
 
-Certificates and keys are provided for you in the lab, but here are test
-certificates and private keys.
+- Proactive Bot Defense should be enabled for all traffic from Russia, but disabled for traffic initiated from everywhere else.
+- Bot Signature protection should remain enforced for all traffic.
+- Selectively enabling PBD should **not** affect any of the existing L7DoS protections currently enforced.
 
-CA certificate (f5test.local)
-
-.. code-block:: console
-
-   -----BEGIN CERTIFICATE-----
-   MIIDqTCCApGgAwIBAgIJAJoOn2YSIE76MA0GCSqGSIb3DQEBCwUAMFsxCzAJBgNV
-   BAYTAlVTMRUwEwYDVQQKEwxmNXRlc3QubG9jYWwxHjAcBgNVBAsTFUNlcnRpZmlj
-   YXRlIEF1dGhvcml0eTEVMBMGA1UEAxMMZjV0ZXN0LmxvY2FsMB4XDTE3MDcxMjA3
-   MzkyOVoXDTIwMDUwMTA3MzkyOVowWzELMAkGA1UEBhMCVVMxFTATBgNVBAoTDGY1
-   dGVzdC5sb2NhbDEeMBwGA1UECxMVQ2VydGlmaWNhdGUgQXV0aG9yaXR5MRUwEwYD
-   VQQDEwxmNXRlc3QubG9jYWwwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIB
-   AQDVrAXCQS0w9sjGRkwiPYpHmc+aMff6HwHYH6aNwIg93P4a5wEUmIFh+ym4aJjf
-   Tmfpsnk2fmbHpygfZU2LEhcxXQuiKB/1euXYizXqlESfFROIScQnCn59Ph+FukVB
-   6eNV0+yc0mVpvu5u9LViZCICYGPaqoIOquPF9r9LoP1j1ZutGtHkt0VjiR0/uTiE
-   BWo3RVuVi/Q6hack2+uhMrepGN045ilCJWfTnfBJoFFE/d6JVanccD9LAyuUxFbl
-   ReSxs6aQNb/nZ/eO1gGts9W16E5XaFv+72wbVgSesTxjXiWnCYnGef/qHkCMxnXg
-   /bLRjWzYeBeiHHLUWUp2wfo/AgMBAAGjcDBuMC8GCWCGSAGG+EIBDQQiFiBPcGVu
-   U1NMIGdlbmVyYXRlZCBDQSBjZXJ0aWZpY2F0ZTAdBgNVHQ4EFgQUp1RR2qzOWUoZ
-   T921koMLiOwHOFIwDwYDVR0TAQH/BAUwAwEB/zALBgNVHQ8EBAMCAYYwDQYJKoZI
-   hvcNAQELBQADggEBAG29bNrTH9DSpe92p6/GBMAvyPku+sB7ksXn5Ww6PN+isUZo
-   NHY9xfe6GqRVnxafIoad4GkOghwNLFnb2DSzTY7mVGLtlh6oz3sYhbmnh8d8CdKT
-   OSQr+rsnZjaQHPX4SK4+PXkWDi6OlAGOAHAx7llOmk5yyIvQ8EsgnOS8MzAFoxJI
-   /SSkxFtZ6WC5sYfaEX/hz+7OaDO/ck62u/0Xvy9QYGn9Noib1+25Jz1Ti77znB9k
-   FpLnQcaLIOsNChX/MbOQ2m9A0AFKYWKl4uyK2LxItxF1nld3gQYLEKJkRwy45TxR
-   4tNLuR5MCYspKEKkdZFs97xZhQyHkQhBekwthNg=
-   -----END CERTIFICATE-----
-
-
-Server certificate (www.f5test.local)
-
-.. code-block:: console
-
-   -----BEGIN CERTIFICATE-----
-   MIIEmzCCA4OgAwIBAgIBDDANBgkqhkiG9w0BAQsFADBbMQswCQYDVQQGEwJVUzEV
-   MBMGA1UEChMMZjV0ZXN0LmxvY2FsMR4wHAYDVQQLExVDZXJ0aWZpY2F0ZSBBdXRo
-   b3JpdHkxFTATBgNVBAMTDGY1dGVzdC5sb2NhbDAeFw0xNzA3MTIxMjA3MjNaFw0y
-   MDA1MDExMjA3MjNaMGAxCzAJBgNVBAYTAlVTMRUwEwYDVQQKEwxmNXRlc3QubG9j
-   YWwxHzAdBgNVBAsTFldlYiBTZXJ2ZXIgQ2VydGlmaWNhdGUxGTAXBgNVBAMTEHd3
-   dy5mNXRlc3QubG9jYWwwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDL
-   MnIIwinW9MQIJ8hwK7TwXHzFoTL6KkBX/5KTOU727nFjiNYMB5o0o//p3qHfHYim
-   lWDD2UgKIyx2lAg+DThEX0r6wDb4MXW+tGZKoOm+xbMl6GGXnB+ppQEnGAexki+c
-   fYmhrS6QloBBHSTmJ6pKGNEKFn+18v3T2ELsZXQLEFOMc7oWO5oUc4yPbPKHgh8s
-   9MoOdNA6vxAff7p0MmyzVDSdxlGYMSRz274z/BfEaL3uOSthzdghDX5e+Wf9Crtx
-   drC4rigoMePEuviV3DjSco4hb43TW8FS6tkgBonBx/53A+zJcoKnwkqMsWkvqVvX
-   Lx3u4e65z6s2sgJv+i7/AgMBAAGjggFjMIIBXzA3BglghkgBhvhCAQ0EKhYoT3Bl
-   blNTTCBnZW5lcmF0ZWQgd2ViIHNlcnZlciBjZXJ0aWZpY2F0ZTAdBgNVHQ4EFgQU
-   boBGjDryjx/CGFvQT1eZTJ3VNq8wgY0GA1UdIwSBhTCBgoAUp1RR2qzOWUoZT921
-   koMLiOwHOFKhX6RdMFsxCzAJBgNVBAYTAlVTMRUwEwYDVQQKEwxmNXRlc3QubG9j
-   YWwxHjAcBgNVBAsTFUNlcnRpZmljYXRlIEF1dGhvcml0eTEVMBMGA1UEAxMMZjV0
-   ZXN0LmxvY2FsggkAmg6fZhIgTvowGwYDVR0RBBQwEoIQd3d3LmY1dGVzdC5sb2Nh
-   bDAjBgNVHSAEHDAaMAsGCWCGSAFlAgELBTALBglghkgBZQIBCxIwIwYDVR0lBBww
-   GgYIKwYBBQUHAwEGCCsGAQUFCAICBgRVHSUAMA4GA1UdDwEB/wQEAwIFoDANBgkq
-   hkiG9w0BAQsFAAOCAQEAieguCjEV7tQ+ocoMfWsebTMJUiK+oOOZ95H5FPW5Yz7N
-   abRTTGEimncrAyJYqFQgjBhaPV+5o/zn53OQpTe7sJsIzJwWWwktFGJu4zYtpet/
-   llGU4/PDdHKmy9ipYEtBlutQP9OLf/PGWuKLnEQ2cT2J2mpDsnELwyJm2YiVoVZp
-   wRf4/gcMZK07YrRigZl6Rr33yw8hBRprLyhL9O+tH72sEofX6+m0Z/qEqre6uveR
-   3LO+WaxRxCk08ZSobiVJh/lbKEnMCOVL4DsIBDCprcMwxEzdHFtrMwCZg/iQEvZR
-   Aasj6BRzEM+e92jAVluUbNja26kd6ImGZaLqul/Elw==
-   -----END CERTIFICATE-----
-
-Server private key
-
-.. code-block:: console
-
-   -----BEGIN RSA PRIVATE KEY-----
-   MIIEpAIBAAKCAQEAyzJyCMIp1vTECCfIcCu08Fx8xaEy+ipAV/+SkzlO9u5xY4jW
-   DAeaNKP/6d6h3x2IppVgw9lICiMsdpQIPg04RF9K+sA2+DF1vrRmSqDpvsWzJehh
-   l5wfqaUBJxgHsZIvnH2Joa0ukJaAQR0k5ieqShjRChZ/tfL909hC7GV0CxBTjHO6
-   FjuaFHOMj2zyh4IfLPTKDnTQOr8QH3+6dDJss1Q0ncZRmDEkc9u+M/wXxGi97jkr
-   Yc3YIQ1+Xvln/Qq7cXawuK4oKDHjxLr4ldw40nKOIW+N01vBUurZIAaJwcf+dwPs
-   yXKCp8JKjLFpL6lb1y8d7uHuuc+rNrICb/ou/wIDAQABAoIBADeEduextSDIC292
-   /yq2pl8txeFxY646MQ5aA8A53jtVdqGNV3497YIIdPl/HJcLSLTLB387NJWgepuD
-   YqUhk4gKyT+tmNdDHDqYq4IkaPj4pzPqRA/aVkRRkvkNdbyshlmpaxtDZ/+VP0GL
-   JvPDTqGkGik5cHdUBsoEwnQ4W/ZRaP+hrvFDguYlwZAe+iN35AXWdviuU7Iz1dZN
-   mcsmpEyqQoHlWvmS15i9IqSkUabbvt/fWCZQTmAQHDc4J+gyYekcLf+ubVgEzB4C
-   Yh/cibO+MMLHOw6aG2lzdnAwPephhhsRYvKdC4GqmxHaNMNdnXuI02HpY8ySL2Ue
-   cPmlnSECgYEA5gixIlmQTNOTbq0VP0YFs09/GD1lk57rQmXQ4FTTd0t++tSyV/oX
-   ugDXeHA10/K3iufaJNfKtj7bUAlux740nqgOqaq/NENiLvF3RMWFVn0UJOO8loHx
-   4ZcpuWfSt/6TRgrHg+V+H0OMCEwUcebG6123Wd43b3JipHttLWFxQpkCgYEA4iI+
-   4bIN61ptzZDmWc7hvIDdvFnyqotOjlwL5RAucV6W0T6SYCuOJb6UXYeDfoisHQqv
-   i5c+oEqVvZHly53+Bx6zRT9zpEhJfDoF929BC3KB44XQDF2MnXzr34gRw0GvJuaR
-   P0lZJqXrN93GXGX80bvqU/eMtOST1BoWkPH2FVcCgYB+TMFs+b334KbvOosS7ZBN
-   rlU66uLtlXDYSOzRbuGYe1QhxkyRb1g9oR6tGvcDAx3xX3FvjyfWvlZN8I/pja54
-   eg9q6rwGpwSuf5ebo9Oc9BnuUzgFbx1uXj/jc3TH3zffWiXHbma8JasqFxOWoj4P
-   lqoH5rGLOEOeycHdC8ZS6QKBgQCXr7MQf/h4TANlpfHugijH4oVah9eQcLu0IKhV
-   8gHFSFbQazGS0wSZ6vnotzMMWK9jF7zjXQPET+Ob8tb7O7KfogdMxyBSLa8lZmKE
-   NJukCx53uVXyRXpCVf5+xe5sVI4iAP2jPxdPJnLe2aPqbPsm0O+BfYdj/APxfcJv
-   Xe7dJwKBgQDgeLXskt1ymndPfDy9XphX/DksZThxy3gFZPicns4mTJ7l6VRpoAd3
-   tJUawHyG97Gdo6XSfVn4Ge7FhMgskqZxHHgr6dtmxdbdheY4uyZp+Kep5gmVmynq
-   2Kz+pBg3E5IaF/A1mxCGEe7EDTZUpgCuTeIRKslBBPGm6ir2vLFNTA==
-   -----END RSA PRIVATE KEY-----
-
-Client certificate (user@f5test.local)
-
-.. code-block:: console
-
-   -----BEGIN CERTIFICATE-----
-   MIIElDCCA3ygAwIBAgIBBDANBgkqhkiG9w0BAQsFADBbMQswCQYDVQQGEwJVUzEV
-   MBMGA1UEChMMZjV0ZXN0LmxvY2FsMR4wHAYDVQQLExVDZXJ0aWZpY2F0ZSBBdXRo
-   b3JpdHkxFTATBgNVBAMTDGY1dGVzdC5sb2NhbDAeFw0xNzA3MTIwODA2MjdaFw0y
-   MDA1MDEwODA2MjdaMH0xCzAJBgNVBAYTAlVTMRUwEwYDVQQKEwxmNXRlc3QubG9j
-   YWwxGTAXBgNVBAsTEFVzZXIgQ2VydGlmaWNhdGUxGjAYBgNVBAMTEXVzZXIuZjV0
-   ZXN0LmxvY2FsMSAwHgYJKoZIhvcNAQkBFhF1c2VyQGY1dGVzdC5sb2NhbDCCASIw
-   DQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAJmy1XU/hJCbvIT5Dsb4s59yep4j
-   zR0OScuFi0keAaZhqdKxW69LN61/M4a7ohRQHj1YEHTRMLQuzSo1keoVqm52KKEy
-   Ws9lkpq3S00nB+jCN1ZcvYbW7FDVBPne4Z+Rkd5VsSwhX2wE7B+is5L0XhKUPb4B
-   WXdOnHmS/TUH5M5nxiFQnygxr69qMK+pfLqHCk8H8g84zpujE9QSks5iV1xeRdEq
-   bOME/VYrllzvYrBRhCzcftJp+PtbY57i/CSawg0P/GeRvPmJoe9HO/vcoG9HmtDX
-   s8mtdg6mUKCYBVhED2362bj1KiDZ6t7IoCafBXM94oPlDAG8tAucGbH5gJcCAwEA
-   AaOCAT8wggE7MDsGCWCGSAGG+EIBDQQuFixPcGVuU1NMIGdlbmVyYXRlZCBzbWFy
-   dGNhcmQgdXNlciBjZXJ0aWZpY2F0ZTAdBgNVHQ4EFgQUwaMwNzNNL4dhB/AzQBaj
-   AkindiUwHwYDVR0jBBgwFoAUp1RR2qzOWUoZT921koMLiOwHOFIwDgYDVR0PAQH/
-   BAQDAgbAMCkGA1UdJQQiMCAGCCsGAQUFBwMCBgorBgEEAYI3FAICBggrBgEFBQcD
-   BDA/BgNVHREEODA2gRF1c2VyQGY1dGVzdC5sb2NhbKAhBgorBgEEAYI3FAIDoBMM
-   EXVzZXJAZjV0ZXN0LmxvY2FsMCMGA1UdIAQcMBowCwYJYIZIAWUCAQsJMAsGCWCG
-   SAFlAgELEzAbBgNVHQkEFDASMBAGCCsGAQUFBwkEMQQTAlVTMA0GCSqGSIb3DQEB
-   CwUAA4IBAQAFKi84V5UX1BiY/XG4gkCwP63JmWwBl9DgFjdG9eXPlFfZIGw/mlEj
-   uULGdHLVqOJ1nseuNdbbHic3anxN7TFlZTm+92xX6/mQhumabvXGqq5s9FjvzmQl
-   6LSEH8U1oGBr1ByV44U3ifJXuSJyrUtfcZN0BifskcAa05C2pJTkDMxHnG1n/s2C
-   lu+Cf2AqAoOgZCz2PsgJtbV5VXckzX+AsWAp2R4ltNWqIbaKEFGsOb9lJa53qmQc
-   25iGpuAGm/ierJoVDfDfLnEWK6vWKiQ7MnbwVG6Rot08uYnyBvgK2JzoGMVhjys0
-   peMa0CNvHv2B/PtbPaNtCKqHJhz6zOI3
-   -----END CERTIFICATE-----
-
-Client private key
-
-.. code-block:: console
-
-   -----BEGIN RSA PRIVATE KEY-----
-   MIIEogIBAAKCAQEAmbLVdT+EkJu8hPkOxvizn3J6niPNHQ5Jy4WLSR4BpmGp0rFb
-   r0s3rX8zhruiFFAePVgQdNEwtC7NKjWR6hWqbnYooTJaz2WSmrdLTScH6MI3Vly9
-   htbsUNUE+d7hn5GR3lWxLCFfbATsH6KzkvReEpQ9vgFZd06ceZL9NQfkzmfGIVCf
-   KDGvr2owr6l8uocKTwfyDzjOm6MT1BKSzmJXXF5F0Sps4wT9ViuWXO9isFGELNx+
-   0mn4+1tjnuL8JJrCDQ/8Z5G8+Ymh70c7+9ygb0ea0Nezya12DqZQoJgFWEQPbfrZ
-   uPUqINnq3sigJp8Fcz3ig+UMAby0C5wZsfmAlwIDAQABAoIBAGlmF7d1vWSlR5ww
-   Zw/PUO5QxQFZL7lzKOvmQmP7rcn5Q0n20hbdj+rsRdtpJHalknciwvY41htZ1NvT
-   LKLIBL4HTUltjJSY5PYwJ/VahLP7K5OPuXCURi4QRn9LdpHEc7FyNjM7F4KtxXbU
-   TizCYxh+i/CWYFHOmMNOJ1GMfj2EIFsUh7i3D9W3A/HKaEn7RWfFWBpF8OwfF7Bl
-   k/qyhjIjv8ux3f7K9izvUiVWH/T9FMPXhb89ieT6Up5Qgrq1ejq6JnHkUhZvrA3N
-   AFWUI2SxMGMy+jS7HCwj5fM3it/FkkG2uf2v3CXx5CP//lmBWid3nCCr9FtB0UgK
-   BwrQ7nECgYEAyxViZTBuPdH0q/GVHcknlIXvl0B4Ah5pNdgfl345fkOLjtXe5HoR
-   MMuLHGACD0/mVn4rl/obU/359ANOOrDGT/66AAD24VhNRtvoeMzDRXJ+Y9QNdBwo
-   tNHntZzp4msolFkSiHUObHG5jXcxryDig2Y54ZLeRJClCFqBXr1HfTsCgYEAwb8+
-   LJYC/SIsbSq6O7cUhiOgcyTkKmKueFUH7ic8JzYXNOTu/mAJuVWb9X1rzCRLc6wj
-   MXj9lKZoyVHaoY7aAtd0y75MuoH0FEZG7btE6iba48ZTiAKc3hZXFOszYdPwWUjI
-   fRQK3g0aRPfrgXhkTFG/aXc6rWFbxZCd9x1YBFUCgYATMmNJs2lIWLdrJXv2A9TE
-   +mAqiQKPGLbTSym5VUo0AEiJ6PeX214Sobr1pLGtJt1cIbMXO6Inr2NYSJO1go5M
-   c4S7iVvM817iqtjvylNPFkKSRzI6XosOhKUFit6k84Ize7P/yCjj4WAr2i+NIWuo
-   BhrEkvCFxLKE9qEyBmxijwKBgFzlVGtOVgqHGyQQq5C8PKQAawsqchf8jsj1hELl
-   Hwtx/PiImCrxY1gwuwGe7FPKRz8kFw++gl+G1pFIpPp3owJfyglyqhl2+8/IznNo
-   KifXD3bM/folvo8hyQknqNBMLV6x7idCt982CxVshcfjMLwDKjLoTwMYvkbhC0yU
-   DkKtAoGABYODvNIuhUQGk8sKcjByZIpMBeeaFBqPSn0dClUvZnTDTA5sKpblnzQ7
-   xj1IK+ZEQQewJ4TifT4CtskkUYDoGz21vsqlBJGXzq/mQPjbyYmeE43jxik7hZ1E
-   M33AhM3mAkOT6tnFoD78DNZn8HlHKuaqtlljYCCCiH7tkA59Cuw=
-   -----END RSA PRIVATE KEY-----
-
-Baseline Testing:
+Baseline Testing
 ~~~~~~~~~~~~~~~~~
-Prior to defining a solution, validate that users do not have the correct access.
+Prior to defining a solution, validate the issue by testing the application to validate AWAF's current behavior:
 
-- From the client work station open a browser to https://www.f5test.local.
-- You should have full access to the url.
+- RDP to the lab jump station 
+- Open Terminal application
+- From Terminal run the following command against the test web application
+ 
+  .. code-block:: console
+    
+     f5student@xjumpbox~$ curl -k http://hackazon.f5demo.com/ -H "X-forwarded-for: 5.16.0.1" | grep -i ?type=
+
+
+- The result of the test should look similar to below, with grep returning no match, and the object response size ~64k
+
+
+  .. image:: /_static/class2/pbd_baseline_test1.png
+      :width: 1000
+
+
+- PBD is not active and not responding to the HTTP request with javascript challenge
+- From Terminal, run the same command, but change the value of the ``X-forwarded-for`` header to be 2.2.2.2
+- Traffic sourced from Russia should match the behavior of all other geolocations, and no proactive bot defense challenges are being issued.
 
 
 The iRule
-~~~~~~~~~
+~~~~~~~~~~~
 
-F5 iRules have complete access to the x509 properties of a client certificate during that
-authentication and can look at the attribute of the certificate to make decisions.
+.. code-block:: tcl 
+   :linenos:
 
-.. code-block:: tcl
-
-   when RULE_INIT {
-       set static::debug 1
+   when CLIENT_ACCEPTED {
+      set geopbd_debug_verb 1
+      set geopdb_debug 1
    }
-   when CLIENTSSL_CLIENTCERT {
-       # Example subject:
-       # C=US, O=f5test.local, OU=User Certificate, CN=user/emailAddress=user@f5test.local
-       set subject_dn [X509::subject [SSL::cert 0]]
-       if { $subject_dn != "" } {
-           if { $static::debug } { log "Client Certificate received: $subject_dn" }
-       }
-   }
+
    when HTTP_REQUEST {
-       if { [HTTP::uri] starts_with "/" } {
-           if { $subject_dn contains "CN=Whitfield Diffe" } {
-               HTTP::uri /whitfielddiffe/index.html
-           } elseif { $subject_dn contains "CN=Martin Hellman" } {
-                   HTTP::uri /martinhellman/index.html
-           } {
-                   reject
+      if { [HTTP::header exists "X-Forwarded-For"] } {
+          set XFF [getfield [lindex [HTTP::header values X-Forwarded-For] 0] "," 1]
+      }
+      else {
+         set XFF [IP::client_addr]
+     }
+
+      if {$geopbd_debug_verb} {
+          log local0. "Coninent: [whereis $XFF continent]"
+          log local0. "Country: [whereis $XFF country]"
+          log local0. "State: [whereis $XFF state] "
+          log local0. "ISP: [whereis $XFF isp] "
+          log local0. "Org: [whereis $XFF org] "
+      }
+    
+      if {!([whereis $XFF country] equals "RU")} {
+          if {$geopdb_debug} {
+             log local0. "De-activating PBD: Not Russia source"
            }
-       }
+          BOTDEFENSE::disable
+      }
+
+   }
+
+   when BOTDEFENSE_ACTION {
+   #catch the inbound status
+      if {$geopdb_debug} {
+         log local0. " Geolocation Country: [whereis $XFF country] "
+         log local0. " Bot Defense Status: [BOTDEFENSE::reason] "
+         log local0. " Bot Defense Action: [BOTDEFENSE::action] "
+      }
    }
 
 
 Analysis
-~~~~~~~~
+~~~~~~~~~
+Event/Command details:
 
--  The above iRule inspects the x509 subject value in the client’s
-   certificate and makes an access decision based on that value. In this
-   very simple example, a specific set of users may access different
-   corporate resources hosted behind the same VIP.
+-  The iRules ``whereis`` command can take several options, including:
+
+   - ``[whereis [IP::client_addr] continent]``: returns the three-letter
+     continent
+
+   - ``[whereis [IP::client_addr] country]``: returns the two-letter
+     country code
+
+   - ``[whereis [IP::client_addr] <state|abbrev>]``: returns the state as
+     word or as two-letter abbreviation
+
+   - ``[whereis [IP::client_addr] isp]``: returns the carrier
+
+   - ``[whereis [IP::client_addr] org]``: returns the registered
+     organization
+
+- ``BOTDEFENSE`` command enables or disables bot defense processing
+- ``BOTDEFENSE_ACTION`` event is triggered after the HTTP request has been processed, and just prior to taking action on transaction.  The event is triggered whenever PBD is enabled, if a DoS L7 attack is configured to trigger PBD, or when a Bot Signature was detected on the request.
+- ``BOTDEFENSE::reason`` returns the reason the for the bot defense action
+- ``BOTDEFENSE::action`` returns the action to be taken by bot defense feature
+
+Rule Details
+~~~~~~~~~~~~~
+This rule does the following:
+
+- Inspects the inbound X-Forwarded-For header or Client IP address, and performs a geolocation lookup on the value.  If either the XFF or the Client IP do **not** match the Russia country code, "RU", then botdefense is disabled. Otherwise Bot Defense is enabled.
+- Logs the geolocation information on to a local logger
+- Logs the botdefense reason and action to a local logger
+
+.. NOTE::
+
+   This rule uses the DoS Profile, iRules_Sec, which has been created for you as part of the lab setup 
 
 Testing
+~~~~~~~~~
+From BIG-IP UI:
+
+- Navigate to Security -> DoS Protection -> DoS Profiles -> iRules_Sec -> Application Security Tab
+- Click the Proactive Bot Defense button, and set the Operation Mode to Always
+- Click Update
+ 
+- Navigate to Local Traffic -> Virtual Servers -> Virtual Server List -> ``vs_hackazon_http``
+- Click the Resources tab, then the Manage button to the right of the iRules section header
+- Move the iRule ``sec_irules_geobased_pbdswitcher`` from the Available box to the Enabled box
+- Click Finished
+
+- Open Terminal application, and create a new tab, then run following command
+
+ .. code-block:: console 
+    
+    f5student@xjumpbox~$ ssh root@10.1.1.245
+
+- From BIG-IP console run the following command:
+ 
+ .. code-block:: console 
+    
+    f5student@xjumpbox~$ tail -f /var/log/ltm 
+
+- On original Terminal Application tab, run the following command:
+ 
+ .. code-block:: console
+    
+    f5student@xjumpbox~$ curl -k http://hackazon.f5demo.com/ -H "X-forwarded-for: 5.16.0.1" | grep -i ?type=
+
+- Response should look similar to below image.  You should see that PBD has injected a javascript challenge, and the response body should be ~5.8K
+
+   .. image:: /_static/class2/pbd_test1.png
+      :width: 1000
+
+- From Terminal, run the same command but change the value of the ``X-forwarded-for`` header to be 2.2.2.2
+
+- This request is not issued from a Russian source, so PBD does not issue a challenge.  The response is missing the challenge, and the response body is ~64K. 
+
+- From BIG-IP UI, view the Bot Defense logs:
+
+- Security -> Event Logs -> Bot Defense -> Requests
+
+- In this log, look at requests from ``5.16.0.1`` and ``2.2.2.2``
+- You will see both requests are properly classified as bots, but only requests from ``5.16.0.1`` are challenged
+
+- On Xubuntu Jumpbox, open another Firefox tab
+
+- browse to http://hackazon.f5demo.com/
+
+- Return to BIG-IP Bot Defense log
+
+- Notice browser issued requests will source from 10.1.10.51, and will show the following:
+
+  - Request Status = Legal
+  - Action = allow
+  - Reason =  Bot Defense Inactive
+
+
+.. NOTE::
+
+   Bot Defense is inactive, because the request wasnt sourced from "Russia", and we have disabled PBD.
+
+- Return to Firefox, and right click the Firefox Modify Header Add-on on the right-side of the screen
+
+- Select Open options page
+
+- Scroll all the way to buttom of options screen and click the disable box in the rule for http://hackazon.f5demo.com 
+
+- verify the box turns blue.  This enables insertion of X-Forwarded-For header in browser request
+
+- Again, browse to http://hackazon.f5demo.com
+
+- Return to BIG-IP Bot Defense log
+
+- Notice browser issued requests will source from 5.16.0.1, and will show the following:
+
+  - Geolocation = RU
+  - Request Status = Legal
+  - Action = browser_challenged (on request for first object), and allow on subsequent requests
+  - Reason = No Valid Cookie: Challenge is possible (on request for first object), and Valid Cookie: No need to review on subsequent requests
+
+
+Review
 ~~~~~~~
+Geolocation, while not foolproof, is often an important piece of context about a user or device. 
+Proactive Bot Defense is a very powerful feature for mitigating bot and automated activity but 
+sometimes, it is challenging to implement in a single broad stroke. 
 
--  In the Client Authentication section of the client SSL
-   profile ``f5test``, set Client Certificate to ``Require``, and
-   assign ``ca_f5test`` to the Trusted Certificate Authorities option.
+In the above lab, we have used iRules to take advantage of the additional context gained 
+through the iRule geolocation commands to leverage a very powerful security feature in a 
+targeted manner.  This is precisely the kind of challenge iRules are best suited for, 
+stitching together pieces of information and features to deliver a solution customized 
+to solve a business challenge.
 
 
--  Test accessing the HTTPS URL https://www.f5test.local from the
-   client. The client browser should prompt you to select a certificate.
-   Upon selecting this certificate, you should be able to pass through
-   to the application.
+Bonus Activity
+~~~~~~~~~~~~~~~
+One of our existing requirements was to not change any of our existing L7DoS protections.
+In the lab, we demonstrated that changes via iRule didnt affect Bot Signatures. As a bonus, 
+you can also verify the iRule enforced PBD for the Russian sources also doesn't impair the 
+pre-existing L7DoS protections configured in the DoS profile.
+
+- Return to Firefox and right-click the Firefox Modify Header Add-on on the right-side of the screen
+
+- Click the Disable button. This time turning it gray
+
+- From the browser tab, open http://hackazon.f5demo.com
+  
+- Click the refresh icon rapidly for ~30 seconds
+
+- You will see the requests beginning to fail. This is the L7DoS protection kicking in and rate limiting requests from non-Russian sources
+
+- Return to BIG-IP UI
+
+- Navigate to Security -> Event Logs -> DoS -> Application Events
+
+- You should see a L7DoS attack has been triggered and detected by Source IP TPS
+
+- Repeat same steps, but after re-enabling the X-Forwarded-For header in the browser add-on
+
+- You should be able to trigger an attack, but this time using a Russian source.
+
+With the above steps, you have demonstrated that you can inject PBD challenges for sources 
+from a given geolocation while maintaining all pre-existing protections. We have just used 
+more context to enable more security using an iRule!
+ 

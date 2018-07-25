@@ -1,193 +1,121 @@
-Lab 2- Securing Cookies
-------------------------
+Lab 2 - DNS Hooks: Amplification Attach
+---------------------------------------
 
-Scenario
-~~~~~~~~
-
-The security team has done an application scan and found that the HTTP cookies are being issued unsecured. They have asked the application team to verify that all the cookies get the Security and httpOnly flags set at the application tier. But, the app team is in the middle of a new deployment and can't reallocate resources to rewrite the cookie code.  So, they have asked the F5 team to set the flags on the cookies.
-
-Restraints
-~~~~~~~~~~
-
-The following restraints prevent from implementing this solution:
-
-- The F5 administrators need to know the name of the HTTP Cookie or Cookies that are being used. 
-
-Requirements
-~~~~~~~~~~~~
-
-To meet the business's objectives the iRule must meet the following requirements:
-
-- The iRule must take a HTTP Cookie being sent from the application server and set the Secure flag and the HTTPOnly flag.
-
-- The security team also requires that the HTTP Cookie not be sent to Javascript Agents. 
-
-Lab Requirements:
-~~~~~~~~~~~~~~~~~
-
--  BIG-IP LTM, web server, client browser, and SSL server certificate.
-   If you don’t have certificates to test with, you can use the CA
-   certificate, server certificate and the private key provided in the
-   Client Certificate Inspection lab from Additional Labs section.
-
-The iRule
+Scenario:
 ~~~~~~~~~
 
-.. code-block:: tcl
-   :linenos:
+You have a F5 DNS deployed to service DNS queries for external DNS.  To meet the business requirements, you must allow DNS queries from any DNS resolver.
+Basic DNSSEC has been implemented as part of your GTM deployment.  As your DNS deployment expands for more applications, you experience a DNS Amplification attack.
 
-   when HTTP_RESPONSE {
-       set ckname "mycookie"
-       if { [HTTP::cookie exists $ckname] } {
-           HTTP::cookie secure $ckname enable
-           HTTP::cookie httponly $ckname enable
-       }
+A DNS amplification attack takes advantage of features that allow a very small request to return a much larger response.
+These attacks also rely on the fact that the attacker can request these large responses on behalf of someone else (the victim).
+More specifically, DNS amplification attacks are a popular type of a Distributed Denial of Service (DDoS) attack in which attackers use publicly accessible open DNS resolvers to flood
+a target system with DNS response traffic.  One other key piece to this puzzle is that DNS uses the User Datagram Protocol (UDP) to send requests and responses.
+An attacker floods your DNS system with an "ANY" query that returns all known information about a DNS zone in a single request.
+
+Figure 1:
+~~~~~~~~~
+.. image:: /_static/class2/DNS_Resolver.gif
+   :scale: 50 %
+
+.. image:: /_static/class2/open_DNS_resolver.gif
+   :scale: 50 %
+
+Figure 2:
+~~~~~~~~~
+.. image:: /_static/class2/amplification_attack.gif
+   :scale: 50 %
+Here we see an example of an DNS Amplification attack using an open DNS resolver
+   
+Restraints:
+~~~~~~~~~~~
+
+The following restraints complicate the request from the business to relax the enforced security posture:
+
+- Respond to queries from any source, even open resolvers.
+- Respond to DNS queries over both TCP and UDP.
+
+
+Requirements:
+~~~~~~~~~~~~~
+
+To meet the business’s objectives while maintaining a strong security policy, an iRule solution must meet the following requirements:
+
+- Checks to see if the query type is "ANY" and responds with a truncated message which will force the legitimate client to use TCP.
+- Allows for a flexible and updatable list of networks allowed to do recursive lookups.
+- The only host allowed to do recursive lookups is 10.1.10.20
+
+
+Baseline Testing:
+~~~~~~~~~~~~~~~~~
+Prior to defining a solution, validate the issue by testing that the DNS answers UDP “ANY” requests and that any resolver can do recursive lookups.
+
+The iRule:
+~~~~~~~~~~
+
+UDP VIP iRule
+
+.. code-block:: tcl
+
+   when DNS_REQUEST {
+     if { [DNS::question type] eq "ANY" } {
+        DNS::answer clear
+        DNS::header tc 1
+        DNS::return
+     }
+   }
+   when DNS_RESPONSE {
+     if { [DNS::origin] eq "TCL" } {
+        return
+     } elseif { [DNS::origin] ne "DNSX" } {
+         if { not [class match [IP::client_addr] eq "admin_datagroup" ] } {
+           DNS::drop
+         }
+     }
    }
 
 
-Analysis
+TCP VIP iRule
+
+.. code-block:: tcl
+
+   when DNS_RESPONSE {
+    if { [DNS::origin] ne "DNSX" } {
+      if { not [class match [IP::client_addr] eq "admin_datagroup" ] } {
+         DNS::drop
+      }
+    }
+   }
+
+Rule Details:
+~~~~~~~~~~~~~
+
+UDP VIP iRule
+
+This first part checks if the DNS query type is "ANY" and responds with a truncated header.
+The second part checks to see if the response packet is built from the first logic (origin = TCL).
+If yes, then exit and do not process further.
+If no, then check if the response is from DNS Express. if it is, allow an answer for non "ANY" type.
+If it is not from DNS Express, check to see if it matches the admin_datagroup created for recursive allowed networks.
+If it does not match both conditions, then drop.
+
+
+TCP VIP iRule
+
+
+Simple logic to check and see if the response is from DNS Express or a part of the admin_datagroup.
+If it is not from DNS Express, check to see if it matches the admin_datagroup created for recursive allowed networks.
+If it does not match both conditions, then drop.
+
+Testing:
 ~~~~~~~~
 
-HTTP cookie misuse represents one of the greatest vulnerability vectors
-known to Internet communications. It’s number 2 on the Open Web
-Application Security Project’s (OWASP) Top Ten list as “weak
-authentication and session management”
-(https://www.owasp.org/index.php/OWASP_Top_Ten_Cheat_Sheet), and also
-touches other top ten list items, including XSS, security
-misconfiguration, sensitive data exposure, and cross site request
-forgery. 
-
-So why do we use cookies if they’re so easy to get wrong? Well,
-as it turns out, HTTP as a “stateless” protocol doesn’t provide its own
-session management mechanism. So cookies are basically the best and
-potentially the only way to maintain information about a user session across
-multiple HTTP requests and responses. Too often, however, applications
-employ mixed content (HTTP and HTTPS in the same application), or worse,
-store too much information in that cookie. 
-
-If an HTTP cookie is being used to maintain an authentication application 
-session, it’s always a best practice to encrypt every part of that application. 
-And it is never a best practice to store anything more than an identifier 
-(some seemingly random and unpredictable blob of characters) in a cookie. 
-
-There are two built-in mechanisms defined in RFC 6265 that can help. But first, 
-let’s first understand what an HTTP cookie is. An HTTP cookie is essentially
-an HTTP header that is sent from the server to the client, and then sent
-back to the server in each and every subsequent request. To send a cookie, 
-the server will format the header as given below:
-
-``Set-Cookie: foo=bar; path=/; domain=domain.com; expires=Sat, 02 May 2009 23:38:35 GMT``
-
-where
-
-- ``foo=bar`` represents the mandatory name=value content
-
-- ``path=/`` represents the mandatory path, or scope of the cookie,
-  such that the browser will only return this cookie if the request is
-  in the designated path (in this case the entire website)
-
-- ``domain=`` represents another, albeit optional, scoping mechanism
-  that tells the browser that this cookie can be sent with any request
-  in the same domain or subdomain. Unlike the path attribute which
-  reduces visibility, the domain attribute increases visibility by
-  making the cookie potentially available across multiple subdomains.
-  Be careful with the domain attribute though. This is an often-used
-  way to build single sign-on, where users authenticate at one domain,
-  but are allowed access to other subdomains by virtue of the cookie
-  being available to all. At the very least, if you don’t own every
-  subdomain that this cookie could possibly be sent to, then someone
-  else may get your user’s session cookies.
-
-- ``expires=`` represents an optional attribute that indicates how
-  long the client should retain this cookie. If the expires attribute
-  is not in the Set-Cookie header, then the cookie is considered
-  “session-based” and will generally live for as long as the browser
-  session (ie. closing the browser deletes the cookie). If the expires
-  attribute exists, the cookie is typically stored on disk or other
-  long-term memory that will persist after the browser is closed and a
-  new one is opened. This is, generally speaking, not a best practice
-  from a security perspective. If a cookie is used to maintain some
-  sort of client state information, and the computer itself is
-  compromised, then that state can also be compromised. It is
-  typically far better to not include an expires attribute, thus
-  deleting the cookie when the browser closes. You can, however,
-  delete an existing in-memory session-based cookie by sending a new
-  cookie with the same attributes but with an expires attribute in the
-  past.
-
-Once the cookie has been received, and depending on scope, the client
-will transmit that information back to the server in every request.
-
-``Cookie: foo=bar``
-
-Notice that a request cookie doesn’t have path, domain or expires
-information. This information is meant for the client only, so doesn’t
-need to be relayed back to the server.
-
-Aside from adjusting path and domain attributes accordingly to limit or
-expand visibility, there are two additional scoping attributes that play
-a crucial part in cookie security.
-
-- ``secure`` represents a single (no value) flag that tells the browser
-  client to only transmit this cookie back in a secure (ie. encrypted
-  HTTPS) request. This attribute is critical against attacks like cross
-  site scripting (XSS) or request forgery (CSRF) where a browser may
-  otherwise be tricked into sending session cookies to an unencrypted
-  host. If you’re encrypting the entire application, the secure cookie
-  flag is an excellent option.
+- Send DNS UDP “ANY” queries to the BIG-IP and verify that you receive a truncated response and a subsequent TCP request is initiated.
+-	Attempt to do a recursive lookup from any machine other than 10.1.10.20.
 
 
-- ``httpOnly`` represents a single (no value) flag that tells the
-  browser client to only transmit this cookie back to non-scripted user
-  agents. In other words, if a JavaScript agent makes a request inside the
-  browser, the cookie will not be sent with this request. Many XSS and
-  CSRF exploits rely on the ability to grab session cookies with rogue
-  browser scripting (ex. JavaScript, vbscript, etc.). There are of course
-  instances where a JavaScript agent needs to send the cookie, like in
-  side-channel Ajax requests, but if not, this flag is highly useful.
-
-
-So putting these attributes together might look something like this:
-
-``Set-Cookie: foo=bar; path=/; secure; httponly``
-
-we have removed the **expires** attribute because file-based cookies are
-almost always a bad idea. And we removed the **domain** attribute because
-there are better and more secure ways to do single sign-on. So in this
-example, we are setting a cookie called “foo” with a value of “bar”, that
-is scoped to all paths within this host (path=/), and will only be
-transmitted over HTTPS and only to non-script agents. As I mentioned a
-few times, there’s simply no substitute for a good security product (ie.
-web application firewall, malware scanner, etc.) and no excuse not to
-write secure code, but if you find yourself in a situation where secure
-cookie coding isn’t happening in the application, then here’s a quick
-and easy way to enable it with F5 iRules.
-
-
--  In this very simple iRule, we’re triggering an event on the HTTP
-   response being sent from the application server, looking for the
-   cookie ``mycookie``. If it exists, enables the ``secure`` and
-   ``httpOnly`` flags. This command effectively includes the ``secure``
-   and ``httpOnly`` flags in the ``Set-Cookie`` header being sent to the
-   client.
-
-Testing
+Result:
 ~~~~~~~
-In the BIG-IP, 
 
-- Access HTTPS URL without iRule to see current cookie status.
-
-   ``curl –vk https://www.f5demolabs.com``	
-
-- Attach the iRule to the HTTPS VIP
-
-- Access the HTTPS URL to see the change in the cookie information.
-
-   ``curl -vk https://www.f5demolabs.com``
-
-A word on cookie security – the ``secure`` and ``httpOnly`` flags are
-exceedingly important for the proper and secure use of HTTP cookies, but
-alone they are not perfect. There are still ways to compromise HTTP
-cookies, even with these flags enabled, so do take additional
-precautions which should definitely include a solid web application
-firewall product and malware scanning and intrusion detection products.
+-	The “ANY” query should not be allowed, and a TCP connection should be created.
+-	The recursive lookup should be denied and no data returned.

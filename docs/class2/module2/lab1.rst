@@ -1,94 +1,34 @@
-Lab 1 - HSTS / HPKP
--------------------
-
-HSTS
-~~~~
-As per OWASP and RFC 6797, HTTP Strict Transport Security (HSTS) is an
-opt-in security enhancement that is specified by a web application
-through the use of a special response header. Once a supported browser
-receives this header that browser will prevent any communications from
-being sent over HTTP to the specified domain and will instead send all
-communications over HTTPS. It also prevents HTTPS click-through prompts
-on browsers. In layman’s terms, HSTS is an HTTP header sent from the
-server to the client browser. The information within that header
-indicates to the browser that any communication with that domain must be
-over HTTPS, regardless of any HTTP URL’s encoded into the HTML pages, or
-what the user types into the browser address bar. This information is
-also placed into the browser’s long term storage, so that subsequent
-requests will immediately communicate over HTTPS. The header looks like
-this:
-
-``Strict-Transport Security: max-age=31536000; includeSubDomains``
-
-The max-age attribute defines how long the browser should store this
-information. In this case, it is 1 year. The includeSubDomains attribute is
-optional and indicates that the browser must communicate over HTTPS to
-this and any sub-domain of the current domain. To be most effective,
-this response header should a) only be transmitted over HTTPS in the
-first place to prevent stripping, and b) be transmitted at the lowest
-possible point in the domain to include all sub-domains. For example, to
-cover all sub-domains of domain.com, you might initially redirect a
-client to https://domain.com and then send an immediate redirect back to
-the requested HTTPS URL and include the HSTS header.
-
-HPKP
-~~~~
-As per OWASP and RFC 7469, HTTP Public Key Pinning (HPKP) is a new HTTP
-header that allows SSL servers to declare hashes of their certificates
-with a time scope in which these certificates should not be changed. In
-other words, it is a method by which a server can indicate to a browser
-the certificate that the client browser should see. This technology
-helps to prevent active man-in-the-middle attacks whereby an agent is
-able to silently decrypt and re-encrypt traffic between a client and
-server. Without knowledge of the server’s private key, the agent won’t
-possibly be able to spoof the server’s real certificate. Therefore the
-"forged" certificate coming from the agent will not match the
-certificate embedded in the HPKP header. That header looks like this:
-
-``Public-Key-Pins: max-age=2592000;``
-
-``pin-sha256="E9CZ9INDbd+2eRQozYqqbQ2yXLVKB9+xcprMF+44U1g=";``
-
-``pin-sha256="LPJNul+wow4m6DsqxbninhsWHlwfp0JecwQzYpOLmCQ=";``
-
-``report-uri="http://example.com/pkp-report"``
-
-The header name is ``Public-Key-Pins`` and has a similar max-age attribute
-as HSTS. The header can include multiple encoded certificate hashes
-indicated as the ``pin-sha256`` values. If the incoming certificate does
-not match anyone of these values, a "report-uri" attribute can send the
-browser to a reporting facility to report this error (possible attack).
-To be most effective, this response header should only be transmitted
-over HTTPS to prevent stripping. To create the encoded value for a given
-certificate, use the following OpenSSL commands:
-
-``openssl x509 –in <cert> -pubkey –noout | openssl rsa –pubin –outform der | openssl dgst –sha256 –binary | openssl enc –base64``
-
-.. NOTE:: 
-
-   Prior to BIG-IP LTM version 13.0, HSTS was implemented with an iRule (see below). As of v13, HSTS is simply enabled  
-   within an HTTP profile.
-
-   1. Create an HTTP profile.
-   2. Under the new "HTTP Strict Transport Security" section (bottom), set Mode to enabled (checked), set a maximum age in seconds and 
-      check the "Include Subdomains" option if you want the HSTS header to be sent for subdomains of this URL. 
-   
-   3. The Preload option is used by browser vendors to hard code this information into future browser updates. You must separately 
-      submit the URL to the vendors' preload lists. They will check that the preload option is set before hard coding your URL.
-   
-   A word of warning: once browser vendors hard code this URL into new versions, it is practically impossible to remove it, so make sure this is exactly what you want and that no "mixed" content (HTTP and HTTPS) exists for this URL.
+Lab 1 - Securing Cookies
+------------------------
 
 Scenario
-~~~~~~~~~
-In this lab exercise, we demonstrate how to deploy both the HSTS and HPKP using an iRule.
+~~~~~~~~
+
+The security team has done an application scan and found that the HTTP cookies are being issued unsecured. They have asked the application team to verify that all the cookies get the Security and httpOnly flags set at the application tier. But, the app team is in the middle of a new deployment and can't reallocate resources to rewrite the cookie code.  So, they have asked the F5 team to set the flags on the cookies.
+
+Restraints
+~~~~~~~~~~
+
+The following restraints prevent from implementing this solution:
+
+- The F5 administrators need to know the name of the HTTP Cookie or Cookies that are being used. 
 
 Requirements
 ~~~~~~~~~~~~
 
--  BIG-IP LTM, web server, client browser, and a SSL server certificate.
+To meet the business's objectives the iRule must meet the following requirements:
+
+- The iRule must take a HTTP Cookie being sent from the application server and set the Secure flag and the HTTPOnly flag.
+
+- The security team also requires that the HTTP Cookie not be sent to Javascript Agents. 
+
+Lab Requirements:
+~~~~~~~~~~~~~~~~~
+
+-  BIG-IP LTM, web server, client browser, and SSL server certificate.
    If you don’t have certificates to test with, you can use the CA
-   certificate, server certificate, and the private key provided in the
-   the Client Certificate Inspection lab from Additional labs section.
+   certificate, server certificate and the private key provided in the
+   Client Certificate Inspection lab from Additional Labs section.
 
 The iRule
 ~~~~~~~~~
@@ -96,56 +36,158 @@ The iRule
 .. code-block:: tcl
    :linenos:
 
-   when RULE_INIT {
-       set static::fqdn_pin1 "X3pGTSOuJeEVw989IJ/cEtXUEmy52zs1TZQrU06KUKg="
-
-       # Set max_age to 180 days
-       set static::max_age 15552000
-   }
    when HTTP_RESPONSE {
-       # Insert an HSTS header
-       HTTP::header insert Strict-Transport-Security "max-age=$static::max_age; includeSubDomains"
-       # Insert an HPKP header
-       HTTP::header insert Public-Key-Pins "pin-sha256=\"$static::fqdn_pin1\" max-age=$static::max_age; includeSubDomains"
+       set ckname "mycookie"
+       if { [HTTP::cookie exists $ckname] } {
+           HTTP::cookie secure $ckname enable
+           HTTP::cookie httponly $ckname enable
+       }
    }
 
 
 Analysis
 ~~~~~~~~
 
--  The above iRule example will perform two functions. Upon receipt of
-   the HSTS header, any attempt to communicate with that VIP again will
-   only use HTTPS. With the injection of the HPKP header, if the
-   certificate (CA or server certificate) does not match the one
-   provided in the SSL handshake, the browser will either end the
-   connection and potentially follow a report-uri URL if it exists.
+HTTP cookie misuse represents one of the greatest vulnerability vectors
+known to Internet communications. It’s number 2 on the Open Web
+Application Security Project’s (OWASP) Top Ten list as “weak
+authentication and session management”
+(https://www.owasp.org/index.php/OWASP_Top_Ten_Cheat_Sheet), and also
+touches other top ten list items, including XSS, security
+misconfiguration, sensitive data exposure, and cross site request
+forgery. 
+
+So why do we use cookies if they’re so easy to get wrong? Well,
+as it turns out, HTTP as a “stateless” protocol doesn’t provide its own
+session management mechanism. So cookies are basically the best and
+potentially the only way to maintain information about a user session across
+multiple HTTP requests and responses. Too often, however, applications
+employ mixed content (HTTP and HTTPS in the same application), or worse,
+store too much information in that cookie. 
+
+If an HTTP cookie is being used to maintain an authentication application 
+session, it’s always a best practice to encrypt every part of that application. 
+And it is never a best practice to store anything more than an identifier 
+(some seemingly random and unpredictable blob of characters) in a cookie. 
+
+There are two built-in mechanisms defined in RFC 6265 that can help. But first, 
+let’s first understand what an HTTP cookie is. An HTTP cookie is essentially
+an HTTP header that is sent from the server to the client, and then sent
+back to the server in each and every subsequent request. To send a cookie, 
+the server will format the header as given below:
+
+``Set-Cookie: foo=bar; path=/; domain=domain.com; expires=Sat, 02 May 2009 23:38:35 GMT``
+
+where
+
+- ``foo=bar`` represents the mandatory name=value content
+
+- ``path=/`` represents the mandatory path, or scope of the cookie,
+  such that the browser will only return this cookie if the request is
+  in the designated path (in this case the entire website)
+
+- ``domain=`` represents another, albeit optional, scoping mechanism
+  that tells the browser that this cookie can be sent with any request
+  in the same domain or subdomain. Unlike the path attribute which
+  reduces visibility, the domain attribute increases visibility by
+  making the cookie potentially available across multiple subdomains.
+  Be careful with the domain attribute though. This is an often-used
+  way to build single sign-on, where users authenticate at one domain,
+  but are allowed access to other subdomains by virtue of the cookie
+  being available to all. At the very least, if you don’t own every
+  subdomain that this cookie could possibly be sent to, then someone
+  else may get your user’s session cookies.
+
+- ``expires=`` represents an optional attribute that indicates how
+  long the client should retain this cookie. If the expires attribute
+  is not in the Set-Cookie header, then the cookie is considered
+  “session-based” and will generally live for as long as the browser
+  session (ie. closing the browser deletes the cookie). If the expires
+  attribute exists, the cookie is typically stored on disk or other
+  long-term memory that will persist after the browser is closed and a
+  new one is opened. This is, generally speaking, not a best practice
+  from a security perspective. If a cookie is used to maintain some
+  sort of client state information, and the computer itself is
+  compromised, then that state can also be compromised. It is
+  typically far better to not include an expires attribute, thus
+  deleting the cookie when the browser closes. You can, however,
+  delete an existing in-memory session-based cookie by sending a new
+  cookie with the same attributes but with an expires attribute in the
+  past.
+
+Once the cookie has been received, and depending on scope, the client
+will transmit that information back to the server in every request.
+
+``Cookie: foo=bar``
+
+Notice that a request cookie doesn’t have path, domain or expires
+information. This information is meant for the client only, so doesn’t
+need to be relayed back to the server.
+
+Aside from adjusting path and domain attributes accordingly to limit or
+expand visibility, there are two additional scoping attributes that play
+a crucial part in cookie security.
+
+- ``secure`` represents a single (no value) flag that tells the browser
+  client to only transmit this cookie back in a secure (ie. encrypted
+  HTTPS) request. This attribute is critical against attacks like cross
+  site scripting (XSS) or request forgery (CSRF) where a browser may
+  otherwise be tricked into sending session cookies to an unencrypted
+  host. If you’re encrypting the entire application, the secure cookie
+  flag is an excellent option.
+
+
+- ``httpOnly`` represents a single (no value) flag that tells the
+  browser client to only transmit this cookie back to non-scripted user
+  agents. In other words, if a JavaScript agent makes a request inside the
+  browser, the cookie will not be sent with this request. Many XSS and
+  CSRF exploits rely on the ability to grab session cookies with rogue
+  browser scripting (ex. JavaScript, vbscript, etc.). There are of course
+  instances where a JavaScript agent needs to send the cookie, like in
+  side-channel Ajax requests, but if not, this flag is highly useful.
+
+
+So putting these attributes together might look something like this:
+
+``Set-Cookie: foo=bar; path=/; secure; httponly``
+
+we have removed the **expires** attribute because file-based cookies are
+almost always a bad idea. And we removed the **domain** attribute because
+there are better and more secure ways to do single sign-on. So in this
+example, we are setting a cookie called “foo” with a value of “bar”, that
+is scoped to all paths within this host (path=/), and will only be
+transmitted over HTTPS and only to non-script agents. As I mentioned a
+few times, there’s simply no substitute for a good security product (ie.
+web application firewall, malware scanner, etc.) and no excuse not to
+write secure code, but if you find yourself in a situation where secure
+cookie coding isn’t happening in the application, then here’s a quick
+and easy way to enable it with F5 iRules.
+
+
+-  In this very simple iRule, we’re triggering an event on the HTTP
+   response being sent from the application server, looking for the
+   cookie ``mycookie``. If it exists, enables the ``secure`` and
+   ``httpOnly`` flags. This command effectively includes the ``secure``
+   and ``httpOnly`` flags in the ``Set-Cookie`` header being sent to the
+   client.
 
 Testing
 ~~~~~~~
+In the BIG-IP, 
 
-- Apply this iRule to an HTTPS virtual server (VIP).
-- Repeatedly navigate to the HTTP URL http://www.f5test.local to 
-   verify that you are indeed talking to the HTTP VIP.
+- Access HTTPS URL without iRule to see current cookie status.
 
-- Navigate to the HTTPS URL https://www.f5test.local one time to
-   verify that you can access it.
+   ``curl –vk https://www.f5demolabs.com``	
 
-- Now attempt to go to the HTTP URL http://www.f5test.local again.
-   Depending on the browser it should immediately go to the HTTPS URL.
+- Attach the iRule to the HTTPS VIP
 
-- If you’re using a Chrome browser, you can navigate to
-   ``chrome://net-internals/#hsts`` to see this URL value now added to
-   Chrome's HSTS list.  Under Query Domain, enter ``www.f5test.local`` to 
-   Domain: entry box and click Query.  ``Be sure to delete domain before
-   moving on or else you will have an issue with a later lab.``
+- Access the HTTPS URL to see the change in the cookie information.
 
-- Unfortunately, unless you’re using a server certificate that chains
-   up to a public root, you won’t be able to test HPKP here. Per the
-   Mozilla Developer Network, "Firefox (and Chrome) disable Pin
-   Validation for Pinned Hosts whose validated certificate chain
-   terminates at a user-defined trust anchor (rather than a built-in
-   trust anchor). This means that for users who imported custom root
-   certificates all pinning violations are ignored."
-   
-.. HINT:: You can still use Chrome Developer Tools to see the HPKP header.    
+   ``curl -vk https://www.f5demolabs.com``
 
+A word on cookie security – the ``secure`` and ``httpOnly`` flags are
+exceedingly important for the proper and secure use of HTTP cookies, but
+alone they are not perfect. There are still ways to compromise HTTP
+cookies, even with these flags enabled, so do take additional
+precautions which should definitely include a solid web application
+firewall product and malware scanning and intrusion detection products.
