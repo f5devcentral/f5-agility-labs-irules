@@ -4,7 +4,12 @@ Lab 3 - HTTP Throttling
 Scenario:
 ~~~~~~~~~
 
-Your company has setup a new web application and did not have the time to develop an ASM policy.  Due to your companies profile, several bad actors have threatened to attack using SlowLoris and SlowPost attacks to create a denial of service.  Although ASM can handle this very easily and would be the best tool to use, we don't have the resources available to test implementing the policy.  In this lab, we are going to use an iRule that throttles the number of requests coming into the application.
+Your company has setup a new web application and did not have the time to develop an ASM 
+policy. Due to your companies profile, several bad actors have threatened to attack using 
+SlowLoris and SlowPost attacks to create a denial of service.  Although ASM can handle 
+this very easily and would be the best tool to use, we don't have the resources available 
+to test implementing the policy.  In this lab, we are going to use an iRule that throttles 
+the number of requests coming into the application.
 
 Restraints:
 ~~~~~~~~~~~
@@ -85,7 +90,6 @@ The iRule
    }
 
 
-Apply this iRule to an HTTP virtual server (VIP).
 
 Analysis
 ~~~~~~~~
@@ -121,19 +125,19 @@ of that script.  We have already put the script on the jumpbox and instructions 
       curl http://www.f5demolabs.com --write-out "%{http_code}\n" --silent -o /dev/null
    done
    
-#. Under Cygwin Terminal, cd to scripts directory and run ``bash http_trottling``.
-#. Notice that you are getting 200 responses from each request.  We will now add the iRule to the VIP.
-#. Login to Bigip01 from Chrome browser.
-#. Go to Local->Virtual Servers and select the generic-app-http virtual server.
-#. Select the resources tab and select Manage for iRules.
-#. Select the sec_http_throttling irule and move it into Enabled.
-#. Select Finished.
-#. To view logging information on the F5 BIG-IP follow these instruction:
-#. Modify the iRule on the F5 to uncomment the line that states:
+- In Terminal, cd to scripts directory and run ``bash http_trottling``.
+- Notice that you are getting 200 responses from each request.  We will now add the iRule to the VIP.
+- Login to Bigip01 from Chrome browser.
+- Go to Local->Virtual Servers and select the generic-app-http virtual server.
+- Select the resources tab and select Manage for iRules.
+- Select the sec_http_throttling irule and move it into Enabled.
+- Select Finished.
+- To view logging information on the F5 BIG-IP follow these instruction:
+- Modify the iRule on the F5 to uncomment the line that states:
     ``log local0. "Request Count for $client_IP_addr is $getcount"``
-#. Click on Update on the iRule.
-#. Open putty and connect to Bigip01.
-#. Run a tail of the BIG-IP LTM log from command line as follows:
+- Click on Update on the iRule.
+- Open putty and connect to Bigip01.
+- Run a tail of the BIG-IP LTM log from command line as follows:
 
    ``tail –f /var/log/ltm``
 
