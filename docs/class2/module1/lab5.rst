@@ -31,6 +31,21 @@ cover all sub-domains of domain.com, you might initially redirect a
 client to https://domain.com and then send an immediate redirect back to
 the requested HTTPS URL and include the HSTS header.
 
+.. NOTE:: 
+
+   Prior to BIG-IP LTM version 13.0, HSTS was implemented with an iRule (see below). As of v13, HSTS is simply enabled  
+   within an HTTP profile.
+
+   1. Create an HTTP profile.
+   2. Under the new "HTTP Strict Transport Security" section (bottom), set Mode to enabled (checked), set a maximum age in seconds and 
+      check the "Include Subdomains" option if you want the HSTS header to be sent for subdomains of this URL. 
+   
+   3. The Preload option is used by browser vendors to hard code this information into future browser updates. You must separately 
+      submit the URL to the vendors' preload lists. They will check that the preload option is set before hard coding your URL.
+   
+   A word of warning: once browser vendors hard code this URL into new versions, it is practically impossible to remove it, so make sure this is exactly what you want and that no "mixed" content (HTTP and HTTPS) exists for this URL.
+
+
 HPKP
 ~~~~
 As per OWASP and RFC 7469, HTTP Public Key Pinning (HPKP) is a new HTTP
@@ -64,19 +79,6 @@ certificate, use the following OpenSSL commands:
 
 ``openssl x509 –in <cert> -pubkey –noout | openssl rsa –pubin –outform der | openssl dgst –sha256 –binary | openssl enc –base64``
 
-.. NOTE:: 
-
-   Prior to BIG-IP LTM version 13.0, HSTS was implemented with an iRule (see below). As of v13, HSTS is simply enabled  
-   within an HTTP profile.
-
-   1. Create an HTTP profile.
-   2. Under the new "HTTP Strict Transport Security" section (bottom), set Mode to enabled (checked), set a maximum age in seconds and 
-      check the "Include Subdomains" option if you want the HSTS header to be sent for subdomains of this URL. 
-   
-   3. The Preload option is used by browser vendors to hard code this information into future browser updates. You must separately 
-      submit the URL to the vendors' preload lists. They will check that the preload option is set before hard coding your URL.
-   
-   A word of warning: once browser vendors hard code this URL into new versions, it is practically impossible to remove it, so make sure this is exactly what you want and that no "mixed" content (HTTP and HTTPS) exists for this URL.
 
 Scenario
 ~~~~~~~~~
@@ -124,18 +126,18 @@ Testing
 ~~~~~~~
 
 - Apply this iRule to an HTTPS virtual server (VIP).
-- Repeatedly navigate to the HTTP URL http://www.f5test.local to 
+- Repeatedly navigate to the HTTP URL http://www.f5demolabs.com to 
    verify that you are indeed talking to the HTTP VIP.
 
-- Navigate to the HTTPS URL https://www.f5test.local one time to
+- Navigate to the HTTPS URL https://www.f5demolabs.com one time to
    verify that you can access it.
 
-- Now attempt to go to the HTTP URL http://www.f5test.local again.
+- Now attempt to go to the HTTP URL http://www.f5demolabs.com again.
    Depending on the browser it should immediately go to the HTTPS URL.
 
 - If you’re using a Chrome browser, you can navigate to
    ``chrome://net-internals/#hsts`` to see this URL value now added to
-   Chrome's HSTS list.  Under Query Domain, enter ``www.f5test.local`` to 
+   Chrome's HSTS list.  Under Query Domain, enter ``www.f5demolabs.com`` to 
    Domain: entry box and click Query.  ``Be sure to delete domain before
    moving on or else you will have an issue with a later lab.``
 
