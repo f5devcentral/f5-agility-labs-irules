@@ -93,7 +93,7 @@ Testing
 
    ``openssl s_client -connect www.f5demolabs.com:443 <cipher>``
 
-   where cipher options could include {-ssl3, -tls1, -tls1_1, -tls1_2}
+   where cipher options could include {-tls1, -tls1_1, -tls1_2}
    to simulate different connections.
 
 Here’s an example output:
@@ -101,7 +101,6 @@ Here’s an example output:
    .. code-block:: console
 
       [ ltm.virtual=/Common/stdsslvip ][TLSv1.1] = 54 (2015-09-01 13:52:20)
-      [ ltm.virtual=/Common/stdsslvip ][SSLv3] = 21 (2015-09-01 13:52:20)
       [ ltm.virtual=/Common/stdsslvip ][TLSv1.2] = 282 (2015-09-01 13:52:20)
       [ ltm.virtual=/Common/stdsslvip ][TLSv1] = 32 (2015-09-01 13:52:20)
 
@@ -131,7 +130,7 @@ for anything less than TLSv1.1.
 
 .. HINT:: 
    #. Change client ssl cipher from ``DEFAULT`` to ``DEFAULT:SSLv3``
-   #. Use ``openssl s_client -connect www.f5demolabs.com:443 -ssl3`` to connect
+   #. Use ``openssl s_client -connect www.f5demolabs.com:443 -tls1`` to connect
    #. Move bonus version of irule, sec_irules_tls_version_control_2, to the selected list of iRules on the generic-app HTTPS virtual server
    
 .. NOTE:: 
