@@ -49,7 +49,9 @@ To meet the business’s objectives while maintaining a strong security policy, 
 
 Baseline Testing:
 ~~~~~~~~~~~~~~~~~
+
 Prior to defining a solution, validate the current behavior:
+
 - RDP to lab jump station
 - From the BIG-IP, Select Local Traffic >> Virtual Servers >> Statistics.  Reset the statistics for all the virtual servers.
 - Open Terminal application
@@ -59,10 +61,9 @@ Prior to defining a solution, validate the current behavior:
     
      f5student@xjumpbox~$ dig f5.com @10.1.10.153 ANY +noall +comments
 
-You should get an answer from the BIG-IP functioning as our open resolver that looks below, and most significantly is missing any notes about truncation:
+You should get an answer from the BIG-IP functioning as our open resolver that looks similar to below image, and most significantly is missing any notes about truncation:
 
   .. image:: /_static/class2/dig_notrunc.png
-     :scale: 50 %
 
 - From Terminal run the following command against the open resolver (F5 DNS)
 
@@ -78,7 +79,7 @@ The resolver will recursively query the f5.com domain name, and return all recor
       
      f5student@xjumpbox~$ dig f5.com @10.1.10.153 
 
-Again, the resolver will recursively query for the A records from f5.com.  Again, take a look at the MSG SIZE field.  The ANY response from f5.com was ~6X the size of the A query.  Now, imagine if the attacker sent a query to a bogus domain which they have populated with thousands of bogus records.  
+Again, the resolver will recursively query for the A records from f5.com.  Take a look at the MSG SIZE field.  The ANY response from f5.com was ~6X the size of the A query.  Now, imagine if the attacker sent a query to a bogus domain which they have populated with thousands of bogus records.  
 
 - From the Terminal run the following command against the open resolver (F5 DNS)
 
@@ -90,7 +91,7 @@ Again, the resolver will recursively query for the A records from f5.com.  Again
 
 .. TIP:: 
 
-   In this lab, we have DNS Express zones defined, f5demolabs.com and badf5demolabs.com.  The above queries validate we are able to resolve names from f5demolabs.com DNSX zone.
+   In this lab, we have two DNS Express zones defined, f5demolabs.com and badf5demolabs.com.  The above queries validate we are able to resolve names from f5demolabs.com DNSX zone.
 
 - From the BIG-IP, Select Local Traffic >> Virtual Servers >> Statistics.  Check statistics on the ``sec_irules_dns_udp`` and ``sec_irules_dns_tcp`` virtual servers.  At this point, we are forcing any traffic to TCP listener, so all traffic should be hitting the udp virtual server.
 
@@ -193,7 +194,6 @@ Testing:
 You should get an answer from the BIG-IP functioning as our open resolver that looks below, this time you should see the DNS response has been truncated forcing the client to retry using TCP.
 
   .. image:: /_static/class2/dig_trunc.png
-     :scale: 50 %
 
 - Navigate to Local Traffic -> Virtual Servers -> Virtual Server List -> ``sec_irules_dns_tcp``
 - Click the Resources tab, then the Manage button to the right of the iRules section header
