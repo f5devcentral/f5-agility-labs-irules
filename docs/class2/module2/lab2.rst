@@ -62,7 +62,7 @@ Prior to defining a solution, validate the current behavior:
 You should get an answer from the BIG-IP functioning as our open resolver that looks below, and most significantly is missing any notes about truncation:
 
   .. image:: /_static/class2/dig_notrunc.png
-   :scale: 50 %
+     :scale: 50 %
 
 - From Terminal run the following command against the open resolver (F5 DNS)
 
@@ -193,7 +193,7 @@ Testing:
 You should get an answer from the BIG-IP functioning as our open resolver that looks below, this time you should see the DNS response has been truncated forcing the client to retry using TCP.
 
   .. image:: /_static/class2/dig_trunc.png
-   :scale: 50 %
+     :scale: 50 %
 
 - Navigate to Local Traffic -> Virtual Servers -> Virtual Server List -> ``sec_irules_dns_tcp``
 - Click the Resources tab, then the Manage button to the right of the iRules section header
