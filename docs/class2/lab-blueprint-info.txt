@@ -1,6 +1,6 @@
-Current Blueprint URL: https://cloud.ravellosystems.com/#/0/library/blueprints/3125670119031/canvas
-Current Blueprint Name: irules-security-07-26_16:30
-Current Blueprint ID: 3125670119031
+Current Blueprint URL: https://cloud.ravellosystems.com/#/0/library/blueprints/3125670248992/canvas
+Current Blueprint Name: irules-security-07-29_22:01 
+Current Blueprint ID: 3125670248992 
 
 Naming Standard: irules-security-<MONTH>-<DAY>_<MILITARY TIME HR:MIN>
 
