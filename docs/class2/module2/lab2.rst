@@ -57,6 +57,7 @@ Prior to defining a solution, validate the current behavior:
 - Open Terminal application
 - From Terminal run the following command against the open resolver (F5 DNS)
  
+
   .. code-block:: console
     
      f5student@xjumpbox~$ dig f5.com @10.1.10.153 ANY +noall +comments
@@ -176,6 +177,7 @@ TCP VIP iRule
 Simple logic to check and see if the response is from DNS Express or a part of the admin_datagroup.
 If it is not from DNS Express, check to see if it matches the admin_datagroup created for recursive allowed networks.
 If it does not match both conditions, then drop.
+
 
 Testing:
 ~~~~~~~~
