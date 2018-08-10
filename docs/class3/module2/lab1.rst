@@ -1,5 +1,5 @@
-NPM and Exception Handling
---------------------------
+Lab 1 - NPM and Exception Handling
+----------------------------------
 
 Test and Review the Existing Configuration
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

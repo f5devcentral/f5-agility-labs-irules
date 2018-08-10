@@ -1,77 +1,34 @@
-Lab 3 - HSTS / HPKP
--------------------
+Lab 3 - HTTP Throttling
+-----------------------
 
-Per OWASP and RFC 6797, HTTP Strict Transport Security (HSTS) is an
-opt-in security enhancement that is specified by a web application
-through the use of a special response header. Once a supported browser
-receives this header that browser will prevent any communications from
-being sent over HTTP to the specified domain and will instead send all
-communications over HTTPS. It also prevents HTTPS click-through prompts
-on browsers. In layman’s terms, HSTS is an HTTP header sent from the
-server to the client browser. The information within that header
-indicates to the browser that any communication with that domain must be
-over HTTPS, regardless of any HTTP URL’s encoded into the HTML pages, or
-what the user types into the browser address bar. This information is
-also placed into the browser’s long term storage, so that subsequent
-requests will immediately communicate over HTTPS. The header looks like
-this:
+Scenario:
+~~~~~~~~~
 
-``Strict-Transport Security: max-age=31536000; includeSubDomains``
+Your company has setup a new web application and did not have the time to develop an ASM 
+policy. Due to your companies profile, several bad actors have threatened to attack using 
+SlowLoris and SlowPost attacks to create a denial of service.  Although ASM can handle 
+this very easily and would be the best tool to use, we don't have the resources available 
+to test implementing the policy.  In this lab, we are going to use an iRule that throttles 
+the number of requests coming into the application.
 
-The max-age attribute defines how long the browser should store this
-information, in this case 1 year. The includeSubDomains attribute is
-optional and indicates that the browser must communicate over HTTPS to
-this and any sub-domain of the current domain. To be most effective,
-this response header should a) only be transmitted over HTTPS in the
-first place to prevent stripping, and b) be transmitted at the lowest
-possible point in the domain to include all sub-domains. For example, to
-cover all sub-domains of domain.com, you might initially redirect a
-client to https://domain.com and then send an immediate redirect back to
-the requested HTTPS URL and include the HSTS header.
+Restraints:
+~~~~~~~~~~~
 
-Per OWASP and RFC 7469, HTTP Public Key Pinning (HPKP) is a new HTTP
-header that allows SSL servers to declare hashes of their certificates
-with time scope in which these certificates should not be changes. In
-other words, it is a method by which a server can indicate to a browser
-the certificate that the client browser should see. This technology
-helps to prevent active man-in-the-middle attacks whereby an agent is
-able to silently decrypt and re-encrypt traffic between a client and
-server. Without knowledge of the server’s private key, the agent won’t
-possibly be able to spoof the server’s real certificate, therefore the
-"forged" certificate coming from the agent will not match the
-certificate embedded in the HPKP header. That header looks like this:
+The following restraints complicate the request to implement the throttling of HTTP requests:
 
-``Public-Key-Pins: max-age=2592000;``
+-  You need to understand the number of the requests that would be coming from a single IP address.
 
-``pin-sha256="E9CZ9INDbd+2eRQozYqqbQ2yXLVKB9+xcprMF+44U1g=";``
+-  Some requests may be coming from companies using a single proxy IP address to make the request.  Throttling those requests to only 10 per 10 seconds could impact the ability of a partner company to access the site.  
 
-``pin-sha256="LPJNul+wow4m6DsqxbninhsWHlwfp0JecwQzYpOLmCQ=";``
+Requirements:
+~~~~~~~~~~~~~
 
-``report-uri="http://example.com/pkp-report"``
+To meet the business's objectives the iRule must meet the following requirements:
 
-The header name is ``Public-Key-Pins`` and has a similar max-age attribute
-as HSTS. The header can include multiple encoded certificate hashes
-indicated as the ``pin-sha256`` values. If the incoming certificate does
-not match one of these values, a "report-uri" attribute can send the
-browser to a reporting facility to report this error (possible attack).
-To be most effective, this response header should only be transmitted
-over HTTPS to prevent stripping. To create the encoded value for a given
-certificate, use the following OpenSSL commands:
+-  The rule must keep a single client from making too many HTTP requests to a single VIP thus stopping a SlowLoris or SlowPost attack.
 
-``openssl x509 –in <cert> -pubkey –noout | openssl rsa –pubin –outform der | openssl dgst –sha256 –binary | openssl enc –base64``
-
-The following iRule demonstrates how to deploy both HSTS and HPKP.
-
-Objectives:
-
--  Deploy and test the example HSTS/HPKP iRule code
-
-Lab Requirements:
-
--  BIG-IP LTM, web server, client browser, and SSL server certificate.
-   If you don’t have certificates to test with, you can use the CA
-   certificate and server certificate and private key provided in the
-   previous lab
+-  The rule should be able to adjust to the multiple customers coming through a proxy IP address.
+ 
 
 The iRule
 ~~~~~~~~~
@@ -80,55 +37,180 @@ The iRule
    :linenos:
 
    when RULE_INIT {
-       set static::fqdn_pin1 "X3pGTSOuJeEVw989IJ/cEtXUEmy52zs1TZQrU06KUKg="
+      # This defines the maximum requests to be served within the timing interval defined by the static::timeout variable below.
+      set static::maxReqs 4;
 
-       # Set max_age to 180 days
-       set static::max_age 15552000
-   }
-   when HTTP_RESPONSE {
-       # Insert an HSTS header
-       HTTP::header insert Strict-Transport-Security "max-age=$static::max_age; includeSubDomains"
-       # Insert an HPKP header
-       HTTP::header insert Public-Key-Pins "pin-sha256=\"$static::fqdn_pin1\" max-age=$static::max_age; includeSubDomains"
+      # Timer Interval in seconds within which only static::maxReqs Requests are allowed.
+      # (i.e: 10 req per 2 sec == 5 req per sec)
+      # If this timer expires, it means that the limit was not reached for this interval and the request
+      # counting starts over.
+      # Making this timeout large increases memory usage.  Making it too small negatively affects performance.
+      set static::timeout 30;
    }
 
-Apply this iRule to an HTTPS virtual server (VIP).
+   when HTTP_REQUEST {
+     # The iRule allows throttling for only sepecific Methods.  You list the Methods_to_throttle
+     # in a datagroup.  URIs_to_throttle or Methods_to_throttle.
+     # if you need to throttle by URI use an statement like this:
+     #                               if { [class match [HTTP::uri] equals URIs_to_throttle] }
+     # Note: a URI is everything after the hostname: e.g. /path1/login.aspx?name=user1
+     #
+
+     if { [class match [HTTP::method] equals Methods_to_throttle] } {
+
+        # The following expects the IP addresses in multiple X-forwarded-for headers.  It picks the first one.
+        if { [HTTP::header exists X-forwarded-for] } {
+           set client_IP_addr [getfield [lindex  [HTTP::header values X-Forwarded-For]  0] "," 1]
+        } else {
+           set client_IP_addr [IP::client_addr]
+        }
+        # The matching below expects a datagroup named: Throttling_Whitelist_IPs
+        # The Condition of the if statement is true if the IP address is NOT in the whitelist.
+        if { not ([class match $client_IP_addr equals Throttling_Whitelist_IPs ] )} {
+            set getcount [table lookup -notouch $client_IP_addr]
+            if { $getcount equals "" } {
+                table set $client_IP_addr "1" $static::timeout $static::timeout
+                # record of this session does not exist, starting new record, request is allowed.
+             } else {
+                   if { $getcount < $static::maxReqs } {
+                       log local0. "Request Count for $client_IP_addr is $getcount"
+                       table incr -notouch $client_IP_addr
+                       # record of this session exists but request is allowed.
+                   } else {
+                        HTTP::respond 403 content {
+                             <html>
+                             <head><title>HTTP Request denied</title></head>
+                             <body>Your HTTP requests are being throttled.</body>
+                             </html>
+                        }
+                   }
+            }
+         }
+      }
+   }
+
+
 
 Analysis
 ~~~~~~~~
 
--  The above iRule example will perform two functions. Upon receipt of
-   the HSTS header, any attempt to communicate with that VIP again will
-   only use HTTPS. With the injection of the HPKP header, if the
-   certificate (CA or server certificate) does not match the one
-   provided in the SSL handshake, the browser will either end the
-   connection and potentially follow a report-uri URL if it exists.
+-  Notice that RULE\_INIT sets up a set of variables that respectively
+   define the maximum rate of requests and a timeout value. Alter these values according
+   to your local preferences.
+
+-  The iRule creates an internal table for each client source address,
+   and an entry for each request is added to this table.
+
+-  As each new request arrives, the iRule counts the number of entries
+   in the respective table. If the count doesn’t exceed the maxRate
+   threshold, a new entry is created and the request is allowed through.
+
+-  If the request exceeds the maxRate threshold, the iRule returns an
+   HTTP error response to the client.
+
 
 Testing
 ~~~~~~~
 
-#. Repeatedly navigate to the HTTP URL http://www.f5test.local to 
-   verify that you are indeed talking to the HTTP VIP.
+A very simple way to test this iRule implementation is with a cURL
+script from the Terminal command line. Here’s a Bash representation
+of that script.  We have already put the script on the jumpbox and instructions follow the sameple code below.
 
-#. Navigate to the HTTPS URL https://www.f5test.local one time to
-   verify that you can access it.
+.. code-block:: console
+   :linenos:
 
-#. Now attempt to go to the HTTP URL http://www.f5test.local again.
-   Depending on the browser it should immediately go to the HTTPS URL.
-
-#. If you’re using a Chrome browser, you can navigate to
-   ``chrome://net-internals/#hsts`` to see this URL value now added to
-   Chrome's HSTS list.  Under Query Domain, enter ``www.f5test.local`` to 
-   Domain: entry box and click Query.  ``Be sure to delete domain before
-   moving on or else you will have an issue with a later lab.``
-
-#. Unfortunately, unless you’re using a server certificate that chains
-   up to a public root, you won’t be able to test HPKP here. Per the
-   Mozilla Developer Network, "Firefox (and Chrome) disable Pin
-   Validation for Pinned Hosts whose validated certificate chain
-   terminates at a user-defined trust anchor (rather than a built-in
-   trust anchor). This means that for users who imported custom root
-   certificates all pinning violations are ignored."
+   #!/bin/bash
+   while [ 1 ]
+   do
+      curl http://www.f5demolabs.com --write-out "%{http_code}\n" --silent -o /dev/null
+   done
    
-.. HINT:: You can still use Chrome Developer Tools to see the HPKP header.    
+- In Terminal, cd to scripts directory and run ``bash http_trottling``.
+- Notice that you are getting 200 responses from each request.  We will now add the iRule to the VIP.
+- Login to Bigip01 from Chrome browser.
+- Go to Local->Virtual Servers and select the generic-app-http virtual server.
+- Select the resources tab and select Manage for iRules.
+- Select the sec_http_throttling irule and move it into Enabled.
+- Select Finished.
+- To view logging information on the F5 BIG-IP follow these instruction:
+- Modify the iRule on the F5 to uncomment the line that states:
+    ``log local0. "Request Count for $client_IP_addr is $getcount"``
+- Click on Update on the iRule.
+- Open putty and connect to Bigip01.
+- Run a tail of the BIG-IP LTM log from command line as follows:
 
+   ``tail –f /var/log/ltm``
+
+The script will make repeated HTTP GET requests. When it exceeds the
+threshold the iRule will generate a 403 error response and prevent
+access to the web server until the **timeout** static variable time
+is reached. 
+
+- Use the CTRL-C keyboard combination to stop the script.
+
+Bonus version
+~~~~~~~~~~~~~
+
+The above iRule presents an extremely simple approach to HTTP
+request throttling and is based solely on client source address. The
+following bonus example extends that functionality to allow for
+throttling of specific URLs.
+
+.. code-block:: tcl
+   :linenos:
+
+   when RULE_INIT {
+       # The max requests served within the timing interval per the static::timeout variable
+       set static::maxReqs 4
+       # Timer Interval in seconds within which only static::maxReqs Requests are allowed.  
+       # (i.e: 10 req per 2 sec == 5 req per sec) 
+       # If this timer expires, it means that the limit was not reached for this interval and    
+       # the request counting starts over. Making this timeout large increases memory usage.   
+       # Making it too small negatively affects performance.  
+       set static::timeout 2
+   }
+   when HTTP_REQUEST {
+       # Allows throttling for only specific URIs. List the URIs_to_throttle in a data group. 
+       # Note: a URI is everything after the hostname: e.g. /path1/login.aspx?name=user1
+       if { [class match [HTTP::uri] equals URIs_to_throttle] } {
+           # The following expects the IP addresses in multiple X-forwarded-for headers. 
+           # It picks the first one. If XFF isn’t defined it can grab the true source IP.
+           if { [HTTP::header exists X-forwarded-for] } {
+               set cIP_addr [getfield [lindex  [HTTP::header values X-Forwarded-For]  0] "," 1]
+           } else {
+               set cIP_addr [IP::client_addr]
+           }
+           set getcount [table lookup -notouch $cIP_addr]
+           if { $getcount equals "" } {
+               table set $cIP_addr "1" $static::timeout $static::timeout
+               # Record of this session does not exist, starting new record 
+               # Request is allowed.
+           } else {
+               if { $getcount < $static::maxReqs } {
+                   log local0. "Request Count for $cIP_addr is $getcount"  
+                   table incr -notouch $cIP_addr
+                   # record of this session exists but request is allowed.
+               } else {
+                   HTTP::respond 403 content {
+                   <html>
+                   <head><title>HTTP Request denied</title></head>
+                   <body>Your HTTP requests are being throttled.</body>
+                   </html>
+                   }
+               }
+           }
+       }
+   }
+
+By running the ``http_throttling_bonus`` script, you are checking HTTP requests
+limits against the URL paths in the ``URIs_to_throttle`` datagroup. Here’s a 
+Bash representation of that script.
+
+.. code-block:: console
+   :linenos:
+
+   #!/bin/bash
+   while [ 1 ]
+   do
+      curl http://www.f5demolabs.com/admin --write-out "%{http_code}\n" --silent -o /dev/null
+   done   

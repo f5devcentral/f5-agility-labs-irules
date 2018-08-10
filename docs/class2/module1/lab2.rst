@@ -1,228 +1,169 @@
-Lab 2 - Client Certificate Inspection
--------------------------------------
+Lab 2 - ASM Hooks
+-----------------
 
-The use of smart card technology to perform client certificate
-authentication is, arguably, one of the most secure and reliable
-two-factor authentication systems in use today. Even without a physical
-smart card, software-based client certificates still offer an advantage
-over many other authentication mechanisms. F5 iRules have complete
-access to the x509 properties of a client certificate during that
-authentication, so there is almost no limit to what can be done here.
-The following iRule is a very simple, but very power example of some of
-that capability.
 
-Objectives:
-
--  Deploy and test the example client certificate inspection iRule code
-
-Lab Requirements:
-
--  BIG-IP LTM, web server, client browser, SSL server and client
-   certificates
-
-The iRule
+Scenario
 ~~~~~~~~~
 
-.. code-block:: tcl
+When applications are moved to your production environment, they are secured with F5 Application Security Manager (ASM) with a well-defined security policy for each application.  The policies deployed have been tested, tuned, and are currently part of an automated build process for deployment.  Amongst other protections, an ASM policy filters all inbound requests that attempts to inject a null byte character from ever reaching the protected web servers.  
+
+In general, this protection is well advised and does not cause issues for most of your customers.  However, it has recently come to the attention of your business representatives that the policy is blocking traffic from one of your most important business partners.  This partner uses automated scripts to scrape your current inventory.  A bug in the partners scraping code is adding extra characters to each request which is violating the ASM’s policy.  The business team would like your security team to disable this protection, so that it no longer causes issue for an important partner.  
+
+
+Restraints
+~~~~~~~~~~~
+
+The following restraints complicate the request from the business team:
+
+- In ASM, the change to relax protection for null byte injection attacks is a global policy setting, and it is enforced across all requests for all users.  Disabling this protection weakens your security policy at a more global level than you are comfortable.
+- This baseline policy is deployed across a number of applications and is ingested by the DevOps team when deploying new applications.  The impact of a policy modification may have broader impact than intended.
+- Your security and compliance teams run routine scans of your applications looking for vulnerabilities that can be exploited.  By modifying the policy on a global basis, you are certain to get notifications and audit findings for a number of applications.  
+
+
+Requirements
+~~~~~~~~~~~~~
+
+To meet the business’s objectives while still maintaining a strong security policy, an iRule solution must meet the following requirements:
+
+- Any modifications to the application security policy must only affect the relevant business partner, and only for the in-scope application:
+ 
+   - Partner IP = 10.1.10.51
+   - URL = http://hackazon.f5demo.com/product/view?id=[0-100]%00
+
+- If a request contains violations other than the violation identified above, the request should be blocked.
+- Direct modifications to the ASM security policy are not allowed
+- Prior to releasing the in-scope requests to the application server, the request must be sanitized by removing the “%00” null byte string terminating partners request.
+
+Baseline Testing
+~~~~~~~~~~~~~~~~~
+
+Prior to defining a solution, validate the issue by testing the application to validate ASM’s behavior:
+
+- RDP to the lab jump station 
+- From the jump station, open Chrome and browse to http://hackazon.f5demo.com/product/view?id=72%00
+- Verify that you receive the ASM block page
+- Test a few more products (e.g. id 73, 7, 45)
+- Open Terminal application
+- Curl http://hackazon.f5demo.com/product/view?id=72%00
+- Verify the content returned is a block page from ASM
+
+- Open another Chrome window, and launch BIG-IP Configuration Utility (https://10.1.1.245)
+- From BIG-IP, verify violation in event logs:
+
+ - Click **Security -> Application Security -> Event Logs -> Application -> Requests**
+ - Examine requests for [HTTP] /product/view
+ - Check icon on request, then click All Details in the request detail to verify the Request Status is blocked
+
+
+The iRule
+~~~~~~~~~~
+
+
+.. code-block:: tcl 
    :linenos:
 
-   when RULE_INIT {
-       set static::debug 1
-   }
-   when CLIENTSSL_CLIENTCERT {
-       # Example subject: 
-       # C=US, O=f5test.local, OU=User Certificate, CN=user/emailAddress=user@f5test.local
-       set subject_dn [X509::subject [SSL::cert 0]]
-       if { $subject_dn != "" } {
-           if { $static::debug } { log "Client Certificate received: $subject_dn" }
-       }
-   }
-   when HTTP_REQUEST {
-       if { [HTTP::uri] starts_with "/" } {
-           if { $subject_dn contains "CN=Whitfield Diffe" } {
-               HTTP::uri /whitfielddiffe/index.html
-           } elseif { $subject_dn contains "CN=Martin Hellman" } {
-                   HTTP::uri /martinhellman/index.html
-           } {
-                   reject
+   when ASM_REQUEST_DONE {
+      set asm1_debug_verb 1
+      set asm1_debug 1
+    
+      if { [ASM::status] equals "blocked" } {
+        
+         if { $asm1_debug_verb } { 
+            log local0. "Violation count: [ASM::violation count] "
+            log local0. "Violation names: [ASM::violation names] "
+            log local0. "Violation attack types: [ASM::violation attack_types] "
+            log local0. "Violation details: [ASM::violation details] "
+        }
+        
+         if { [ASM::violation count] <= 1 } {
+         # Allow only if this request only violates a specific element of the policy 
+            if { [lindex [ASM::violation names] 0] equals "VIOLATION_HTTP_SANITY_CHECK_FAILED" } { 
+               if {$asm1_debug} {
+                  log local0. "ASM_OVERRIDE: HTTP Request Blocked by ASM with SANITY CHECK VIOLATION, URI = [HTTP::uri] "
+               }
+               if { [HTTP::uri] starts_with "/product/view?id" && [HTTP::uri] ends_with "%00" } {
+                  if { $asm1_debug } {
+                     log local0. "ASM_OVERRIDE: URI Request pattern matches override request"
+                  }  
+                    
+                  if { [ASM::client_ip] equals "10.1.10.51" } {
+                     if { $asm1_debug } {
+                        log local0. "ASM_OVERRIDE: Partner IP: [ASM::client_ip] matches override request" 
+                     }
+                     #we have a request that matches the OVERRIDE request, override and modify
+                        set new_uri [string trimright [HTTP::uri] "%00"]
+                        HTTP::uri $new_uri
+                        ASM::unblock
+                        if { $asm1_debug } {
+                           log local0. "ASM_OVERRIDE: Modified request URI, new uri = [HTTP::uri]"
+                           log local0. "ASM_OVERRIDE: Unblocking request and releasing to server"
+                        }
+                   }
+               }    
            }
-       }
+        }
+         else {
+            if { $asm1_debug } {
+               log local0. "ASM:OVERRIDE: Request contains multiple violations, will not override sec policy"
+            }
+         }
+      }
    }
 
-Certificates and keys are provided for you in the lab, but here are test
-certificates and private keys.
-
-CA certificate (f5test.local)
-
-.. code-block:: console
-
-   -----BEGIN CERTIFICATE-----
-   MIIDqTCCApGgAwIBAgIJAJoOn2YSIE76MA0GCSqGSIb3DQEBCwUAMFsxCzAJBgNV
-   BAYTAlVTMRUwEwYDVQQKEwxmNXRlc3QubG9jYWwxHjAcBgNVBAsTFUNlcnRpZmlj
-   YXRlIEF1dGhvcml0eTEVMBMGA1UEAxMMZjV0ZXN0LmxvY2FsMB4XDTE3MDcxMjA3
-   MzkyOVoXDTIwMDUwMTA3MzkyOVowWzELMAkGA1UEBhMCVVMxFTATBgNVBAoTDGY1
-   dGVzdC5sb2NhbDEeMBwGA1UECxMVQ2VydGlmaWNhdGUgQXV0aG9yaXR5MRUwEwYD
-   VQQDEwxmNXRlc3QubG9jYWwwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIB
-   AQDVrAXCQS0w9sjGRkwiPYpHmc+aMff6HwHYH6aNwIg93P4a5wEUmIFh+ym4aJjf
-   Tmfpsnk2fmbHpygfZU2LEhcxXQuiKB/1euXYizXqlESfFROIScQnCn59Ph+FukVB
-   6eNV0+yc0mVpvu5u9LViZCICYGPaqoIOquPF9r9LoP1j1ZutGtHkt0VjiR0/uTiE
-   BWo3RVuVi/Q6hack2+uhMrepGN045ilCJWfTnfBJoFFE/d6JVanccD9LAyuUxFbl
-   ReSxs6aQNb/nZ/eO1gGts9W16E5XaFv+72wbVgSesTxjXiWnCYnGef/qHkCMxnXg
-   /bLRjWzYeBeiHHLUWUp2wfo/AgMBAAGjcDBuMC8GCWCGSAGG+EIBDQQiFiBPcGVu
-   U1NMIGdlbmVyYXRlZCBDQSBjZXJ0aWZpY2F0ZTAdBgNVHQ4EFgQUp1RR2qzOWUoZ
-   T921koMLiOwHOFIwDwYDVR0TAQH/BAUwAwEB/zALBgNVHQ8EBAMCAYYwDQYJKoZI
-   hvcNAQELBQADggEBAG29bNrTH9DSpe92p6/GBMAvyPku+sB7ksXn5Ww6PN+isUZo
-   NHY9xfe6GqRVnxafIoad4GkOghwNLFnb2DSzTY7mVGLtlh6oz3sYhbmnh8d8CdKT
-   OSQr+rsnZjaQHPX4SK4+PXkWDi6OlAGOAHAx7llOmk5yyIvQ8EsgnOS8MzAFoxJI
-   /SSkxFtZ6WC5sYfaEX/hz+7OaDO/ck62u/0Xvy9QYGn9Noib1+25Jz1Ti77znB9k
-   FpLnQcaLIOsNChX/MbOQ2m9A0AFKYWKl4uyK2LxItxF1nld3gQYLEKJkRwy45TxR
-   4tNLuR5MCYspKEKkdZFs97xZhQyHkQhBekwthNg=
-   -----END CERTIFICATE-----
-
-Server certificate (www.f5test.local)
-
-.. code-block:: console
-
-   -----BEGIN CERTIFICATE-----
-   MIIEmzCCA4OgAwIBAgIBDDANBgkqhkiG9w0BAQsFADBbMQswCQYDVQQGEwJVUzEV
-   MBMGA1UEChMMZjV0ZXN0LmxvY2FsMR4wHAYDVQQLExVDZXJ0aWZpY2F0ZSBBdXRo
-   b3JpdHkxFTATBgNVBAMTDGY1dGVzdC5sb2NhbDAeFw0xNzA3MTIxMjA3MjNaFw0y
-   MDA1MDExMjA3MjNaMGAxCzAJBgNVBAYTAlVTMRUwEwYDVQQKEwxmNXRlc3QubG9j
-   YWwxHzAdBgNVBAsTFldlYiBTZXJ2ZXIgQ2VydGlmaWNhdGUxGTAXBgNVBAMTEHd3
-   dy5mNXRlc3QubG9jYWwwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDL
-   MnIIwinW9MQIJ8hwK7TwXHzFoTL6KkBX/5KTOU727nFjiNYMB5o0o//p3qHfHYim
-   lWDD2UgKIyx2lAg+DThEX0r6wDb4MXW+tGZKoOm+xbMl6GGXnB+ppQEnGAexki+c
-   fYmhrS6QloBBHSTmJ6pKGNEKFn+18v3T2ELsZXQLEFOMc7oWO5oUc4yPbPKHgh8s
-   9MoOdNA6vxAff7p0MmyzVDSdxlGYMSRz274z/BfEaL3uOSthzdghDX5e+Wf9Crtx
-   drC4rigoMePEuviV3DjSco4hb43TW8FS6tkgBonBx/53A+zJcoKnwkqMsWkvqVvX
-   Lx3u4e65z6s2sgJv+i7/AgMBAAGjggFjMIIBXzA3BglghkgBhvhCAQ0EKhYoT3Bl
-   blNTTCBnZW5lcmF0ZWQgd2ViIHNlcnZlciBjZXJ0aWZpY2F0ZTAdBgNVHQ4EFgQU
-   boBGjDryjx/CGFvQT1eZTJ3VNq8wgY0GA1UdIwSBhTCBgoAUp1RR2qzOWUoZT921
-   koMLiOwHOFKhX6RdMFsxCzAJBgNVBAYTAlVTMRUwEwYDVQQKEwxmNXRlc3QubG9j
-   YWwxHjAcBgNVBAsTFUNlcnRpZmljYXRlIEF1dGhvcml0eTEVMBMGA1UEAxMMZjV0
-   ZXN0LmxvY2FsggkAmg6fZhIgTvowGwYDVR0RBBQwEoIQd3d3LmY1dGVzdC5sb2Nh
-   bDAjBgNVHSAEHDAaMAsGCWCGSAFlAgELBTALBglghkgBZQIBCxIwIwYDVR0lBBww
-   GgYIKwYBBQUHAwEGCCsGAQUFCAICBgRVHSUAMA4GA1UdDwEB/wQEAwIFoDANBgkq
-   hkiG9w0BAQsFAAOCAQEAieguCjEV7tQ+ocoMfWsebTMJUiK+oOOZ95H5FPW5Yz7N
-   abRTTGEimncrAyJYqFQgjBhaPV+5o/zn53OQpTe7sJsIzJwWWwktFGJu4zYtpet/
-   llGU4/PDdHKmy9ipYEtBlutQP9OLf/PGWuKLnEQ2cT2J2mpDsnELwyJm2YiVoVZp
-   wRf4/gcMZK07YrRigZl6Rr33yw8hBRprLyhL9O+tH72sEofX6+m0Z/qEqre6uveR
-   3LO+WaxRxCk08ZSobiVJh/lbKEnMCOVL4DsIBDCprcMwxEzdHFtrMwCZg/iQEvZR
-   Aasj6BRzEM+e92jAVluUbNja26kd6ImGZaLqul/Elw==
-   -----END CERTIFICATE-----
-
-Server private key
-
-.. code-block:: console
-
-   -----BEGIN RSA PRIVATE KEY-----
-   MIIEpAIBAAKCAQEAyzJyCMIp1vTECCfIcCu08Fx8xaEy+ipAV/+SkzlO9u5xY4jW
-   DAeaNKP/6d6h3x2IppVgw9lICiMsdpQIPg04RF9K+sA2+DF1vrRmSqDpvsWzJehh
-   l5wfqaUBJxgHsZIvnH2Joa0ukJaAQR0k5ieqShjRChZ/tfL909hC7GV0CxBTjHO6
-   FjuaFHOMj2zyh4IfLPTKDnTQOr8QH3+6dDJss1Q0ncZRmDEkc9u+M/wXxGi97jkr
-   Yc3YIQ1+Xvln/Qq7cXawuK4oKDHjxLr4ldw40nKOIW+N01vBUurZIAaJwcf+dwPs
-   yXKCp8JKjLFpL6lb1y8d7uHuuc+rNrICb/ou/wIDAQABAoIBADeEduextSDIC292
-   /yq2pl8txeFxY646MQ5aA8A53jtVdqGNV3497YIIdPl/HJcLSLTLB387NJWgepuD
-   YqUhk4gKyT+tmNdDHDqYq4IkaPj4pzPqRA/aVkRRkvkNdbyshlmpaxtDZ/+VP0GL
-   JvPDTqGkGik5cHdUBsoEwnQ4W/ZRaP+hrvFDguYlwZAe+iN35AXWdviuU7Iz1dZN
-   mcsmpEyqQoHlWvmS15i9IqSkUabbvt/fWCZQTmAQHDc4J+gyYekcLf+ubVgEzB4C
-   Yh/cibO+MMLHOw6aG2lzdnAwPephhhsRYvKdC4GqmxHaNMNdnXuI02HpY8ySL2Ue
-   cPmlnSECgYEA5gixIlmQTNOTbq0VP0YFs09/GD1lk57rQmXQ4FTTd0t++tSyV/oX
-   ugDXeHA10/K3iufaJNfKtj7bUAlux740nqgOqaq/NENiLvF3RMWFVn0UJOO8loHx
-   4ZcpuWfSt/6TRgrHg+V+H0OMCEwUcebG6123Wd43b3JipHttLWFxQpkCgYEA4iI+
-   4bIN61ptzZDmWc7hvIDdvFnyqotOjlwL5RAucV6W0T6SYCuOJb6UXYeDfoisHQqv
-   i5c+oEqVvZHly53+Bx6zRT9zpEhJfDoF929BC3KB44XQDF2MnXzr34gRw0GvJuaR
-   P0lZJqXrN93GXGX80bvqU/eMtOST1BoWkPH2FVcCgYB+TMFs+b334KbvOosS7ZBN
-   rlU66uLtlXDYSOzRbuGYe1QhxkyRb1g9oR6tGvcDAx3xX3FvjyfWvlZN8I/pja54
-   eg9q6rwGpwSuf5ebo9Oc9BnuUzgFbx1uXj/jc3TH3zffWiXHbma8JasqFxOWoj4P
-   lqoH5rGLOEOeycHdC8ZS6QKBgQCXr7MQf/h4TANlpfHugijH4oVah9eQcLu0IKhV
-   8gHFSFbQazGS0wSZ6vnotzMMWK9jF7zjXQPET+Ob8tb7O7KfogdMxyBSLa8lZmKE
-   NJukCx53uVXyRXpCVf5+xe5sVI4iAP2jPxdPJnLe2aPqbPsm0O+BfYdj/APxfcJv
-   Xe7dJwKBgQDgeLXskt1ymndPfDy9XphX/DksZThxy3gFZPicns4mTJ7l6VRpoAd3
-   tJUawHyG97Gdo6XSfVn4Ge7FhMgskqZxHHgr6dtmxdbdheY4uyZp+Kep5gmVmynq
-   2Kz+pBg3E5IaF/A1mxCGEe7EDTZUpgCuTeIRKslBBPGm6ir2vLFNTA==
-   -----END RSA PRIVATE KEY-----
-
-Client certificate (user@f5test.local)
-
-.. code-block:: console
-
-   -----BEGIN CERTIFICATE-----
-   MIIElDCCA3ygAwIBAgIBBDANBgkqhkiG9w0BAQsFADBbMQswCQYDVQQGEwJVUzEV
-   MBMGA1UEChMMZjV0ZXN0LmxvY2FsMR4wHAYDVQQLExVDZXJ0aWZpY2F0ZSBBdXRo
-   b3JpdHkxFTATBgNVBAMTDGY1dGVzdC5sb2NhbDAeFw0xNzA3MTIwODA2MjdaFw0y
-   MDA1MDEwODA2MjdaMH0xCzAJBgNVBAYTAlVTMRUwEwYDVQQKEwxmNXRlc3QubG9j
-   YWwxGTAXBgNVBAsTEFVzZXIgQ2VydGlmaWNhdGUxGjAYBgNVBAMTEXVzZXIuZjV0
-   ZXN0LmxvY2FsMSAwHgYJKoZIhvcNAQkBFhF1c2VyQGY1dGVzdC5sb2NhbDCCASIw
-   DQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAJmy1XU/hJCbvIT5Dsb4s59yep4j
-   zR0OScuFi0keAaZhqdKxW69LN61/M4a7ohRQHj1YEHTRMLQuzSo1keoVqm52KKEy
-   Ws9lkpq3S00nB+jCN1ZcvYbW7FDVBPne4Z+Rkd5VsSwhX2wE7B+is5L0XhKUPb4B
-   WXdOnHmS/TUH5M5nxiFQnygxr69qMK+pfLqHCk8H8g84zpujE9QSks5iV1xeRdEq
-   bOME/VYrllzvYrBRhCzcftJp+PtbY57i/CSawg0P/GeRvPmJoe9HO/vcoG9HmtDX
-   s8mtdg6mUKCYBVhED2362bj1KiDZ6t7IoCafBXM94oPlDAG8tAucGbH5gJcCAwEA
-   AaOCAT8wggE7MDsGCWCGSAGG+EIBDQQuFixPcGVuU1NMIGdlbmVyYXRlZCBzbWFy
-   dGNhcmQgdXNlciBjZXJ0aWZpY2F0ZTAdBgNVHQ4EFgQUwaMwNzNNL4dhB/AzQBaj
-   AkindiUwHwYDVR0jBBgwFoAUp1RR2qzOWUoZT921koMLiOwHOFIwDgYDVR0PAQH/
-   BAQDAgbAMCkGA1UdJQQiMCAGCCsGAQUFBwMCBgorBgEEAYI3FAICBggrBgEFBQcD
-   BDA/BgNVHREEODA2gRF1c2VyQGY1dGVzdC5sb2NhbKAhBgorBgEEAYI3FAIDoBMM
-   EXVzZXJAZjV0ZXN0LmxvY2FsMCMGA1UdIAQcMBowCwYJYIZIAWUCAQsJMAsGCWCG
-   SAFlAgELEzAbBgNVHQkEFDASMBAGCCsGAQUFBwkEMQQTAlVTMA0GCSqGSIb3DQEB
-   CwUAA4IBAQAFKi84V5UX1BiY/XG4gkCwP63JmWwBl9DgFjdG9eXPlFfZIGw/mlEj
-   uULGdHLVqOJ1nseuNdbbHic3anxN7TFlZTm+92xX6/mQhumabvXGqq5s9FjvzmQl
-   6LSEH8U1oGBr1ByV44U3ifJXuSJyrUtfcZN0BifskcAa05C2pJTkDMxHnG1n/s2C
-   lu+Cf2AqAoOgZCz2PsgJtbV5VXckzX+AsWAp2R4ltNWqIbaKEFGsOb9lJa53qmQc
-   25iGpuAGm/ierJoVDfDfLnEWK6vWKiQ7MnbwVG6Rot08uYnyBvgK2JzoGMVhjys0
-   peMa0CNvHv2B/PtbPaNtCKqHJhz6zOI3
-   -----END CERTIFICATE-----
-
-Client private key
-
-.. code-block:: console
-
-   -----BEGIN RSA PRIVATE KEY-----
-   MIIEogIBAAKCAQEAmbLVdT+EkJu8hPkOxvizn3J6niPNHQ5Jy4WLSR4BpmGp0rFb
-   r0s3rX8zhruiFFAePVgQdNEwtC7NKjWR6hWqbnYooTJaz2WSmrdLTScH6MI3Vly9
-   htbsUNUE+d7hn5GR3lWxLCFfbATsH6KzkvReEpQ9vgFZd06ceZL9NQfkzmfGIVCf
-   KDGvr2owr6l8uocKTwfyDzjOm6MT1BKSzmJXXF5F0Sps4wT9ViuWXO9isFGELNx+
-   0mn4+1tjnuL8JJrCDQ/8Z5G8+Ymh70c7+9ygb0ea0Nezya12DqZQoJgFWEQPbfrZ
-   uPUqINnq3sigJp8Fcz3ig+UMAby0C5wZsfmAlwIDAQABAoIBAGlmF7d1vWSlR5ww
-   Zw/PUO5QxQFZL7lzKOvmQmP7rcn5Q0n20hbdj+rsRdtpJHalknciwvY41htZ1NvT
-   LKLIBL4HTUltjJSY5PYwJ/VahLP7K5OPuXCURi4QRn9LdpHEc7FyNjM7F4KtxXbU
-   TizCYxh+i/CWYFHOmMNOJ1GMfj2EIFsUh7i3D9W3A/HKaEn7RWfFWBpF8OwfF7Bl
-   k/qyhjIjv8ux3f7K9izvUiVWH/T9FMPXhb89ieT6Up5Qgrq1ejq6JnHkUhZvrA3N
-   AFWUI2SxMGMy+jS7HCwj5fM3it/FkkG2uf2v3CXx5CP//lmBWid3nCCr9FtB0UgK
-   BwrQ7nECgYEAyxViZTBuPdH0q/GVHcknlIXvl0B4Ah5pNdgfl345fkOLjtXe5HoR
-   MMuLHGACD0/mVn4rl/obU/359ANOOrDGT/66AAD24VhNRtvoeMzDRXJ+Y9QNdBwo
-   tNHntZzp4msolFkSiHUObHG5jXcxryDig2Y54ZLeRJClCFqBXr1HfTsCgYEAwb8+
-   LJYC/SIsbSq6O7cUhiOgcyTkKmKueFUH7ic8JzYXNOTu/mAJuVWb9X1rzCRLc6wj
-   MXj9lKZoyVHaoY7aAtd0y75MuoH0FEZG7btE6iba48ZTiAKc3hZXFOszYdPwWUjI
-   fRQK3g0aRPfrgXhkTFG/aXc6rWFbxZCd9x1YBFUCgYATMmNJs2lIWLdrJXv2A9TE
-   +mAqiQKPGLbTSym5VUo0AEiJ6PeX214Sobr1pLGtJt1cIbMXO6Inr2NYSJO1go5M
-   c4S7iVvM817iqtjvylNPFkKSRzI6XosOhKUFit6k84Ize7P/yCjj4WAr2i+NIWuo
-   BhrEkvCFxLKE9qEyBmxijwKBgFzlVGtOVgqHGyQQq5C8PKQAawsqchf8jsj1hELl
-   Hwtx/PiImCrxY1gwuwGe7FPKRz8kFw++gl+G1pFIpPp3owJfyglyqhl2+8/IznNo
-   KifXD3bM/folvo8hyQknqNBMLV6x7idCt982CxVshcfjMLwDKjLoTwMYvkbhC0yU
-   DkKtAoGABYODvNIuhUQGk8sKcjByZIpMBeeaFBqPSn0dClUvZnTDTA5sKpblnzQ7
-   xj1IK+ZEQQewJ4TifT4CtskkUYDoGz21vsqlBJGXzq/mQPjbyYmeE43jxik7hZ1E
-   M33AhM3mAkOT6tnFoD78DNZn8HlHKuaqtlljYCCCiH7tkA59Cuw=
-   -----END RSA PRIVATE KEY-----
 
 Analysis
-~~~~~~~~
+~~~~~~~~~
 
--  The above iRule inspects the x509 subject value in the client’s
-   certificate and makes an access decision based on that value. In this
-   very simple example, a specific set of users may access different
-   corporate resources hosted behind the same VIP.
+ASM Event/Command Details:
+
+- ``ASM_REQUEST_DONE`` event is triggered after ASM has finished processing the request and found all violations of the ASM policy.
+- ``[ASM::violations]`` command will return the list of violations found in the request or response with details on each violation
+- ``ASM::unblock`` command overrides the blocking action for a request that had blocking violation
+
+Rule Details
+~~~~~~~~~~~~~
+
+The rule does the following:
+
+- Inspects the blocking status of the request.  If the request is blocked, the rule validates that request contains only a single violation. This violation is the one whose approval has been given to override (VIOLATION_HTTP_SANITY_CHECK_FAILED) and the request originates from the expected business partner.
+- If the request matches the above conditions, the irule will do the following: 
+ 
+   - Strip the expected violation from the request
+   - Unblock the request
+
 
 Testing
-~~~~~~~
-   
-#. In the Client Authentication section of the client SSL
-   profile ``f5test``, set Client Certificate to ``Require``, and
-   assign ``ca_f5test`` to the Trusted Certificate Authorities option.
+~~~~~~~~
 
-#. Test accessing the HTTPS URL https://www.f5test.local from the
-   client. The client browser should prompt you to select a certificate.
-   Upon selecting this certificate, you should be able to pass through
-   to the application.
+- From BIG-IP Configuration Utility, open **Local Traffic -> Virtual Servers** and select ``Hackazon_protected_virtual``. Click the Resources tab. In the iRules section, click Manage.  Move ``sec_irules_asm_hook_1`` from Available section to the Enabled section and click the Finished button.
+- From the Jump Station, open the Terminal application and SSH to the BIG-IP: ssh root@10.1.1.245.
+
+   .. code-block:: console
+      
+      [root@bigipo01:Active:Standalone] config # tail -f /var/log/ltm
+
+- Re-open the Chrome window used in the Baseline Testing section, and again browse to http://hackazon.f5demo.com/product/view?id=72%00  
+ 
+- Earlier, this request was receiving an ASM block page.  Now, you should be getting access to the page.
+
+- From the SSH session, review the log messages associated with the above request.  Details on the request, and the override decision should be present in the logs.
+- From BIG-IP, verify violation in event logs:
+ 
+ - Click **Security -> Application Security -> Event Logs -> Application -> Requests**
+ - Examine requests for [HTTP] /product/view
+ - Check icon on request, then click All Details in the request detail to verify the Request Status is unblocked
+
+**Test additional conditions:**
+   
+- From Chrome Window, modify the request to include an additional violation: http://hackazon.f5demo.com/product/view<script>?id=72%00
+
+- This request should receive a block page because it contains violations that were not approved per override request
+
+- From Chrome window, send requests for additional URLs matching the override pattern: http://hackazon.f5demo.com/product/view?id=73%00, http://hackazon.f5demo.com/product/view?id=7%00
+
+
+Review
+~~~~~~~
+
+While a relatively simple scenario, the above lab exercise demonstrates the use of iRules in concert with the F5 ASM to handle special situations. The above example would have required a broader weakening of an organization’s application security policy if the request from the business was relaxed directly by the ASM policy tweaks.  Also, this type of change when deployed through a policy re-configuration often has downstream impact on orchestration and automation tools and can lead to false positives with vulnerability.  Using an iRule, we were able to temporarily override the security policy without any policy changes, mitigate the exposed vulnerability, and meet the requirements outlined by the business representatives.
+

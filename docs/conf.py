@@ -9,7 +9,7 @@ classname = "F5 iRules Data Plane Programmability"
 
 # OPTIONAL: The URL to the GitHub Repository for this class
 # github_repo = "https://github.com/f5devcentral/your-class-repo"
-github_repo = "https://github.com/yxeGithub/agility_irules_http_docs_17"
+github_repo = "https://github.com/f5devcentral/f5-agility-labs-irules/"
 
 #
 # END CONFIG
@@ -97,7 +97,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = classname
-copyright = u'2017, F5 Networks, Inc.'
+copyright = u'2018, F5 Networks, Inc.'
 author = u'F5 Networks, Inc.'
 
 # The version info for the project you're documenting, acts as replacement for
