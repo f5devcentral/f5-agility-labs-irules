@@ -26,6 +26,7 @@ Figure 2:
 ~~~~~~~~~
 .. image:: /_static/class2/amplification_attack.gif
    :scale: 50 %
+
 Here we see an example of an DNS Amplification attack using an open DNS resolver
    
 Restraints:
@@ -155,7 +156,7 @@ TCP VIP iRule
         DNS::drop
       }
     }
-}
+  }
 
 
 Rule Details:

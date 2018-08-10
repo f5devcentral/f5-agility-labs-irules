@@ -1,5 +1,5 @@
 Lab 1 - iRules LX Streaming
--------------------
+---------------------------
 
 Creating and Implementing a Streaming LX Plugin
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
