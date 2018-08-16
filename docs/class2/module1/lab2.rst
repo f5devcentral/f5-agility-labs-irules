@@ -149,7 +149,7 @@ Testing
 - From the SSH session, review the log messages associated with the above request.  Details on the request, and the override decision should be present in the logs.
 - From BIG-IP, verify violation in event logs:
  
- - Click **Security -> Application Security -> Event Logs -> Application -> Requests**
+ - Click **Security -> Event Logs -> Application -> Requests**
  - Examine requests for [HTTP] /product/view
  - Check icon on request, then click All Details in the request detail to verify the Request Status is unblocked
 
