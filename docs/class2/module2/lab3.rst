@@ -1,241 +1,153 @@
-Lab 3 - Client Certificate Inspection
--------------------------------------
+Additional Lab 3 - HSTS / HPKP
+-------------------
 
-Scenario:
+HSTS
+~~~~
+As per OWASP and RFC 6797, HTTP Strict Transport Security (HSTS) is an
+opt-in security enhancement that is specified by a web application
+through the use of a special response header. Once a supported browser
+receives this header that browser will prevent any communications from
+being sent over HTTP to the specified domain and will instead send all
+communications over HTTPS. It also prevents HTTPS click-through prompts
+on browsers. In layman’s terms, HSTS is an HTTP header sent from the
+server to the client browser. The information within that header
+indicates to the browser that any communication with that domain must be
+over HTTPS, regardless of any HTTP URL’s encoded into the HTML pages, or
+what the user types into the browser address bar. This information is
+also placed into the browser’s long term storage, so that subsequent
+requests will immediately communicate over HTTPS. The header looks like
+this:
+
+``Strict-Transport Security: max-age=31536000; includeSubDomains``
+
+The max-age attribute defines how long the browser should store this
+information. In this case, it is 1 year. The includeSubDomains attribute is
+optional and indicates that the browser must communicate over HTTPS to
+this and any sub-domain of the current domain. To be most effective,
+this response header should a) only be transmitted over HTTPS in the
+first place to prevent stripping, and b) be transmitted at the lowest
+possible point in the domain to include all sub-domains. For example, to
+cover all sub-domains of domain.com, you might initially redirect a
+client to https://domain.com and then send an immediate redirect back to
+the requested HTTPS URL and include the HSTS header.
+
+.. NOTE:: 
+
+   Prior to BIG-IP LTM version 13.0, HSTS was implemented with an iRule (see below). As of v13, HSTS is simply enabled  
+   within an HTTP profile.
+
+   1. Create an HTTP profile.
+   2. Under the new "HTTP Strict Transport Security" section (bottom), set Mode to enabled (checked), set a maximum age in seconds and 
+      check the "Include Subdomains" option if you want the HSTS header to be sent for subdomains of this URL. 
+   
+   3. The Preload option is used by browser vendors to hard code this information into future browser updates. You must separately 
+      submit the URL to the vendors' preload lists. They will check that the preload option is set before hard coding your URL.
+   
+   A word of warning: once browser vendors hard code this URL into new versions, it is practically impossible to remove it, so make sure this is exactly what you want and that no "mixed" content (HTTP and HTTPS) exists for this URL.
+
+
+HPKP
+~~~~
+As per OWASP and RFC 7469, HTTP Public Key Pinning (HPKP) is a new HTTP
+header that allows SSL servers to declare hashes of their certificates
+with a time scope in which these certificates should not be changed. In
+other words, it is a method by which a server can indicate to a browser
+the certificate that the client browser should see. This technology
+helps to prevent active man-in-the-middle attacks whereby an agent is
+able to silently decrypt and re-encrypt traffic between a client and
+server. Without knowledge of the server’s private key, the agent won’t
+possibly be able to spoof the server’s real certificate. Therefore the
+"forged" certificate coming from the agent will not match the
+certificate embedded in the HPKP header. That header looks like this:
+
+``Public-Key-Pins: max-age=2592000;``
+
+``pin-sha256="E9CZ9INDbd+2eRQozYqqbQ2yXLVKB9+xcprMF+44U1g=";``
+
+``pin-sha256="LPJNul+wow4m6DsqxbninhsWHlwfp0JecwQzYpOLmCQ=";``
+
+``report-uri="http://example.com/pkp-report"``
+
+The header name is ``Public-Key-Pins`` and has a similar max-age attribute
+as HSTS. The header can include multiple encoded certificate hashes
+indicated as the ``pin-sha256`` values. If the incoming certificate does
+not match anyone of these values, a "report-uri" attribute can send the
+browser to a reporting facility to report this error (possible attack).
+To be most effective, this response header should only be transmitted
+over HTTPS to prevent stripping. To create the encoded value for a given
+certificate, use the following OpenSSL commands:
+
+``openssl x509 –in <cert> -pubkey –noout | openssl rsa –pubin –outform der | openssl dgst –sha256 –binary | openssl enc –base64``
+
+
+Scenario
 ~~~~~~~~~
+In this lab exercise, we demonstrate how to deploy both the HSTS and HPKP using an iRule.
 
-Your company uses smart cards for two-factor authentication.  Users access different resources from a single url and
-need to be given access to those resources based on the properties of a client certificate. Users have physical
-smart cards and software-based client certificates and authentication decisions will need to be made based on certificate attributes.
+Requirements
+~~~~~~~~~~~~
 
-Requirements:
-~~~~~~~~~~~~~~~~~
-
--  BIG-IP LTM, web server, client browser, SSL server and client certificates
-
-To meet the business’s objectives while still maintaining a strong security policy, an iRule solution must meet the following requirements:
-
-- inspect certificate attribute to give access to correct resource
-
-Certificates:
-~~~~~~~~~~~~~
-
-Certificates and keys are provided for you in the lab, but here are test
-certificates and private keys.
-
-CA certificate (f5test.local)
-
-.. code-block:: console
-
-   -----BEGIN CERTIFICATE-----
-   MIIDqTCCApGgAwIBAgIJAJoOn2YSIE76MA0GCSqGSIb3DQEBCwUAMFsxCzAJBgNV
-   BAYTAlVTMRUwEwYDVQQKEwxmNXRlc3QubG9jYWwxHjAcBgNVBAsTFUNlcnRpZmlj
-   YXRlIEF1dGhvcml0eTEVMBMGA1UEAxMMZjV0ZXN0LmxvY2FsMB4XDTE3MDcxMjA3
-   MzkyOVoXDTIwMDUwMTA3MzkyOVowWzELMAkGA1UEBhMCVVMxFTATBgNVBAoTDGY1
-   dGVzdC5sb2NhbDEeMBwGA1UECxMVQ2VydGlmaWNhdGUgQXV0aG9yaXR5MRUwEwYD
-   VQQDEwxmNXRlc3QubG9jYWwwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIB
-   AQDVrAXCQS0w9sjGRkwiPYpHmc+aMff6HwHYH6aNwIg93P4a5wEUmIFh+ym4aJjf
-   Tmfpsnk2fmbHpygfZU2LEhcxXQuiKB/1euXYizXqlESfFROIScQnCn59Ph+FukVB
-   6eNV0+yc0mVpvu5u9LViZCICYGPaqoIOquPF9r9LoP1j1ZutGtHkt0VjiR0/uTiE
-   BWo3RVuVi/Q6hack2+uhMrepGN045ilCJWfTnfBJoFFE/d6JVanccD9LAyuUxFbl
-   ReSxs6aQNb/nZ/eO1gGts9W16E5XaFv+72wbVgSesTxjXiWnCYnGef/qHkCMxnXg
-   /bLRjWzYeBeiHHLUWUp2wfo/AgMBAAGjcDBuMC8GCWCGSAGG+EIBDQQiFiBPcGVu
-   U1NMIGdlbmVyYXRlZCBDQSBjZXJ0aWZpY2F0ZTAdBgNVHQ4EFgQUp1RR2qzOWUoZ
-   T921koMLiOwHOFIwDwYDVR0TAQH/BAUwAwEB/zALBgNVHQ8EBAMCAYYwDQYJKoZI
-   hvcNAQELBQADggEBAG29bNrTH9DSpe92p6/GBMAvyPku+sB7ksXn5Ww6PN+isUZo
-   NHY9xfe6GqRVnxafIoad4GkOghwNLFnb2DSzTY7mVGLtlh6oz3sYhbmnh8d8CdKT
-   OSQr+rsnZjaQHPX4SK4+PXkWDi6OlAGOAHAx7llOmk5yyIvQ8EsgnOS8MzAFoxJI
-   /SSkxFtZ6WC5sYfaEX/hz+7OaDO/ck62u/0Xvy9QYGn9Noib1+25Jz1Ti77znB9k
-   FpLnQcaLIOsNChX/MbOQ2m9A0AFKYWKl4uyK2LxItxF1nld3gQYLEKJkRwy45TxR
-   4tNLuR5MCYspKEKkdZFs97xZhQyHkQhBekwthNg=
-   -----END CERTIFICATE-----
-
-
-Server certificate (www.f5test.local)
-
-.. code-block:: console
-
-   -----BEGIN CERTIFICATE-----
-   MIIEmzCCA4OgAwIBAgIBDDANBgkqhkiG9w0BAQsFADBbMQswCQYDVQQGEwJVUzEV
-   MBMGA1UEChMMZjV0ZXN0LmxvY2FsMR4wHAYDVQQLExVDZXJ0aWZpY2F0ZSBBdXRo
-   b3JpdHkxFTATBgNVBAMTDGY1dGVzdC5sb2NhbDAeFw0xNzA3MTIxMjA3MjNaFw0y
-   MDA1MDExMjA3MjNaMGAxCzAJBgNVBAYTAlVTMRUwEwYDVQQKEwxmNXRlc3QubG9j
-   YWwxHzAdBgNVBAsTFldlYiBTZXJ2ZXIgQ2VydGlmaWNhdGUxGTAXBgNVBAMTEHd3
-   dy5mNXRlc3QubG9jYWwwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDL
-   MnIIwinW9MQIJ8hwK7TwXHzFoTL6KkBX/5KTOU727nFjiNYMB5o0o//p3qHfHYim
-   lWDD2UgKIyx2lAg+DThEX0r6wDb4MXW+tGZKoOm+xbMl6GGXnB+ppQEnGAexki+c
-   fYmhrS6QloBBHSTmJ6pKGNEKFn+18v3T2ELsZXQLEFOMc7oWO5oUc4yPbPKHgh8s
-   9MoOdNA6vxAff7p0MmyzVDSdxlGYMSRz274z/BfEaL3uOSthzdghDX5e+Wf9Crtx
-   drC4rigoMePEuviV3DjSco4hb43TW8FS6tkgBonBx/53A+zJcoKnwkqMsWkvqVvX
-   Lx3u4e65z6s2sgJv+i7/AgMBAAGjggFjMIIBXzA3BglghkgBhvhCAQ0EKhYoT3Bl
-   blNTTCBnZW5lcmF0ZWQgd2ViIHNlcnZlciBjZXJ0aWZpY2F0ZTAdBgNVHQ4EFgQU
-   boBGjDryjx/CGFvQT1eZTJ3VNq8wgY0GA1UdIwSBhTCBgoAUp1RR2qzOWUoZT921
-   koMLiOwHOFKhX6RdMFsxCzAJBgNVBAYTAlVTMRUwEwYDVQQKEwxmNXRlc3QubG9j
-   YWwxHjAcBgNVBAsTFUNlcnRpZmljYXRlIEF1dGhvcml0eTEVMBMGA1UEAxMMZjV0
-   ZXN0LmxvY2FsggkAmg6fZhIgTvowGwYDVR0RBBQwEoIQd3d3LmY1dGVzdC5sb2Nh
-   bDAjBgNVHSAEHDAaMAsGCWCGSAFlAgELBTALBglghkgBZQIBCxIwIwYDVR0lBBww
-   GgYIKwYBBQUHAwEGCCsGAQUFCAICBgRVHSUAMA4GA1UdDwEB/wQEAwIFoDANBgkq
-   hkiG9w0BAQsFAAOCAQEAieguCjEV7tQ+ocoMfWsebTMJUiK+oOOZ95H5FPW5Yz7N
-   abRTTGEimncrAyJYqFQgjBhaPV+5o/zn53OQpTe7sJsIzJwWWwktFGJu4zYtpet/
-   llGU4/PDdHKmy9ipYEtBlutQP9OLf/PGWuKLnEQ2cT2J2mpDsnELwyJm2YiVoVZp
-   wRf4/gcMZK07YrRigZl6Rr33yw8hBRprLyhL9O+tH72sEofX6+m0Z/qEqre6uveR
-   3LO+WaxRxCk08ZSobiVJh/lbKEnMCOVL4DsIBDCprcMwxEzdHFtrMwCZg/iQEvZR
-   Aasj6BRzEM+e92jAVluUbNja26kd6ImGZaLqul/Elw==
-   -----END CERTIFICATE-----
-
-Server private key
-
-.. code-block:: console
-
-   -----BEGIN RSA PRIVATE KEY-----
-   MIIEpAIBAAKCAQEAyzJyCMIp1vTECCfIcCu08Fx8xaEy+ipAV/+SkzlO9u5xY4jW
-   DAeaNKP/6d6h3x2IppVgw9lICiMsdpQIPg04RF9K+sA2+DF1vrRmSqDpvsWzJehh
-   l5wfqaUBJxgHsZIvnH2Joa0ukJaAQR0k5ieqShjRChZ/tfL909hC7GV0CxBTjHO6
-   FjuaFHOMj2zyh4IfLPTKDnTQOr8QH3+6dDJss1Q0ncZRmDEkc9u+M/wXxGi97jkr
-   Yc3YIQ1+Xvln/Qq7cXawuK4oKDHjxLr4ldw40nKOIW+N01vBUurZIAaJwcf+dwPs
-   yXKCp8JKjLFpL6lb1y8d7uHuuc+rNrICb/ou/wIDAQABAoIBADeEduextSDIC292
-   /yq2pl8txeFxY646MQ5aA8A53jtVdqGNV3497YIIdPl/HJcLSLTLB387NJWgepuD
-   YqUhk4gKyT+tmNdDHDqYq4IkaPj4pzPqRA/aVkRRkvkNdbyshlmpaxtDZ/+VP0GL
-   JvPDTqGkGik5cHdUBsoEwnQ4W/ZRaP+hrvFDguYlwZAe+iN35AXWdviuU7Iz1dZN
-   mcsmpEyqQoHlWvmS15i9IqSkUabbvt/fWCZQTmAQHDc4J+gyYekcLf+ubVgEzB4C
-   Yh/cibO+MMLHOw6aG2lzdnAwPephhhsRYvKdC4GqmxHaNMNdnXuI02HpY8ySL2Ue
-   cPmlnSECgYEA5gixIlmQTNOTbq0VP0YFs09/GD1lk57rQmXQ4FTTd0t++tSyV/oX
-   ugDXeHA10/K3iufaJNfKtj7bUAlux740nqgOqaq/NENiLvF3RMWFVn0UJOO8loHx
-   4ZcpuWfSt/6TRgrHg+V+H0OMCEwUcebG6123Wd43b3JipHttLWFxQpkCgYEA4iI+
-   4bIN61ptzZDmWc7hvIDdvFnyqotOjlwL5RAucV6W0T6SYCuOJb6UXYeDfoisHQqv
-   i5c+oEqVvZHly53+Bx6zRT9zpEhJfDoF929BC3KB44XQDF2MnXzr34gRw0GvJuaR
-   P0lZJqXrN93GXGX80bvqU/eMtOST1BoWkPH2FVcCgYB+TMFs+b334KbvOosS7ZBN
-   rlU66uLtlXDYSOzRbuGYe1QhxkyRb1g9oR6tGvcDAx3xX3FvjyfWvlZN8I/pja54
-   eg9q6rwGpwSuf5ebo9Oc9BnuUzgFbx1uXj/jc3TH3zffWiXHbma8JasqFxOWoj4P
-   lqoH5rGLOEOeycHdC8ZS6QKBgQCXr7MQf/h4TANlpfHugijH4oVah9eQcLu0IKhV
-   8gHFSFbQazGS0wSZ6vnotzMMWK9jF7zjXQPET+Ob8tb7O7KfogdMxyBSLa8lZmKE
-   NJukCx53uVXyRXpCVf5+xe5sVI4iAP2jPxdPJnLe2aPqbPsm0O+BfYdj/APxfcJv
-   Xe7dJwKBgQDgeLXskt1ymndPfDy9XphX/DksZThxy3gFZPicns4mTJ7l6VRpoAd3
-   tJUawHyG97Gdo6XSfVn4Ge7FhMgskqZxHHgr6dtmxdbdheY4uyZp+Kep5gmVmynq
-   2Kz+pBg3E5IaF/A1mxCGEe7EDTZUpgCuTeIRKslBBPGm6ir2vLFNTA==
-   -----END RSA PRIVATE KEY-----
-
-Client certificate (user@f5test.local)
-
-.. code-block:: console
-
-   -----BEGIN CERTIFICATE-----
-   MIIElDCCA3ygAwIBAgIBBDANBgkqhkiG9w0BAQsFADBbMQswCQYDVQQGEwJVUzEV
-   MBMGA1UEChMMZjV0ZXN0LmxvY2FsMR4wHAYDVQQLExVDZXJ0aWZpY2F0ZSBBdXRo
-   b3JpdHkxFTATBgNVBAMTDGY1dGVzdC5sb2NhbDAeFw0xNzA3MTIwODA2MjdaFw0y
-   MDA1MDEwODA2MjdaMH0xCzAJBgNVBAYTAlVTMRUwEwYDVQQKEwxmNXRlc3QubG9j
-   YWwxGTAXBgNVBAsTEFVzZXIgQ2VydGlmaWNhdGUxGjAYBgNVBAMTEXVzZXIuZjV0
-   ZXN0LmxvY2FsMSAwHgYJKoZIhvcNAQkBFhF1c2VyQGY1dGVzdC5sb2NhbDCCASIw
-   DQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAJmy1XU/hJCbvIT5Dsb4s59yep4j
-   zR0OScuFi0keAaZhqdKxW69LN61/M4a7ohRQHj1YEHTRMLQuzSo1keoVqm52KKEy
-   Ws9lkpq3S00nB+jCN1ZcvYbW7FDVBPne4Z+Rkd5VsSwhX2wE7B+is5L0XhKUPb4B
-   WXdOnHmS/TUH5M5nxiFQnygxr69qMK+pfLqHCk8H8g84zpujE9QSks5iV1xeRdEq
-   bOME/VYrllzvYrBRhCzcftJp+PtbY57i/CSawg0P/GeRvPmJoe9HO/vcoG9HmtDX
-   s8mtdg6mUKCYBVhED2362bj1KiDZ6t7IoCafBXM94oPlDAG8tAucGbH5gJcCAwEA
-   AaOCAT8wggE7MDsGCWCGSAGG+EIBDQQuFixPcGVuU1NMIGdlbmVyYXRlZCBzbWFy
-   dGNhcmQgdXNlciBjZXJ0aWZpY2F0ZTAdBgNVHQ4EFgQUwaMwNzNNL4dhB/AzQBaj
-   AkindiUwHwYDVR0jBBgwFoAUp1RR2qzOWUoZT921koMLiOwHOFIwDgYDVR0PAQH/
-   BAQDAgbAMCkGA1UdJQQiMCAGCCsGAQUFBwMCBgorBgEEAYI3FAICBggrBgEFBQcD
-   BDA/BgNVHREEODA2gRF1c2VyQGY1dGVzdC5sb2NhbKAhBgorBgEEAYI3FAIDoBMM
-   EXVzZXJAZjV0ZXN0LmxvY2FsMCMGA1UdIAQcMBowCwYJYIZIAWUCAQsJMAsGCWCG
-   SAFlAgELEzAbBgNVHQkEFDASMBAGCCsGAQUFBwkEMQQTAlVTMA0GCSqGSIb3DQEB
-   CwUAA4IBAQAFKi84V5UX1BiY/XG4gkCwP63JmWwBl9DgFjdG9eXPlFfZIGw/mlEj
-   uULGdHLVqOJ1nseuNdbbHic3anxN7TFlZTm+92xX6/mQhumabvXGqq5s9FjvzmQl
-   6LSEH8U1oGBr1ByV44U3ifJXuSJyrUtfcZN0BifskcAa05C2pJTkDMxHnG1n/s2C
-   lu+Cf2AqAoOgZCz2PsgJtbV5VXckzX+AsWAp2R4ltNWqIbaKEFGsOb9lJa53qmQc
-   25iGpuAGm/ierJoVDfDfLnEWK6vWKiQ7MnbwVG6Rot08uYnyBvgK2JzoGMVhjys0
-   peMa0CNvHv2B/PtbPaNtCKqHJhz6zOI3
-   -----END CERTIFICATE-----
-
-Client private key
-
-.. code-block:: console
-
-   -----BEGIN RSA PRIVATE KEY-----
-   MIIEogIBAAKCAQEAmbLVdT+EkJu8hPkOxvizn3J6niPNHQ5Jy4WLSR4BpmGp0rFb
-   r0s3rX8zhruiFFAePVgQdNEwtC7NKjWR6hWqbnYooTJaz2WSmrdLTScH6MI3Vly9
-   htbsUNUE+d7hn5GR3lWxLCFfbATsH6KzkvReEpQ9vgFZd06ceZL9NQfkzmfGIVCf
-   KDGvr2owr6l8uocKTwfyDzjOm6MT1BKSzmJXXF5F0Sps4wT9ViuWXO9isFGELNx+
-   0mn4+1tjnuL8JJrCDQ/8Z5G8+Ymh70c7+9ygb0ea0Nezya12DqZQoJgFWEQPbfrZ
-   uPUqINnq3sigJp8Fcz3ig+UMAby0C5wZsfmAlwIDAQABAoIBAGlmF7d1vWSlR5ww
-   Zw/PUO5QxQFZL7lzKOvmQmP7rcn5Q0n20hbdj+rsRdtpJHalknciwvY41htZ1NvT
-   LKLIBL4HTUltjJSY5PYwJ/VahLP7K5OPuXCURi4QRn9LdpHEc7FyNjM7F4KtxXbU
-   TizCYxh+i/CWYFHOmMNOJ1GMfj2EIFsUh7i3D9W3A/HKaEn7RWfFWBpF8OwfF7Bl
-   k/qyhjIjv8ux3f7K9izvUiVWH/T9FMPXhb89ieT6Up5Qgrq1ejq6JnHkUhZvrA3N
-   AFWUI2SxMGMy+jS7HCwj5fM3it/FkkG2uf2v3CXx5CP//lmBWid3nCCr9FtB0UgK
-   BwrQ7nECgYEAyxViZTBuPdH0q/GVHcknlIXvl0B4Ah5pNdgfl345fkOLjtXe5HoR
-   MMuLHGACD0/mVn4rl/obU/359ANOOrDGT/66AAD24VhNRtvoeMzDRXJ+Y9QNdBwo
-   tNHntZzp4msolFkSiHUObHG5jXcxryDig2Y54ZLeRJClCFqBXr1HfTsCgYEAwb8+
-   LJYC/SIsbSq6O7cUhiOgcyTkKmKueFUH7ic8JzYXNOTu/mAJuVWb9X1rzCRLc6wj
-   MXj9lKZoyVHaoY7aAtd0y75MuoH0FEZG7btE6iba48ZTiAKc3hZXFOszYdPwWUjI
-   fRQK3g0aRPfrgXhkTFG/aXc6rWFbxZCd9x1YBFUCgYATMmNJs2lIWLdrJXv2A9TE
-   +mAqiQKPGLbTSym5VUo0AEiJ6PeX214Sobr1pLGtJt1cIbMXO6Inr2NYSJO1go5M
-   c4S7iVvM817iqtjvylNPFkKSRzI6XosOhKUFit6k84Ize7P/yCjj4WAr2i+NIWuo
-   BhrEkvCFxLKE9qEyBmxijwKBgFzlVGtOVgqHGyQQq5C8PKQAawsqchf8jsj1hELl
-   Hwtx/PiImCrxY1gwuwGe7FPKRz8kFw++gl+G1pFIpPp3owJfyglyqhl2+8/IznNo
-   KifXD3bM/folvo8hyQknqNBMLV6x7idCt982CxVshcfjMLwDKjLoTwMYvkbhC0yU
-   DkKtAoGABYODvNIuhUQGk8sKcjByZIpMBeeaFBqPSn0dClUvZnTDTA5sKpblnzQ7
-   xj1IK+ZEQQewJ4TifT4CtskkUYDoGz21vsqlBJGXzq/mQPjbyYmeE43jxik7hZ1E
-   M33AhM3mAkOT6tnFoD78DNZn8HlHKuaqtlljYCCCiH7tkA59Cuw=
-   -----END RSA PRIVATE KEY-----
-
-Baseline Testing:
-~~~~~~~~~~~~~~~~~
-Prior to defining a solution, validate that users do not have the correct access.
-
-- From the client work station open a browser to https://www.f5test.local.
-- You should have full access to the url.
-
+-  BIG-IP LTM, web server, client browser, and a SSL server certificate.
+   If you don’t have certificates to test with, you can use the CA
+   certificate, server certificate, and the private key provided in the
+   the Client Certificate Inspection lab from Additional labs section.
 
 The iRule
 ~~~~~~~~~
 
-F5 iRules have complete access to the x509 properties of a client certificate during that
-authentication and can look at the attribute of the certificate to make decisions.
-
 .. code-block:: tcl
+   :linenos:
 
    when RULE_INIT {
-       set static::debug 1
+       set static::fqdn_pin1 "X3pGTSOuJeEVw989IJ/cEtXUEmy52zs1TZQrU06KUKg="
+
+       # Set max_age to 180 days
+       set static::max_age 15552000
    }
-   when CLIENTSSL_CLIENTCERT {
-       # Example subject:
-       # C=US, O=f5test.local, OU=User Certificate, CN=user/emailAddress=user@f5test.local
-       set subject_dn [X509::subject [SSL::cert 0]]
-       if { $subject_dn != "" } {
-           if { $static::debug } { log "Client Certificate received: $subject_dn" }
-       }
-   }
-   when HTTP_REQUEST {
-       if { [HTTP::uri] starts_with "/" } {
-           if { $subject_dn contains "CN=Whitfield Diffe" } {
-               HTTP::uri /whitfielddiffe/index.html
-           } elseif { $subject_dn contains "CN=Martin Hellman" } {
-                   HTTP::uri /martinhellman/index.html
-           } {
-                   reject
-           }
-       }
+   when HTTP_RESPONSE {
+       # Insert an HSTS header
+       HTTP::header insert Strict-Transport-Security "max-age=$static::max_age; includeSubDomains"
+       # Insert an HPKP header
+       HTTP::header insert Public-Key-Pins "pin-sha256=\"$static::fqdn_pin1\" max-age=$static::max_age; includeSubDomains"
    }
 
 
 Analysis
 ~~~~~~~~
 
--  The above iRule inspects the x509 subject value in the client’s
-   certificate and makes an access decision based on that value. In this
-   very simple example, a specific set of users may access different
-   corporate resources hosted behind the same VIP.
+-  The above iRule example will perform two functions. Upon receipt of
+   the HSTS header, any attempt to communicate with that VIP again will
+   only use HTTPS. With the injection of the HPKP header, if the
+   certificate (CA or server certificate) does not match the one
+   provided in the SSL handshake, the browser will either end the
+   connection and potentially follow a report-uri URL if it exists.
 
 Testing
 ~~~~~~~
 
--  In the Client Authentication section of the client SSL
-   profile ``f5test``, set Client Certificate to ``Require``, and
-   assign ``ca_f5test`` to the Trusted Certificate Authorities option.
+- Apply this iRule to an HTTPS virtual server (VIP).
+- Repeatedly navigate to the HTTP URL http://www.f5demolabs.com to 
+   verify that you are indeed talking to the HTTP VIP.
 
+- Navigate to the HTTPS URL https://www.f5demolabs.com one time to
+   verify that you can access it.
 
--  Test accessing the HTTPS URL https://www.f5test.local from the
-   client. The client browser should prompt you to select a certificate.
-   Upon selecting this certificate, you should be able to pass through
-   to the application.
+- Now attempt to go to the HTTP URL http://www.f5demolabs.com again.
+   Depending on the browser it should immediately go to the HTTPS URL.
+
+- If you’re using a Chrome browser, you can navigate to
+   ``chrome://net-internals/#hsts`` to see this URL value now added to
+   Chrome's HSTS list.  Under Query Domain, enter ``www.f5demolabs.com`` to 
+   Domain: entry box and click Query.  ``Be sure to delete domain before
+   moving on or else you will have an issue with a later lab.``
+
+- Unfortunately, unless you’re using a server certificate that chains
+   up to a public root, you won’t be able to test HPKP here. Per the
+   Mozilla Developer Network, "Firefox (and Chrome) disable Pin
+   Validation for Pinned Hosts whose validated certificate chain
+   terminates at a user-defined trust anchor (rather than a built-in
+   trust anchor). This means that for users who imported custom root
+   certificates all pinning violations are ignored."
+   
+.. HINT:: You can still use Chrome Developer Tools to see the HPKP header.    
+
