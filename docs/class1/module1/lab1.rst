@@ -56,7 +56,7 @@ Please create an iRule that will route traffic based on the following table:
 
 #. Click on **URI_Routing_iRule** from the Available box and click the << button, thus moving it to the Enabled box.
 
-   .. image:: /_static/class1/manage_irule.png
+   .. image:: /_static/class1/lab1-irules-add.png
       :width: 800
 
 #. Click the **Finished** button
