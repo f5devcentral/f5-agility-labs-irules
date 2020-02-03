@@ -9,7 +9,7 @@ Your iRule should:
 #. Remove the header named **Server** from all HTTP responses.
 
 .. ATTENTION::
-  Extra Credit: OPTIONAL:  Instead of removing the **Server** header in the response, change the value of the **Server** header to **Microsoft-IIS/7.0**.
+  OPTIONAL:  Instead of removing the **Server** header in the response, change the value of the **Server** header to **Microsoft-IIS/7.0**.
 
 .. IMPORTANT::
   •	Estimated completion time: 15 minutes
@@ -45,7 +45,7 @@ Your iRule should:
 
 #. Click on Header_Log_Strip_iRule from the Available box and click the << button, thus moving it to the Enabled box, your first and now second iRule should be in the Enabled box.
 
-   .. image:: /_static/class1/manage_irule.png
+   .. image:: /_static/class1/lab2-irules-add.png
       :width: 800
 
 #. Click the **Finished** button
@@ -60,6 +60,12 @@ Your iRule should:
 #. Now enter http://wackopicko.f5lab.com/
 #. Finally, enter http://peruggia.f5lab.com/ and ensure you can get to that app
 #. Look at the headers for each of your requests. Did you log them all? What is the value of the Server header?
+
+   .. image:: /_static/class1/lab2_verify-remove.png
+      :width: 800
+
+.. ATTENTION::
+  OPTIONAL:  Instead of removing the **Server** header in the response, change the value of the **Server** header to **Microsoft-IIS/7.0**.
 
    .. image:: /_static/class1/lab2_verify.png
       :width: 800
