@@ -33,26 +33,53 @@ Lab 3 - HTTP to HTTPS Redirect
    .. image:: /_static/class1/select_vs.png
       :width: 800
 
+#. Click on the **Resources** tab.
+#. Click **Manage** button for the iRules section.
+
+   .. image:: /_static/class1/resources.png
+      :width: 800
+
+#. Click on HTTP_to_HTTPS_iRule from the Available box and click the << button, thus moving it to the Enabled box, your first, second, and now third iRule's should be in the Enabled box.
+
+   .. image:: /_static/class1/lab3-irules-add.png
+      :width: 800
+
+#. Click the **Finished** button.
+#. Click Local Traffic -> Virtual Servers -> Virtual Server List.
+#. Click on **https_irules_vip**
+
+   .. image:: /_static/class1/select_vs_https.png
+      :width: 800
+
 #. Click on the **Resources** tab
 #. Click **Manage** button for the iRules section
 
    .. image:: /_static/class1/resources.png
       :width: 800
 
-#. Click on HTTP_to_HTTPS_iRule from the Available box and click the << button, thus moving it to the Enabled box, your first and now second iRule should be in the Enabled box.
+#. Click on the **2 iRules** you require to enable **pool selection and Server header removal** from the previous labs from the Available box and click the << button, thus moving them to the Enabled box.
 
-   .. image:: /_static/class1/manage_irule.png
+   .. image:: /_static/class1/lab3-irules-add-https.png
       :width: 800
 
-#. Click the **Finished** button
-#. Open the Firefox browser
-#. Click the 3 horizontal line button on the far right of the address bar
-#. Use developer tools in Mozilla, or use Chrome to view headers
+#. Enter http://dvwa.f5lab.com/ and ensure you get redirected to the HTTPS virtual server.
+#. Now enter http://wackopicko.f5lab.com/ and ensure you get redirected to the HTTPS virtual server.
+#. Finally, enter http://peruggia.f5lab.com/ ensure you get redirected to the HTTPS virtual server.
 
-   .. image:: /_static/class1/firefox_developer.png
-      :width: 600
+   .. image:: /_static/class1/lab2_verify.png
+      :width: 800
 
-#. Look at the headers for each of your requests. Did you log them all? What is the value of the Server header? None of this should have changed since the last lab.
+#. From the previous lab the next two tests should confirm everything is working as before, but using HTTPS.
+#. Look at the headers for each of your requests. Did you log them all? What is the value of the Server header?
+
+   .. image:: /_static/class1/lab2_verify-remove.png
+      :width: 800
+
+.. ATTENTION::
+  OPTIONAL:  Instead of removing the **Server** header in the response, change the value of the **Server** header to **Microsoft-IIS/7.0**.
+
+   .. image:: /_static/class1/lab2_verify.png
+      :width: 800
 
 .. HINT::
 
