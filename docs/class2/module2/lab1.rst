@@ -1,193 +1,169 @@
-Lab 1 - Securing Cookies
-------------------------
+Additional Lab 1 - ASM Hooks
+-----------------
+
 
 Scenario
-~~~~~~~~
-
-The security team has done an application scan and found that the HTTP cookies are being issued unsecured. They have asked the application team to verify that all the cookies get the Security and httpOnly flags set at the application tier. But, the app team is in the middle of a new deployment and can't reallocate resources to rewrite the cookie code.  So, they have asked the F5 team to set the flags on the cookies.
-
-Restraints
-~~~~~~~~~~
-
-The following restraints prevent from implementing this solution:
-
-- The F5 administrators need to know the name of the HTTP Cookie or Cookies that are being used. 
-
-Requirements
-~~~~~~~~~~~~
-
-To meet the business's objectives the iRule must meet the following requirements:
-
-- The iRule must take a HTTP Cookie being sent from the application server and set the Secure flag and the HTTPOnly flag.
-
-- The security team also requires that the HTTP Cookie not be sent to Javascript Agents. 
-
-Lab Requirements:
-~~~~~~~~~~~~~~~~~
-
--  BIG-IP LTM, web server, client browser, and SSL server certificate.
-   If you don’t have certificates to test with, you can use the CA
-   certificate, server certificate and the private key provided in the
-   Client Certificate Inspection lab from Additional Labs section.
-
-The iRule
 ~~~~~~~~~
 
-.. code-block:: tcl
+When applications are moved to your production environment, they are secured with F5 Application Security Manager (ASM) with a well-defined security policy for each application.  The policies deployed have been tested, tuned, and are currently part of an automated build process for deployment.  Amongst other protections, an ASM policy filters all inbound requests that attempts to inject a null byte character from ever reaching the protected web servers.  
+
+In general, this protection is well advised and does not cause issues for most of your customers.  However, it has recently come to the attention of your business representatives that the policy is blocking traffic from one of your most important business partners.  This partner uses automated scripts to scrape your current inventory.  A bug in the partners scraping code is adding extra characters to each request which is violating the ASM’s policy.  The business team would like your security team to disable this protection, so that it no longer causes issue for an important partner.  
+
+
+Restraints
+~~~~~~~~~~~
+
+The following restraints complicate the request from the business team:
+
+- In ASM, the change to relax protection for null byte injection attacks is a global policy setting, and it is enforced across all requests for all users.  Disabling this protection weakens your security policy at a more global level than you are comfortable.
+- This baseline policy is deployed across a number of applications and is ingested by the DevOps team when deploying new applications.  The impact of a policy modification may have broader impact than intended.
+- Your security and compliance teams run routine scans of your applications looking for vulnerabilities that can be exploited.  By modifying the policy on a global basis, you are certain to get notifications and audit findings for a number of applications.  
+
+
+Requirements
+~~~~~~~~~~~~~
+
+To meet the business’s objectives while still maintaining a strong security policy, an iRule solution must meet the following requirements:
+
+- Any modifications to the application security policy must only affect the relevant business partner, and only for the in-scope application:
+ 
+   - Partner IP = 10.1.10.51
+   - URL = http://hackazon.f5demo.com/product/view?id=[0-100]%00
+
+- If a request contains violations other than the violation identified above, the request should be blocked.
+- Direct modifications to the ASM security policy are not allowed
+- Prior to releasing the in-scope requests to the application server, the request must be sanitized by removing the “%00” null byte string terminating partners request.
+
+Baseline Testing
+~~~~~~~~~~~~~~~~~
+
+Prior to defining a solution, validate the issue by testing the application to validate ASM’s behavior:
+
+- RDP to the lab jump station 
+- From the jump station, open Chrome and browse to http://hackazon.f5demo.com/product/view?id=72%00
+- Verify that you receive the ASM block page
+- Test a few more products (e.g. id 73, 7, 45)
+- Open Terminal application
+- Curl http://hackazon.f5demo.com/product/view?id=72%00
+- Verify the content returned is a block page from ASM
+
+- Open another Chrome window, and launch BIG-IP Configuration Utility (https://10.1.1.245)
+- From BIG-IP, verify violation in event logs:
+
+ - Click **Security -> Application Security -> Event Logs -> Application -> Requests**
+ - Examine requests for [HTTP] /product/view
+ - Check icon on request, then click All Details in the request detail to verify the Request Status is blocked
+
+
+The iRule
+~~~~~~~~~~
+
+
+.. code-block:: tcl 
    :linenos:
 
-   when HTTP_RESPONSE {
-       set ckname "mycookie"
-       if { [HTTP::cookie exists $ckname] } {
-           HTTP::cookie secure $ckname enable
-           HTTP::cookie httponly $ckname enable
-       }
+   when ASM_REQUEST_DONE {
+      set asm1_debug_verb 1
+      set asm1_debug 1
+    
+      if { [ASM::status] equals "blocked" } {
+        
+         if { $asm1_debug_verb } { 
+            log local0. "Violation count: [ASM::violation count] "
+            log local0. "Violation names: [ASM::violation names] "
+            log local0. "Violation attack types: [ASM::violation attack_types] "
+            log local0. "Violation details: [ASM::violation details] "
+        }
+        
+         if { [ASM::violation count] <= 1 } {
+         # Allow only if this request only violates a specific element of the policy 
+            if { [lindex [ASM::violation names] 0] equals "VIOLATION_HTTP_SANITY_CHECK_FAILED" } { 
+               if {$asm1_debug} {
+                  log local0. "ASM_OVERRIDE: HTTP Request Blocked by ASM with SANITY CHECK VIOLATION, URI = [HTTP::uri] "
+               }
+               if { [HTTP::uri] starts_with "/product/view?id" && [HTTP::uri] ends_with "%00" } {
+                  if { $asm1_debug } {
+                     log local0. "ASM_OVERRIDE: URI Request pattern matches override request"
+                  }  
+                    
+                  if { [ASM::client_ip] equals "10.1.10.51" } {
+                     if { $asm1_debug } {
+                        log local0. "ASM_OVERRIDE: Partner IP: [ASM::client_ip] matches override request" 
+                     }
+                     #we have a request that matches the OVERRIDE request, override and modify
+                        set new_uri [string trimright [HTTP::uri] "%00"]
+                        HTTP::uri $new_uri
+                        ASM::unblock
+                        if { $asm1_debug } {
+                           log local0. "ASM_OVERRIDE: Modified request URI, new uri = [HTTP::uri]"
+                           log local0. "ASM_OVERRIDE: Unblocking request and releasing to server"
+                        }
+                   }
+               }    
+           }
+        }
+         else {
+            if { $asm1_debug } {
+               log local0. "ASM:OVERRIDE: Request contains multiple violations, will not override sec policy"
+            }
+         }
+      }
    }
 
 
 Analysis
-~~~~~~~~
+~~~~~~~~~
 
-HTTP cookie misuse represents one of the greatest vulnerability vectors
-known to Internet communications. It’s number 2 on the Open Web
-Application Security Project’s (OWASP) Top Ten list as “weak
-authentication and session management”
-(https://www.owasp.org/index.php/OWASP_Top_Ten_Cheat_Sheet), and also
-touches other top ten list items, including XSS, security
-misconfiguration, sensitive data exposure, and cross site request
-forgery. 
+ASM Event/Command Details:
 
-So why do we use cookies if they’re so easy to get wrong? Well,
-as it turns out, HTTP as a “stateless” protocol doesn’t provide its own
-session management mechanism. So cookies are basically the best and
-potentially the only way to maintain information about a user session across
-multiple HTTP requests and responses. Too often, however, applications
-employ mixed content (HTTP and HTTPS in the same application), or worse,
-store too much information in that cookie. 
+- ``ASM_REQUEST_DONE`` event is triggered after ASM has finished processing the request and found all violations of the ASM policy.
+- ``[ASM::violations]`` command will return the list of violations found in the request or response with details on each violation
+- ``ASM::unblock`` command overrides the blocking action for a request that had blocking violation
 
-If an HTTP cookie is being used to maintain an authentication application 
-session, it’s always a best practice to encrypt every part of that application. 
-And it is never a best practice to store anything more than an identifier 
-(some seemingly random and unpredictable blob of characters) in a cookie. 
+Rule Details
+~~~~~~~~~~~~~
 
-There are two built-in mechanisms defined in RFC 6265 that can help. But first, 
-let’s first understand what an HTTP cookie is. An HTTP cookie is essentially
-an HTTP header that is sent from the server to the client, and then sent
-back to the server in each and every subsequent request. To send a cookie, 
-the server will format the header as given below:
+The rule does the following:
 
-``Set-Cookie: foo=bar; path=/; domain=domain.com; expires=Sat, 02 May 2009 23:38:35 GMT``
+- Inspects the blocking status of the request.  If the request is blocked, the rule validates that request contains only a single violation. This violation is the one whose approval has been given to override (VIOLATION_HTTP_SANITY_CHECK_FAILED) and the request originates from the expected business partner.
+- If the request matches the above conditions, the irule will do the following: 
+ 
+   - Strip the expected violation from the request
+   - Unblock the request
 
-where
-
-- ``foo=bar`` represents the mandatory name=value content
-
-- ``path=/`` represents the mandatory path, or scope of the cookie,
-  such that the browser will only return this cookie if the request is
-  in the designated path (in this case the entire website)
-
-- ``domain=`` represents another, albeit optional, scoping mechanism
-  that tells the browser that this cookie can be sent with any request
-  in the same domain or subdomain. Unlike the path attribute which
-  reduces visibility, the domain attribute increases visibility by
-  making the cookie potentially available across multiple subdomains.
-  Be careful with the domain attribute though. This is an often-used
-  way to build single sign-on, where users authenticate at one domain,
-  but are allowed access to other subdomains by virtue of the cookie
-  being available to all. At the very least, if you don’t own every
-  subdomain that this cookie could possibly be sent to, then someone
-  else may get your user’s session cookies.
-
-- ``expires=`` represents an optional attribute that indicates how
-  long the client should retain this cookie. If the expires attribute
-  is not in the Set-Cookie header, then the cookie is considered
-  “session-based” and will generally live for as long as the browser
-  session (ie. closing the browser deletes the cookie). If the expires
-  attribute exists, the cookie is typically stored on disk or other
-  long-term memory that will persist after the browser is closed and a
-  new one is opened. This is, generally speaking, not a best practice
-  from a security perspective. If a cookie is used to maintain some
-  sort of client state information, and the computer itself is
-  compromised, then that state can also be compromised. It is
-  typically far better to not include an expires attribute, thus
-  deleting the cookie when the browser closes. You can, however,
-  delete an existing in-memory session-based cookie by sending a new
-  cookie with the same attributes but with an expires attribute in the
-  past.
-
-Once the cookie has been received, and depending on scope, the client
-will transmit that information back to the server in every request.
-
-``Cookie: foo=bar``
-
-Notice that a request cookie doesn’t have path, domain or expires
-information. This information is meant for the client only, so doesn’t
-need to be relayed back to the server.
-
-Aside from adjusting path and domain attributes accordingly to limit or
-expand visibility, there are two additional scoping attributes that play
-a crucial part in cookie security.
-
-- ``secure`` represents a single (no value) flag that tells the browser
-  client to only transmit this cookie back in a secure (ie. encrypted
-  HTTPS) request. This attribute is critical against attacks like cross
-  site scripting (XSS) or request forgery (CSRF) where a browser may
-  otherwise be tricked into sending session cookies to an unencrypted
-  host. If you’re encrypting the entire application, the secure cookie
-  flag is an excellent option.
-
-
-- ``httpOnly`` represents a single (no value) flag that tells the
-  browser client to only transmit this cookie back to non-scripted user
-  agents. In other words, if a JavaScript agent makes a request inside the
-  browser, the cookie will not be sent with this request. Many XSS and
-  CSRF exploits rely on the ability to grab session cookies with rogue
-  browser scripting (ex. JavaScript, vbscript, etc.). There are of course
-  instances where a JavaScript agent needs to send the cookie, like in
-  side-channel Ajax requests, but if not, this flag is highly useful.
-
-
-So putting these attributes together might look something like this:
-
-``Set-Cookie: foo=bar; path=/; secure; httponly``
-
-we have removed the **expires** attribute because file-based cookies are
-almost always a bad idea. And we removed the **domain** attribute because
-there are better and more secure ways to do single sign-on. So in this
-example, we are setting a cookie called “foo” with a value of “bar”, that
-is scoped to all paths within this host (path=/), and will only be
-transmitted over HTTPS and only to non-script agents. As I mentioned a
-few times, there’s simply no substitute for a good security product (ie.
-web application firewall, malware scanner, etc.) and no excuse not to
-write secure code, but if you find yourself in a situation where secure
-cookie coding isn’t happening in the application, then here’s a quick
-and easy way to enable it with F5 iRules.
-
-
--  In this very simple iRule, we’re triggering an event on the HTTP
-   response being sent from the application server, looking for the
-   cookie ``mycookie``. If it exists, enables the ``secure`` and
-   ``httpOnly`` flags. This command effectively includes the ``secure``
-   and ``httpOnly`` flags in the ``Set-Cookie`` header being sent to the
-   client.
 
 Testing
+~~~~~~~~
+
+- From BIG-IP Configuration Utility, open **Local Traffic -> Virtual Servers** and select ``vs_hackazon_http virtual``. Click the Resources tab. In the iRules section, click Manage.  Move ``sec_irules_asm_hook_1`` from Available section to the Enabled section and click the Finished button.
+- From the Jump Station, open the Terminal application and SSH to the BIG-IP: ssh root@10.1.1.245.
+
+   .. code-block:: console
+      
+      [root@bigipo01:Active:Standalone] config # tail -f /var/log/ltm
+
+- Re-open the Chrome window used in the Baseline Testing section, and again browse to http://hackazon.f5demo.com/product/view?id=72%00  
+ 
+- Earlier, this request was receiving an ASM block page.  Now, you should be getting access to the page.
+
+- From the SSH session, review the log messages associated with the above request.  Details on the request, and the override decision should be present in the logs.
+- From BIG-IP, verify violation in event logs:
+ 
+ - Click **Security -> Event Logs -> Application -> Requests**
+ - Examine requests for [HTTP] /product/view
+ - Check icon on request, then click All Details in the request detail to verify the Request Status is unblocked
+
+**Test additional conditions:**
+   
+- From Chrome Window, modify the request to include an additional violation: http://hackazon.f5demo.com/product/view<script>?id=72%00
+
+- This request should receive a block page because it contains violations that were not approved per override request
+
+- From Chrome window, send requests for additional URLs matching the override pattern: http://hackazon.f5demo.com/product/view?id=73%00, http://hackazon.f5demo.com/product/view?id=7%00
+
+
+Review
 ~~~~~~~
-In the BIG-IP, 
 
-- Access HTTPS URL without iRule to see current cookie status.
+While a relatively simple scenario, the above lab exercise demonstrates the use of iRules in concert with the F5 ASM to handle special situations. The above example would have required a broader weakening of an organization’s application security policy if the request from the business was relaxed directly by the ASM policy tweaks.  Also, this type of change when deployed through a policy re-configuration often has downstream impact on orchestration and automation tools and can lead to false positives with vulnerability.  Using an iRule, we were able to temporarily override the security policy without any policy changes, mitigate the exposed vulnerability, and meet the requirements outlined by the business representatives.
 
-   ``curl –vk https://www.f5demolabs.com``	
-
-- Attach the iRule to the HTTPS VIP
-
-- Access the HTTPS URL to see the change in the cookie information.
-
-   ``curl -vk https://www.f5demolabs.com``
-
-A word on cookie security – the ``secure`` and ``httpOnly`` flags are
-exceedingly important for the proper and secure use of HTTP cookies, but
-alone they are not perfect. There are still ways to compromise HTTP
-cookies, even with these flags enabled, so do take additional
-precautions which should definitely include a solid web application
-firewall product and malware scanning and intrusion detection products.
