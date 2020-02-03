@@ -1,5 +1,5 @@
 
-Lab 2 - DNS Hooks: Amplification attackers
+Additional Lab 4 - DNS Hooks: Amplification attackers
 ------------------------------------------
 
 Scenario:

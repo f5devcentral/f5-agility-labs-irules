@@ -1,169 +1,216 @@
-Lab 2 - ASM Hooks
------------------
+Lab 2 - HTTP Throttling
+-----------------------
 
-
-Scenario
+Scenario:
 ~~~~~~~~~
 
-When applications are moved to your production environment, they are secured with F5 Application Security Manager (ASM) with a well-defined security policy for each application.  The policies deployed have been tested, tuned, and are currently part of an automated build process for deployment.  Amongst other protections, an ASM policy filters all inbound requests that attempts to inject a null byte character from ever reaching the protected web servers.  
+Your company has setup a new web application and did not have the time to develop a WAF 
+policy. Due to your company's profile, several bad actors have threatened to attack using 
+SlowLoris and SlowPost attacks to create a denial of service.  Although Avanced WAF or ASM can handle 
+this very easily and would be the best tool to use, we don't have the resources available 
+to test implementing the policy.  In this lab, we are going to use an iRule that throttles 
+the number of requests coming into the application.
 
-In general, this protection is well advised and does not cause issues for most of your customers.  However, it has recently come to the attention of your business representatives that the policy is blocking traffic from one of your most important business partners.  This partner uses automated scripts to scrape your current inventory.  A bug in the partners scraping code is adding extra characters to each request which is violating the ASM’s policy.  The business team would like your security team to disable this protection, so that it no longer causes issue for an important partner.  
-
-
-Restraints
+Restraints:
 ~~~~~~~~~~~
 
-The following restraints complicate the request from the business team:
+The following restraints complicate the request to implement the throttling of HTTP requests:
 
-- In ASM, the change to relax protection for null byte injection attacks is a global policy setting, and it is enforced across all requests for all users.  Disabling this protection weakens your security policy at a more global level than you are comfortable.
-- This baseline policy is deployed across a number of applications and is ingested by the DevOps team when deploying new applications.  The impact of a policy modification may have broader impact than intended.
-- Your security and compliance teams run routine scans of your applications looking for vulnerabilities that can be exploited.  By modifying the policy on a global basis, you are certain to get notifications and audit findings for a number of applications.  
+-  You need to understand the number of the requests that would be coming from a single IP address.
 
+-  Some requests may be coming from companies using a single proxy IP address to make the request.  Throttling those requests to only 10 per 10 seconds could impact the ability of a partner company to access the site.  
 
-Requirements
+Requirements:
 ~~~~~~~~~~~~~
 
-To meet the business’s objectives while still maintaining a strong security policy, an iRule solution must meet the following requirements:
+To meet the business's objectives the iRule must meet the following requirements:
 
-- Any modifications to the application security policy must only affect the relevant business partner, and only for the in-scope application:
+-  The rule must keep a single client from making too many HTTP requests to a single VIP thus stopping a SlowLoris or SlowPost attack.
+
+-  The rule should be able to adjust to the multiple customers coming through a proxy IP address.
  
-   - Partner IP = 10.1.10.51
-   - URL = http://hackazon.f5demo.com/product/view?id=[0-100]%00
-
-- If a request contains violations other than the violation identified above, the request should be blocked.
-- Direct modifications to the ASM security policy are not allowed
-- Prior to releasing the in-scope requests to the application server, the request must be sanitized by removing the “%00” null byte string terminating partners request.
-
-Baseline Testing
-~~~~~~~~~~~~~~~~~
-
-Prior to defining a solution, validate the issue by testing the application to validate ASM’s behavior:
-
-- RDP to the lab jump station 
-- From the jump station, open Chrome and browse to http://hackazon.f5demo.com/product/view?id=72%00
-- Verify that you receive the ASM block page
-- Test a few more products (e.g. id 73, 7, 45)
-- Open Terminal application
-- Curl http://hackazon.f5demo.com/product/view?id=72%00
-- Verify the content returned is a block page from ASM
-
-- Open another Chrome window, and launch BIG-IP Configuration Utility (https://10.1.1.245)
-- From BIG-IP, verify violation in event logs:
-
- - Click **Security -> Application Security -> Event Logs -> Application -> Requests**
- - Examine requests for [HTTP] /product/view
- - Check icon on request, then click All Details in the request detail to verify the Request Status is blocked
-
 
 The iRule
-~~~~~~~~~~
+~~~~~~~~~
 
-
-.. code-block:: tcl 
+.. code-block:: tcl
    :linenos:
 
-   when ASM_REQUEST_DONE {
-      set asm1_debug_verb 1
-      set asm1_debug 1
-    
-      if { [ASM::status] equals "blocked" } {
-        
-         if { $asm1_debug_verb } { 
-            log local0. "Violation count: [ASM::violation count] "
-            log local0. "Violation names: [ASM::violation names] "
-            log local0. "Violation attack types: [ASM::violation attack_types] "
-            log local0. "Violation details: [ASM::violation details] "
+   when RULE_INIT {
+      # This defines the maximum requests to be served within the timing interval defined by the static::timeout variable below.
+      set static::maxReqs 4;
+
+      # Timer Interval in seconds within which only static::maxReqs Requests are allowed.
+      # (i.e: 10 req per 2 sec == 5 req per sec)
+      # If this timer expires, it means that the limit was not reached for this interval and the request
+      # counting starts over.
+      # Making this timeout large increases memory usage.  Making it too small negatively affects performance.
+      set static::timeout 30;
+   }
+
+   when HTTP_REQUEST {
+     # The iRule allows throttling for only sepecific Methods.  You list the Methods_to_throttle
+     # in a datagroup.
+     # If you need to throttle by URI use an statement like this:
+     #                               if { [class match [HTTP::uri] equals URIs_to_throttle] }
+     # Note: a URI is everything after the hostname: e.g. /path1/login.aspx?name=user1
+     #
+
+     if { [class match [HTTP::method] equals Methods_to_throttle] } {
+
+        # The following expects the IP addresses in multiple X-forwarded-for headers.  It picks the first one.
+        if { [HTTP::header exists X-forwarded-for] } {
+           set client_IP_addr [getfield [lindex  [HTTP::header values X-Forwarded-For]  0] "," 1]
+        } else {
+           set client_IP_addr [IP::client_addr]
         }
-        
-         if { [ASM::violation count] <= 1 } {
-         # Allow only if this request only violates a specific element of the policy 
-            if { [lindex [ASM::violation names] 0] equals "VIOLATION_HTTP_SANITY_CHECK_FAILED" } { 
-               if {$asm1_debug} {
-                  log local0. "ASM_OVERRIDE: HTTP Request Blocked by ASM with SANITY CHECK VIOLATION, URI = [HTTP::uri] "
-               }
-               if { [HTTP::uri] starts_with "/product/view?id" && [HTTP::uri] ends_with "%00" } {
-                  if { $asm1_debug } {
-                     log local0. "ASM_OVERRIDE: URI Request pattern matches override request"
-                  }  
-                    
-                  if { [ASM::client_ip] equals "10.1.10.51" } {
-                     if { $asm1_debug } {
-                        log local0. "ASM_OVERRIDE: Partner IP: [ASM::client_ip] matches override request" 
-                     }
-                     #we have a request that matches the OVERRIDE request, override and modify
-                        set new_uri [string trimright [HTTP::uri] "%00"]
-                        HTTP::uri $new_uri
-                        ASM::unblock
-                        if { $asm1_debug } {
-                           log local0. "ASM_OVERRIDE: Modified request URI, new uri = [HTTP::uri]"
-                           log local0. "ASM_OVERRIDE: Unblocking request and releasing to server"
+        # The matching below expects a datagroup named: Throttling_Whitelist_IPs
+        # The Condition of the if statement is true if the IP address is NOT in the whitelist.
+        if { not ([class match $client_IP_addr equals Throttling_Whitelist_IPs ] )} {
+            set getcount [table lookup -notouch $client_IP_addr]
+            if { $getcount equals "" } {
+                table set $client_IP_addr "1" $static::timeout $static::timeout
+                # record of this session does not exist, starting new record, request is allowed.
+             } else {
+                   if { $getcount < $static::maxReqs } {
+                       log local0. "Request Count for $client_IP_addr is $getcount"
+                       table incr -notouch $client_IP_addr
+                       # record of this session exists but request is allowed.
+                   } else {
+                        HTTP::respond 403 content {
+                             <html>
+                             <head><title>HTTP Request denied</title></head>
+                             <body>Your HTTP requests are being throttled.</body>
+                             </html>
                         }
                    }
-               }    
-           }
-        }
-         else {
-            if { $asm1_debug } {
-               log local0. "ASM:OVERRIDE: Request contains multiple violations, will not override sec policy"
             }
          }
       }
    }
 
 
+
 Analysis
-~~~~~~~~~
+~~~~~~~~
 
-ASM Event/Command Details:
+-  Notice that RULE\_INIT sets up a set of variables that respectively
+   define the maximum rate of requests and a timeout value. Alter these values according
+   to your local preferences.
 
-- ``ASM_REQUEST_DONE`` event is triggered after ASM has finished processing the request and found all violations of the ASM policy.
-- ``[ASM::violations]`` command will return the list of violations found in the request or response with details on each violation
-- ``ASM::unblock`` command overrides the blocking action for a request that had blocking violation
+-  The iRule creates an internal table for each client source address,
+   and an entry for each request is added to this table.
 
-Rule Details
-~~~~~~~~~~~~~
+-  As each new request arrives, the iRule counts the number of entries
+   in the respective table. If the count doesn’t exceed the maxRate
+   threshold, a new entry is created and the request is allowed through.
 
-The rule does the following:
-
-- Inspects the blocking status of the request.  If the request is blocked, the rule validates that request contains only a single violation. This violation is the one whose approval has been given to override (VIOLATION_HTTP_SANITY_CHECK_FAILED) and the request originates from the expected business partner.
-- If the request matches the above conditions, the irule will do the following: 
- 
-   - Strip the expected violation from the request
-   - Unblock the request
+-  If the request exceeds the maxRate threshold, the iRule returns an
+   HTTP error response to the client.
 
 
 Testing
-~~~~~~~~
-
-- From BIG-IP Configuration Utility, open **Local Traffic -> Virtual Servers** and select ``vs_hackazon_http virtual``. Click the Resources tab. In the iRules section, click Manage.  Move ``sec_irules_asm_hook_1`` from Available section to the Enabled section and click the Finished button.
-- From the Jump Station, open the Terminal application and SSH to the BIG-IP: ssh root@10.1.1.245.
-
-   .. code-block:: console
-      
-      [root@bigipo01:Active:Standalone] config # tail -f /var/log/ltm
-
-- Re-open the Chrome window used in the Baseline Testing section, and again browse to http://hackazon.f5demo.com/product/view?id=72%00  
- 
-- Earlier, this request was receiving an ASM block page.  Now, you should be getting access to the page.
-
-- From the SSH session, review the log messages associated with the above request.  Details on the request, and the override decision should be present in the logs.
-- From BIG-IP, verify violation in event logs:
- 
- - Click **Security -> Event Logs -> Application -> Requests**
- - Examine requests for [HTTP] /product/view
- - Check icon on request, then click All Details in the request detail to verify the Request Status is unblocked
-
-**Test additional conditions:**
-   
-- From Chrome Window, modify the request to include an additional violation: http://hackazon.f5demo.com/product/view<script>?id=72%00
-
-- This request should receive a block page because it contains violations that were not approved per override request
-
-- From Chrome window, send requests for additional URLs matching the override pattern: http://hackazon.f5demo.com/product/view?id=73%00, http://hackazon.f5demo.com/product/view?id=7%00
-
-
-Review
 ~~~~~~~
 
-While a relatively simple scenario, the above lab exercise demonstrates the use of iRules in concert with the F5 ASM to handle special situations. The above example would have required a broader weakening of an organization’s application security policy if the request from the business was relaxed directly by the ASM policy tweaks.  Also, this type of change when deployed through a policy re-configuration often has downstream impact on orchestration and automation tools and can lead to false positives with vulnerability.  Using an iRule, we were able to temporarily override the security policy without any policy changes, mitigate the exposed vulnerability, and meet the requirements outlined by the business representatives.
+A very simple way to test this iRule implementation is with a cURL
+script from the Terminal command line. Here’s a Bash representation
+of that script.  We have already put the script on the Ubuntu client and instructions follow the sample code below.
 
+.. code-block:: console
+   :linenos:
+
+   #!/bin/bash
+   while [ 1 ]
+   do
+      curl http://www.f5demolabs.com --write-out "%{http_code}\n" --silent -o /dev/null
+   done
+   
+- In Terminal, cd to scripts directory and run ``bash http_throttling``.
+- Notice that you are getting 200 responses from each request.  We will now add the iRule to the VIP.
+- Login to BIG-IP from Chrome browser.
+- Go to Local->Virtual Servers and select the http virtual server.
+- Select the resources tab and select Manage for iRules.
+- Select the Lab2_1 irule and move it into Enabled.
+- Select Finished.
+- To view logging information on the F5 BIG-IP follow these instruction:
+- Modify the iRule on the F5 to uncomment the line that states:
+    ``log local0. "Request Count for $client_IP_addr is $getcount"``
+- Click on Update on the iRule.
+- Open ssh, connect to BIG-IP, and enter the bash shell.
+- Run a tail of the BIG-IP LTM log from command line as follows:
+
+   ``tail –f /var/log/ltm``
+
+The script will make repeated HTTP GET requests. When it exceeds the
+threshold the iRule will generate a 403 error response and prevent
+access to the web server until the **timeout** static variable time
+is reached. 
+
+- Use the CTRL-C keyboard combination to stop the script.
+
+Bonus version
+~~~~~~~~~~~~~
+
+The above iRule presents an extremely simple approach to HTTP
+request throttling and is based solely on client source address. The
+following bonus example extends that functionality to allow for
+throttling of specific URLs.
+
+.. code-block:: tcl
+   :linenos:
+
+   when RULE_INIT {
+       # The max requests served within the timing interval per the static::timeout variable
+       set static::maxReqs 4
+       # Timer Interval in seconds within which only static::maxReqs Requests are allowed.  
+       # (i.e: 10 req per 2 sec == 5 req per sec) 
+       # If this timer expires, it means that the limit was not reached for this interval and    
+       # the request counting starts over. Making this timeout large increases memory usage.   
+       # Making it too small negatively affects performance.  
+       set static::timeout 2
+   }
+   when HTTP_REQUEST {
+       # Allows throttling for only specific URIs. List the URIs_to_throttle in a data group. 
+       # Note: a URI is everything after the hostname: e.g. /path1/login.aspx?name=user1
+       if { [class match [HTTP::uri] equals URIs_to_throttle] } {
+           # The following expects the IP addresses in multiple X-forwarded-for headers. 
+           # It picks the first one. If XFF isn’t defined it can grab the true source IP.
+           if { [HTTP::header exists X-forwarded-for] } {
+               set cIP_addr [getfield [lindex  [HTTP::header values X-Forwarded-For]  0] "," 1]
+           } else {
+               set cIP_addr [IP::client_addr]
+           }
+           set getcount [table lookup -notouch $cIP_addr]
+           if { $getcount equals "" } {
+               table set $cIP_addr "1" $static::timeout $static::timeout
+               # Record of this session does not exist, starting new record 
+               # Request is allowed.
+           } else {
+               if { $getcount < $static::maxReqs } {
+                   log local0. "Request Count for $cIP_addr is $getcount"  
+                   table incr -notouch $cIP_addr
+                   # record of this session exists but request is allowed.
+               } else {
+                   HTTP::respond 403 content {
+                   <html>
+                   <head><title>HTTP Request denied</title></head>
+                   <body>Your HTTP requests are being throttled.</body>
+                   </html>
+                   }
+               }
+           }
+       }
+   }
+
+By running the ``http_throttling_bonus`` script, you are checking HTTP requests
+limits against the URL paths in the ``URIs_to_throttle`` datagroup. Here’s a 
+Bash representation of that script.
+
+.. code-block:: console
+   :linenos:
+
+   #!/bin/bash
+   while [ 1 ]
+   do
+      curl http://www.f5demolabs.com/admin/ --write-out "%{http_code}\n" --silent -o /dev/null
+   done   

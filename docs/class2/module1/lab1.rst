@@ -75,7 +75,7 @@ Analysis
    example, see David Holmes’ excellent guide on dumping this
    information to a Google pie chart:
    
-   https://devcentral.f5.com/codeshare/categorize-ssl-traffic-by-version-display-as-graph/tag/istats
+   https://devcentral.f5.com/s/articles/categorize-ssl-traffic-by-version-display-as-graph
 
 Testing
 ~~~~~~~

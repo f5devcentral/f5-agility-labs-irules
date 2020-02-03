@@ -1,7 +1,7 @@
 Cooking with iRules - Security/SSL
 ==================================
 
-Security vulnerabilities are on the rise. In 2017, nearly 81 new 0-day vulnerabilities were discovered each week (according to Symantec's 2017 Internet Security Threat Report), and the number of known critical vulnerabilities is so large that application security teams simply cannot patch quickly enough.  As you’re no doubt aware by now, F5 iRules can often “fix”
+Security vulnerabilities are on the rise. In 2018, over 16,000 new CVEs were published, a more than 300% increase over 5 years (according to Skybox Security's 2019 Vulnerability and Threat Trends Report), and the number of known critical vulnerabilities is so large that application security teams simply cannot patch quickly enough.  As you’re no doubt aware by now, F5 iRules can often “fix”
 things that are missing or hard to solve in the existing application
 stack. Of course, custom code should never take the place of a good
 security product, but arguably there’s no single security device that
