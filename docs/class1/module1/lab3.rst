@@ -66,7 +66,7 @@ Lab 3 - HTTP to HTTPS Redirect
 #. Now enter http://wackopicko.f5lab.com/ and ensure you get redirected to the HTTPS virtual server.
 #. Finally, enter http://peruggia.f5lab.com/ ensure you get redirected to the HTTPS virtual server.
 
-   .. image:: /_static/class1/lab2_verify.png
+   .. image:: /_static/class1/lab3_verify.png
       :width: 800
 
 #. From the previous lab the next two tests should confirm everything is working as before, but using HTTPS.
