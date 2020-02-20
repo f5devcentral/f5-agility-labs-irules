@@ -1,7 +1,7 @@
 Cooking with iRules - HTTP
 ==========================
 
-This class covers the following topics:
+This class covers the following topics: 
 
 - HTTP Protocol Review
 - HTTP Request Side Overview
