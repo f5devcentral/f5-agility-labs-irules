@@ -1,6 +1,6 @@
-#####################################################
+#################################
 Lab 5 - HTTP Payload Manipulation
-#####################################################
+#################################
 
 Collect an HTTP payload, change it, and release it to the client.
 As in the previous lab replace Damn with Darn, or get creative.
@@ -21,7 +21,7 @@ As in the previous lab replace Damn with Darn, or get creative.
 #. Click on the Resources tab
 #. Click Manage button for the iRules section
 
-   .. image:: /_static/class1/iRulesManage.png
+   .. image:: /_static/class1/manage_irule.png
       :width: 800
 
 #. What should you do here? (Hint: Remove Stream_iRule)
