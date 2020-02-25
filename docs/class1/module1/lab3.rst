@@ -1,5 +1,5 @@
 #####################################################
-Lab 3 – HTTP to HTTPS Redirect
+Lab 3 - HTTP to HTTPS Redirect
 #####################################################
 
 Create an HTTP to HTTPS redirect. Additionally, when traffic goes to the HTTPS side the app selection should still work as well as the header stripping.

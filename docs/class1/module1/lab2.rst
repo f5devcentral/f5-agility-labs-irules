@@ -1,5 +1,5 @@
 #####################################################
-Lab 2 – Log and Change Headers
+Lab 2 - Log and Change Headers
 #####################################################
 
 Your iRule should log all request headers and all response headers and should remove the response header “Server”.

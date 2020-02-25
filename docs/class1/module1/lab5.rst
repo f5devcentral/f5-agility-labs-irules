@@ -1,5 +1,5 @@
 #####################################################
-Lab 5 – HTTP Payload Manipulation
+Lab 5 - HTTP Payload Manipulation
 #####################################################
 
 Collect an HTTP payload, change it, and release it to the client.

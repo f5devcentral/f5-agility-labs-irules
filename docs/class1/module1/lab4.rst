@@ -1,5 +1,5 @@
 #####################################################
-Lab 4 – Stream Profile
+Lab 4 - Stream Profile
 #####################################################
 
 Create a Stream Profile to change the body of the DVWA site
