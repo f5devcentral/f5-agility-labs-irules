@@ -1,6 +1,8 @@
+
 #####################################################
 Lab 4 - Stream Profile
 #####################################################
+
 
 Create a Stream Profile to change the body of the DVWA site
 
@@ -9,34 +11,55 @@ Create a Stream Profile to change the body of the DVWA site
 
 #. Open Chrome Browser
 #. Enter https://bigip1 into the address bar and hit Enter
-#. Login with username: admin password: admin
-#. Click Local Traffic -> iRules  -> iRules List
-#. Click Create button
-#. Enter Name of Stream_iRule
-#. Enter Your Code
-#. Click Finished
-#. Click Local Traffic -> Virtual Servers -> Virtual Server List
-#. Click on https_irules_vip
-#. In the Configuration section ensure it says Advanced in the drop down
-#. Go to the Stream Profile section and select stream
-#. Scroll to the bottom and click the Update button
-#. Click on the Resources tab
-#. Click Manage button for the iRules section
 
-   .. image:: /_static/class1/iRulesManage.png
+   .. image:: /_static/class1/bigip_login.png
       :width: 800
 
-#. What should you do here?
-#. Click the Finished button
+#. #. Login with **username**: **admin** 
+              **password**: **admin.F5demo.com**
+#. Click Local Traffic -> iRules  -> iRules List
+#. Click **Create** button
+
+   .. image:: /_static/class1/irule_create.png
+      :width: 800
+
+#. Enter Name of **Stream_iRule**
+#. Enter Your Code
+#. Click **Finished**
+#. Click Local Traffic -> Virtual Servers -> Virtual Server List
+#. Click on **https_irules_vip**
+
+   .. image:: /_static/class1/select_vs.png
+      :width: 800
+
+#. In the **Configuration** section ensure it says **Advanced** in the drop down
+#. Go to the **Stream Profile** section and select **stream**
+
+   .. image:: /_static/class1/advanced-stream.png
+      :width: 800
+
+#. Scroll to the bottom and click the **Update** button
+#. Click on the **Resources** tab at the top of the page.
+#. Click **Manage** button for the iRules section
+
+   .. image:: /_static/class1/resources.png
+      :width: 800
+
+#. Click on Stream_iRule from the Available box and click the << button, thus moving it to the Enabled box, your first and now second iRule should be in the Enabled box.
+
+   .. image:: /_static/class1/manage_irule.png
+      :width: 800
+
+#. Click the **Finished** button
 #. Open the Firefox browser
-#. Enter https://dvwa.f5lab.com  and ensure you get there and it is HTTPS and that the word “Damn” is replaced with “Darn”
+#. Enter https://dvwa.f5lab.com and ensure you get there and it is HTTPS and that the word **Damn** is replaced with **Darn**
 
 .. HINT::
 
   Basic Hint
   `if you need a hint here is some example code: <../../class1/module1/irules/lab4irule_0.html>`__
 
-  Link to DevCentral: https://devcentral.f5.com/wiki/iRules.STREAM.ashx
+  Link to DevCentral: https://clouddocs.f5.com/api/irules/STREAM.html
 
   If you are really stuck, here is what we are looking for:
 

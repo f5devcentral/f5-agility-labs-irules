@@ -1,5 +1,5 @@
-NPM and Exception Handling
---------------------------
+Lab 1 - NPM and Exception Handling
+----------------------------------
 
 Test and Review the Existing Configuration
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -383,7 +383,7 @@ commands:
 
 .. code-block:: console
 
-   [root@localhost] # cd /var/ilx/workspaces/Common /ilxlab2/extensions/ilxlab2_ext/
+   [root@localhost] # cd /var/ilx/workspaces/Common/ilxlab2/extensions/ilxlab2_ext/
    [root@localhost] # npm install validator --save
    validator@6.1.0 node_modules/validator
    [root@localhost] # ls node_modules/

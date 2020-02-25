@@ -1,6 +1,8 @@
+
 #####################################################
 Lab 5 - HTTP Payload Manipulation
 #####################################################
+
 
 Collect an HTTP payload, change it, and release it to the client.
 As in the previous lab replace Damn with Darn, or get creative.
@@ -10,7 +12,7 @@ As in the previous lab replace Damn with Darn, or get creative.
 
 #. Open Chrome Browser
 #. Enter https://bigip1 into the address bar and hit Enter
-#. Login with username: admin password: admin
+#. Login with username: admin password: admin.F5demo.com
 #. Click Local Traffic -> iRules  -> iRules List
 #. Click Create button
 #. Enter Name of HTTP_Payload_iRule
@@ -21,7 +23,7 @@ As in the previous lab replace Damn with Darn, or get creative.
 #. Click on the Resources tab
 #. Click Manage button for the iRules section
 
-   .. image:: /_static/class1/iRulesManage.png
+   .. image:: /_static/class1/manage_irule.png
       :width: 800
 
 #. What should you do here? (Hint: Remove Stream_iRule)
@@ -35,9 +37,9 @@ As in the previous lab replace Damn with Darn, or get creative.
 
   `if you need a hint here is some example code: <../../class1/module1/irules/lab5irule_0.html>`_
 
-  Link to DevCentral: https://devcentral.f5.com/wiki/iRules.HTTP__collect.ashx
+  Link to DevCentral: https://clouddocs.f5.com/api/irules/HTTP__collect.html
 
-  Link to DevCentral: https://devcentral.f5.com/wiki/iRules.HTTP__release.ashx
+  Link to DevCentral: https://clouddocs.f5.com/api/irules/HTTP__release.html
 
 
   If you are really stuck, here is what we are looking for:

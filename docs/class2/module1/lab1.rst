@@ -1,172 +1,152 @@
-Lab 1 - HTTP Throttling
------------------------
+Lab 1 - TLS Version Control 
+---------------------------
 
-There are a number of well-known vulnerabilities that focus on attacking
-HTTP (web servers) with large numbers of requests, or large request
-payloads (ex. Slow Loris, Slow Post) to produce a denial of service. As
-mentioned in the introduction, custom code should never replace a solid
-security product that can handle these types of vulnerabilities, and
-indeed F5’s Application Security Manager (ASM) is well-versed at
-protecting against HTTP attacks. That said, you may still want to do
-some HTTP request throttling in an iRule, if only for a specific URL,
-request method, or any number of other HTTP attributes. Here’s an
-example of what that might look like.
+Scenario
+~~~~~~~~
 
-Objectives:
+If you care about security at all, then you also need to care about SSL
+and TLS. These are the protocols that provide encryption to the Internet
+traffic. It’s the "S" in HTTPS, FTPS, and IMAPS. You get the picture!
 
--  Deploy and test the example HTTP throttling iRule code
+Without encryption, all communication between a client and server is 
+visible for any third party to see and this can have some pretty 
+devastating effects. Encryption is a cornerstone of network security. 
+If you’ve been paying attention to the news the last few years, you’re 
+probably also aware that SSL and TLS are not without their own flaws. 
+Exploits like BEAST, Heartbleed, and POODLE take advantage of
+specific holes in the SSL and TLS protocols. To stay ahead of these
+vulnerabilities, industry best practices suggest that we avoid some
+versions of these protocols specifically SSLv2, SSLv3, and now TLSv1.
+This also applies to certain ciphers such as MD5, RC4, and eventually 
+the RSA key exchange. 
 
-Lab Requirements:
+The F5 BIG-IP platforms make it extremely easy to control and enforce 
+these protocols and ciphers but at the same time, you may not simply 
+want to "break" some users. If your income depends on Internet commerce, 
+the last thing you may want to do is block customers from buying from you 
+because they have a slightly out-of-date browser. Eventually, most of these
+older browsers will go away or at least enough of them that you can justify 
+disabling lower encryption protocols and ciphers. But, how do you know? 
 
--  BIG-IP LTM, web server and client (Linux command line client
-   preferred)
-   
--  HTTP throttling scripts under scripts directory in Cygwin Terminal   
+F5 iRules have access to everything in the OSI layers from 3 to 7 that includes 
+some pretty rich information about SSL and TLS. Let’s take a look at an iRule 
+that will catalog the SSL/TLS versions that clients are using.
+
+.. NOTE:: A word on "mixed content" – All too often, developers or development
+   platforms provide access to both HTTP and HTTPS content within the same
+   application. This is referred to as "mixed content" and can have some
+   significant security implications. For example, an application may
+   redirect a user to an HTTPS URL to authenticate, but then switch back to
+   HTTP after authentication to access normal application content. At the
+   very least, the HTTPS authentication is very likely going to set up a
+   "session" with the user, which will also very likely to be maintained by an
+   HTTP cookie in the browser. If the application session is now
+   communicating via HTTP, all of that user session information is in the
+   clear. Long story short, don’t allow mixed content in your applications.
+   If there is *anything* in your application worth protecting with
+   encryption, it is a best practice to encrypt *everything*.
+
+Requirements
+~~~~~~~~~~~~
+
+-  BIG-IP LTM, web server, client browser, and a SSL server certificate.
+   If you don’t have certificates to test with, you can use the CA
+   certificate, server certificate, and private key provided in the
+   Client Certificate Inspection lab from Additional labs section.
 
 The iRule
 ~~~~~~~~~
 
 .. code-block:: tcl
    :linenos:
-   :emphasize-lines: 13,18
 
-    when RULE_INIT {
-        # This is the life timer of the subtable object
-        # Defines how long this object exists in the subtable
-        set static::maxRate 10
-        # This defines how long is the sliding window to count the requests. 
-        # This example allows 10 requests in 10 seconds
-        set static::windowSecs 10
-        set static::timeout 30
-    }
-    when HTTP_REQUEST {
-        if { [HTTP::method] eq "GET" } {
-            set getCount [table key -count -subtable [IP::client_addr]]
-            log local0. "getCount=$getCount"
-            if { $getCount < $static::maxRate } {
-                incr getCount 1
-                table set -subtable [IP::client_addr] $getCount "ignore" $static::timeout     $static::windowSecs
-            } else {
-                log local0. "[IP::client_addr] has exceeded the number of requests allowed."
-                HTTP::respond 501 content "Request blocked Exceeded requests/sec limit."
-                return
-            }
-        }
-    }
-
-Apply this iRule to an HTTP virtual server (VIP).
+   when CLIENTSSL_HANDSHAKE {
+       ISTATS::incr "ltm.virtual [virtual name] c [SSL::cipher version]" 1
+   }
 
 Analysis
 ~~~~~~~~
 
--  Notice that RULE\_INIT sets up a set of variables that respectively
-   define the maximum rate of requests, the sliding window for timing
-   the rate, and a separate timeout value. Alter these values according
-   to your local preferences.
-
--  The iRule creates an internal table for each client source address,
-   and an entry for each request is added to this table.
-
--  As each new request arrives, the iRule counts the number of entries
-   in the respective table. If the count doesn’t exceed the maxRate
-   threshold, a new entry is created and the request is allowed through.
-
--  If the request exceeds the maxRate threshold, the iRule returns an
-   HTTP error response to the client.
-
--  The **WindowSecs** static variable defines an idle timeout for each
-   request entry, and the **timeout** static variable defines a total
-   lifetime for that table entry, irrespective of the idle time.
+-  iStats are user-created custom statistics, accessible from both the
+   data plane (iRules) and the control plane (tmsh, on-box scripts,
+   etc.). What we’re doing here is simply cataloging the SSL/TLS version
+   from each client SSL handshake and storing these in an iStats table.
+   That data can then be accessed from pretty much anywhere. For
+   example, see David Holmes’ excellent guide on dumping this
+   information to a Google pie chart:
+   
+   https://devcentral.f5.com/s/articles/categorize-ssl-traffic-by-version-display-as-graph
 
 Testing
 ~~~~~~~
 
-A very simple way to test this iRule implementation is with a cURL
-script from the Cygwin Terminal command line. Here’s a Bash representation
-of that script.
-
-.. code-block:: console
-   :linenos:
-
-   #!/bin/bash
-   while [ 1 ]
-   do
-      curl http://www.f5test.local --write-out "%{http_code}\n" --silent -o /dev/null
-   done
+- Apply this iRule to an SSL VIP and test across several browsers and platforms. 
+  If at all possible, stage this iRule at someplace that it can be accessed by a 
+  larger audience.
    
-Under Cygwin Terminal, cd to scripts directory and run ``bash http_trottling``.
-To view logging information, open a tail of the BIG-IP LTM log from command line.
+- At any point you can access the data collected in the iStats by
+  simply typing the following at the BIG-IP command line:
 
-``tail –f /var/log/ltm``
+   ``istats dump``
 
-The script will make repeated HTTP GET requests. When it exceeds the
-threshold the iRule will generate a 501 error response and prevent
-access to the web server until the **timeout** static variable time
-is reached. Use the CTRL-C keyboard combination to stop the script.
+.. HINT:: For the purpose of this lab we can use
+
+   ``openssl s_client -connect www.f5demolabs.com:443 <cipher>``
+
+   where cipher options could include {-tls1, -tls1_1, -tls1_2}
+   to simulate different connections.
+
+Here’s an example output:
+
+   .. code-block:: console
+
+      [ ltm.virtual=/Common/stdsslvip ][TLSv1.1] = 54 (2015-09-01 13:52:20)
+      [ ltm.virtual=/Common/stdsslvip ][TLSv1.2] = 282 (2015-09-01 13:52:20)
+      [ ltm.virtual=/Common/stdsslvip ][TLSv1] = 32 (2015-09-01 13:52:20)
 
 Bonus version
 ~~~~~~~~~~~~~
 
-The above iRule presents an extremely simple approach to HTTP
-request throttling and is based solely on client source address. The
-following bonus example extends that functionality to allow for
-throttling of specific URLs.
+Now that you have a better idea of what protocols are being used on
+your site, you may now want to ease your customers into a better
+security posture than simply denying access with no warning. To
+do this, we’ll first test the SSL/TLS version. if it’s below our
+security threshold, we’ll redirect the user to another page or site
+to inform them that they need to upgrade their browser.
 
 .. code-block:: tcl
    :linenos:
 
-   when RULE_INIT {
-       # The max requests served within the timing interval per the static::timeout variable
-       set static::maxReqs 4
-       # Timer Interval in seconds within which only static::maxReqs Requests are allowed.  
-       # (i.e: 10 req per 2 sec == 5 req per sec) 
-       # If this timer expires, it means that the limit was not reached for this interval and    
-       # the request counting starts over. Making this timeout large increases memory usage.   
-       # Making it too small negatively affects performance.  
-       set static::timeout 2
-   }
    when HTTP_REQUEST {
-       # Allows throttling for only specific URIs. List the URIs_to_throttle in a data group. 
-       # Note: a URI is everything after the hostname: e.g. /path1/login.aspx?name=user1
-       if { [class match [HTTP::uri] equals URIs_to_throttle] } {
-           # The following expects the IP addresses in multiple X-forwarded-for headers. 
-           # It picks the first one. If XFF isn’t defined it can grab the true source IP.
-           if { [HTTP::header exists X-forwarded-for] } {
-               set cIP_addr [getfield [lindex  [HTTP::header values X-Forwarded-For]  0] "," 1]
-           } else {
-               set cIP_addr [IP::client_addr]
-           }
-           set getcount [table lookup -notouch $cIP_addr]
-           if { $getcount equals "" } {
-               table set $cIP_addr "1" $static::timeout $static::timeout
-               # Record of this session does not exist, starting new record 
-               # Request is allowed.
-           } else {
-               if { $getcount < $static::maxReqs } {
-                   # log local0. "Request Count for $cIP_addr is $getcount"  
-                   table incr -notouch $cIP_addr
-                   # record of this session exists but request is allowed.
-               } else {
-                   HTTP::respond 403 content {
-                   <html>
-                   <head><title>HTTP Request denied</title></head>
-                   <body>Your HTTP requests are being throttled.</body>
-                   </html>
-                   }
-               }
-           }
-       }
+       if { (( [SSL::cipher version] equals "TLSv1" ) or ( [SSL::cipher version] equals "SSLv3" )) and not ( [HTTP::uri] equals "/insecure.html" ) } {
+           set redirect "https://www.f5demolabs.com/insecure.html"
+           HTTP::respond 302 Location "${redirect}"
+      }
    }
 
-By running the ``http_throttling_bonus`` script, you are checking HTTP requests
-limits against the URL paths in the ``URIs_to_throttle`` datagroup. Here’s a 
-Bash representation of that script.
+You’re still allowing SSLv3 and TLSv1 at this point, which is
+definitely bad, but you’re not allowing access to the application
+for anything less than TLSv1.1.
 
-.. code-block:: console
-   :linenos:
-
-   #!/bin/bash
-   while [ 1 ]
-   do
-      curl http://www.f5test.local/admin --write-out "%{http_code}\n" --silent -o /dev/null
-   done   
+.. HINT:: 
+   #. Change client ssl cipher from ``DEFAULT`` to ``DEFAULT:SSLv3``
+   #. Use ``openssl s_client -connect www.f5demolabs.com:443 -tls1`` to connect
+   #. Move bonus version of irule, sec_irules_tls_version_control_2, to the selected list of iRules on the generic-app HTTPS virtual server
+   
+.. NOTE:: 
+   Lab Notes:
+   
+   - Use the Chrome browser to manage the BIG-IP.
+   - Use the Firefox browser to perform access testing.
+      - Modify Firefox's TLS version by navigating to about:config and modifying the "security.tls.version.max" value.
+      - 1 = TLSv1.0
+      - 2 = TLSv1.1
+      - 3 = TLSv1.2 
+   - The test site URL is https://www.f5demolabs.com. A hosts file entry is already applied to the lab desktop.
+   - Use a command line client to also test access:
+      - curl -vk https://www.f5demolabs.com --[tlsv1.0|tlsv1.1|tlsv1.2]
+      - openssl s_client -connect www.f5demolabs.com:443 -[tls1|tls1_1|tls1_2]
+   - Three TLS version control iRules are provided:
+      - Basic istats capture
+      - Redirect to insecure page if TLSv1 or SSLv3
+      - Provide David Holmes' iRules and access to the /sslversions URL.

@@ -1,5 +1,5 @@
-iRules LX Streaming
--------------------
+Lab 1 - iRules LX Streaming
+---------------------------
 
 Creating and Implementing a Streaming LX Plugin
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -95,7 +95,7 @@ done with an iRules LX profile. To create a new iRules LX profile,
 navigate to the menu *Local Traffic > Profiles > Other > iRules LX* and
 click the + sign.
 
-Name the new profile *ilxlab4\_stream \_profile*, select the
+Name the new profile *ilxlab4\_stream\_profile*, select the
 *ilxlab4\_stream\_pl* LX Plugin and click finish to save the changes.
 
 Assign the iRules LX Profile to Virtual Servers
@@ -119,7 +119,7 @@ Now we should be able to see the hexdumps in the log file. First, in an
 SSH session with the BIG-IP, tail the log file of the plugin with the
 following command:
 
-``# tail -f  /var/log/ilx/Common. ilxlab4_stream_pl.hexdump``
+``# tail -f  /var/log/ilx/Common/ilxlab4_stream_pl.hexdump``
 
 Then refresh the page in the browser (URL http://10.0.0.23/ilxlab4stream)
 and you should see output like this in the SSH terminal:
