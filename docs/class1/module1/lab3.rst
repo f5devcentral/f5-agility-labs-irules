@@ -1,6 +1,8 @@
-##############################
+
+#####################################################
 Lab 3 - HTTP to HTTPS Redirect
-##############################
+#####################################################
+
 
 #. Create an iRule to redirect all traffic that arrives at an HTTP virtual server to be redirected to the same IP address but using an HTTPS port. 
 #. The full original HTTP request should be maintained when re-directing.  Example http://my.domain.com/app1/index1.html should redirect to https://my.domain.com/app1/inex.html
