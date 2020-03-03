@@ -32,11 +32,14 @@ The following table lists the Credentials for all components:
     * - **Component**
       - **VLAN/IP Address(es)**
       - **Credentials**
-    * - BigIP
-      - **Management:** bigip1
+    * - BigIP admin
+      - **Management:** ``bigip1``
       - ``admin``/``admin.F5demo.com``
+    * - Bigip root
+      - **Management:** - ``bigip1``
+      - ``root``/``default.F5demo.com``
     * - Jumphost
-      - **Jumphost:** TBD
+      - **Jumphost:** ``Windows Jumpbox``
       - ``external_user``/``P@ssw0rd!``
 
 
