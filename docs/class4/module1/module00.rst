@@ -35,7 +35,7 @@ Starting the Lab
 *Insert instructions here to access UDF*
 
 Using NGINX with Docker
-============
+=======================
 
 .. code-block:: shell
 

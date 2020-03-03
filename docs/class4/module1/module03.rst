@@ -1,5 +1,5 @@
 Lab 3 - Injecting HTTP header using stream proxy
-========================================
+================================================
 
 Running inside Docker:
 

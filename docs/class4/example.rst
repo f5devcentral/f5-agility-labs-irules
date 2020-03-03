@@ -15,7 +15,7 @@ password: default
    The 'any' interface will be taken by TMM and made into the interface '0.0'
 
    .. image:: /_static/tcpdump-x.jpg
-      :scale: 50 %
+      :scale: 50
 
 #. **tcpdump -i**
 

@@ -1,5 +1,5 @@
 Lab 5 - Secure hash
-================
+===================
 Protecting ``/secure/`` location from simple bots and web crawlers.
 
 Running inside Docker:

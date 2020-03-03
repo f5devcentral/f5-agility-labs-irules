@@ -1,5 +1,5 @@
 Lab 6 - File IO
-================
+===============
 
 Running inside Docker:
 
