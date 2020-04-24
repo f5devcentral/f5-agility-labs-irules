@@ -77,7 +77,7 @@ Analysis
 Testing
 ~~~~~~~
 
-- Apply this iRule to the Lab1 SSL virtual server. 
+- Apply this iRule to the HTTPS virtual server. 
      
 - Establish several connections to the virtual server from the Ubuntu client using different ciphers.
 
@@ -128,7 +128,7 @@ for anything less than TLSv1.1.
 .. HINT:: 
    #. Change client ssl cipher from ``DEFAULT`` to ``DEFAULT:SSLv3``
    #. Use ``openssl s_client -connect www.f5demolabs.com:443 -tls1`` to connect
-   #. Move bonus version of irule, Lab1_2, to the selected list of iRules on the Lab1 HTTPS virtual server
+   #. Move bonus version of irule, Lab1_2, to the selected list of iRules on the HTTPS virtual server
    
 .. NOTE:: 
    Lab Notes:
