@@ -134,7 +134,7 @@ for anything less than TLSv1.1.
    Lab Notes:
    
    - Use your computer's browser to manage the BIG-IP.
-     - The test site URL is https://www.f5demolabs.com. A hosts file entry is already applied to the Ubuntu client.
+   - The test site URL is https://www.f5demolabs.com. A hosts file entry is already applied to the Ubuntu client.
    - Use a command line client to also test access:
       - curl -vk https://www.f5demolabs.com --[tlsv1.0|tlsv1.1|tlsv1.2]
       - openssl s_client -connect www.f5demolabs.com:443 -[tls1|tls1_1|tls1_2]
