@@ -37,7 +37,8 @@ nginx.conf:
               }
         }
   }
-example.js:
+
+The njs code is following:
 
 .. code-block:: js
 

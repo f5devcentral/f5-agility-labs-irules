@@ -44,11 +44,9 @@ Lab 7 - Complex redirects using njs file map.
                 js_content resolv;
             }
          }
-
-         ...
       }
 
-   example.js:
+   the njs code is as follows:
 
    .. code-block:: js
 
