@@ -22,6 +22,12 @@ https://devcentral.f5.com
 
 **iRules rock!**
 
+In these labs, a Windows jumphost is not required.  All testing will be done from 
+a command prompt on a lab Ubuntu client.  The labs in the "Additional Labs" section 
+were written for a previous Agility lab, and were not reformated for virtual delivery.
+They contain valuable content, but may require additional resources to get working in 
+the current lab environment.
+
 .. toctree::
    :maxdepth: 1
    :glob:
