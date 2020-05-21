@@ -5,6 +5,7 @@ Lab 1 - Create an iRule that Parses the URI to Route Traffic
 
 Creating your first HTTP iRule that routes traffic based upon the value of the Host name.
 -----------------------------------------------------------------------------------------
+
 The goal of this lab is to route incoming HTTP requests to a specific pool based on the incoming http host name.
 
 Please create an iRule that will route traffic based on the following table:

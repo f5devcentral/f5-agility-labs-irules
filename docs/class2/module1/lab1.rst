@@ -90,6 +90,7 @@ Testing
   simply typing the following at the BIG-IP command line:
 
   .. code-block:: console
+  
      run \util bash
      istats dumpre’s an example output:
 
