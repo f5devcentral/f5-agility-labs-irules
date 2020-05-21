@@ -14,16 +14,12 @@ HTTP::payload command instead.
 
 #. Open Chrome Browser
 #. Enter https://bigip1 into the address bar and hit Enter
-<<<<<<< HEAD
 
    .. image:: /_static/class1/bigip_login.png
       :width: 800
 
 #. #. Login with **username**: **admin** 
               **password**: **admin.F5demo.com**
-=======
-#. Login with username: admin password: admin.F5demo.com
->>>>>>> origin/master
 #. Click Local Traffic -> iRules  -> iRules List
 #. Click **Create** button
 
@@ -43,11 +39,7 @@ HTTP::payload command instead.
 #. Click on the **Resources** tab.
 #. Click **Manage** button for the iRules section.
 
-<<<<<<< HEAD
    .. image:: /_static/class1/resources.png
-=======
-   .. image:: /_static/class1/manage_irule.png
->>>>>>> origin/master
       :width: 800
 
 #. What should you do here? (Hint: Remove Stream_iRule and replace with HTTP_Payload_iRule)
