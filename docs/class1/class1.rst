@@ -1,7 +1,7 @@
 Cooking with iRules - HTTP
 ==========================
 
-This class covers the following topics:
+This class covers the following topics: 
 
 - HTTP Protocol Review
 - HTTP Request Side Overview
@@ -32,11 +32,22 @@ The following table lists the Credentials for all components:
     * - **Component**
       - **VLAN/IP Address(es)**
       - **Credentials**
+<<<<<<< HEAD
     * - BigIP
       - **Management:** bigip1
       - ``admin``/``admin.F5demo.com``
     * - Jumphost
       - **Jumphost:** TBD
+=======
+    * - BigIP admin
+      - **Management:** ``bigip1``
+      - ``admin``/``admin.F5demo.com``
+    * - Bigip root
+      - **Management:** - ``bigip1``
+      - ``root``/``default.F5demo.com``
+    * - Jumphost
+      - **Jumphost:** ``Windows Jumpbox``
+>>>>>>> origin/master
       - ``external_user``/``P@ssw0rd!``
 
 

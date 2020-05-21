@@ -1,7 +1,12 @@
+
 #####################################################
 Lab 3 - HTTP to HTTPS Redirect
 #####################################################
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/master
 #. Create an iRule to redirect all traffic that arrives at an HTTP virtual server to be redirected to the same IP address but using an HTTPS port. 
 #. The full original HTTP request should be maintained when re-directing.  Example http://my.domain.com/app1/index1.html should redirect to https://my.domain.com/app1/inex.html
 #. Traffic goes to the HTTPS virtual server should still perform the pool selection and should still perform the header stripping from previous labs.
@@ -29,6 +34,7 @@ Lab 3 - HTTP to HTTPS Redirect
 #. Click **Finished**
 #. Click Local Traffic -> Virtual Servers -> Virtual Server List
 #. Click on **http_irules_vip**
+<<<<<<< HEAD
 
    .. image:: /_static/class1/select_vs.png
       :width: 800
@@ -49,6 +55,10 @@ Lab 3 - HTTP to HTTPS Redirect
 #. Click on **https_irules_vip**
 
    .. image:: /_static/class1/select_vs_https.png
+=======
+
+   .. image:: /_static/class1/select_vs.png
+>>>>>>> origin/master
       :width: 800
 
 #. Click on the **Resources** tab
@@ -57,6 +67,7 @@ Lab 3 - HTTP to HTTPS Redirect
    .. image:: /_static/class1/resources.png
       :width: 800
 
+<<<<<<< HEAD
 #. Click on the **2 iRules** you require to enable **pool selection and Server header removal** from the previous labs from the Available box and click the << button, thus moving them to the Enabled box.
 
    .. image:: /_static/class1/lab3-irules-add-https.png
@@ -80,6 +91,22 @@ Lab 3 - HTTP to HTTPS Redirect
 
    .. image:: /_static/class1/lab2_verify.png
       :width: 800
+=======
+#. Click on HTTP_to_HTTPS_iRule from the Available box and click the << button, thus moving it to the Enabled box, your first and now second iRule should be in the Enabled box.
+
+   .. image:: /_static/class1/manage_irule.png
+      :width: 800
+
+#. Click the **Finished** button
+#. Open the Firefox browser
+#. Click the 3 horizontal line button on the far right of the address bar
+#. Use developer tools in Mozilla, or use Chrome to view headers
+
+   .. image:: /_static/class1/firefox_developer.png
+      :width: 600
+
+#. Look at the headers for each of your requests. Did you log them all? What is the value of the Server header? None of this should have changed since the last lab.
+>>>>>>> origin/master
 
 .. HINT::
 

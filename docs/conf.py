@@ -26,6 +26,8 @@ import string
 sys.path.insert(0, os.path.abspath('.'))
 import f5_sphinx_theme
 
+smartquotes = False
+
 year = time.strftime("%Y")
 eventname = "Agility %s Hands-on Lab Guide" % (year)
 
