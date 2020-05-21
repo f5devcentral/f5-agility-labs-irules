@@ -229,6 +229,25 @@ Testing
 ~~~~~~~
 
 -  In the Client Authentication section of the client SSL
+<<<<<<< HEAD
+   profile ``Lab4_Clientssl``, set Client Certificate to ``Require``, and
+   assign ``f5test.local`` to the Trusted Certificate Authorities option.
+
+
+-  Test accessing the URL https://www.f5test.local from the
+   client. First do not include the client certificate:
+   **curl -vk https://www.f5test.local**
+   You should receive a failed handshake error.  Try again, but include the certificate:
+   **curl -vk --cert /etc/ssl/certs/f5test.pem https://www.f5test.local**
+   You should now be able to pass through to the application.
+   
+-  In the Resources section of the ``f5test_local`` virtual, add the ``Lab4`` irule.
+-  Watch the log file on the BIG-IP:
+   **tail -f /var/log/ltm**
+-  Access the URL again from the client:
+   **curl -vk --cert /etc/ssl/certs/f5test.pem https://www.f5test.local**
+   You should now get a different response page.  Notice the Client Certificate log message on the BIG-IP.
+=======
    profile ``Lab4_Clientssl``, set Client Certificate to ``Require``, 
    and assign ``f5test.local`` to the Trusted Certificate Authorities option.
 
@@ -249,3 +268,4 @@ Testing
     
 -  You should now get a different response page.  Notice the Client Certificate log message on the BIG-IP.
     
+>>>>>>> origin/master

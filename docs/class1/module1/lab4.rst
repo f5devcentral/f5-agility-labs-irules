@@ -29,7 +29,7 @@ Create a Stream Profile to change the body of the DVWA site
 #. Click Local Traffic -> Virtual Servers -> Virtual Server List
 #. Click on **https_irules_vip**
 
-   .. image:: /_static/class1/select_vs.png
+   .. image:: /_static/class1/select_vs_https.png
       :width: 800
 
 #. In the **Configuration** section ensure it says **Advanced** in the drop down

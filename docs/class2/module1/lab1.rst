@@ -49,10 +49,7 @@ that will catalog the SSL/TLS versions that clients are using.
 Requirements
 ~~~~~~~~~~~~
 
--  BIG-IP LTM, web server, client browser, and a SSL server certificate.
-   If you don’t have certificates to test with, you can use the CA
-   certificate, server certificate, and private key provided in the
-   Client Certificate Inspection lab from Additional labs section.
+-  BIG-IP LTM, web server, and a client workstation.  In this lab, the Ubuntu client is the client workstation.
 
 The iRule
 ~~~~~~~~~
@@ -80,23 +77,23 @@ Analysis
 Testing
 ~~~~~~~
 
-- Apply this iRule to an SSL VIP and test across several browsers and platforms. 
-  If at all possible, stage this iRule at someplace that it can be accessed by a 
-  larger audience.
-   
-- At any point you can access the data collected in the iStats by
-  simply typing the following at the BIG-IP command line:
-
-   ``istats dump``
-
-.. HINT:: For the purpose of this lab we can use
+- Apply this iRule to the HTTPS virtual server. 
+     
+- Establish several connections to the virtual server from the Ubuntu client using different ciphers.
 
    ``openssl s_client -connect www.f5demolabs.com:443 <cipher>``
 
    where cipher options could include {-tls1, -tls1_1, -tls1_2}
    to simulate different connections.
 
-Here’s an example output:
+- At any point you can access the data collected in the iStats by
+  simply typing the following at the BIG-IP command line:
+
+  .. code-block:: console
+     run \util bash
+     istats dumpre’s an example output:
+
+  Here’s an example output:
 
    .. code-block:: console
 
@@ -131,22 +128,17 @@ for anything less than TLSv1.1.
 .. HINT:: 
    #. Change client ssl cipher from ``DEFAULT`` to ``DEFAULT:SSLv3``
    #. Use ``openssl s_client -connect www.f5demolabs.com:443 -tls1`` to connect
-   #. Move bonus version of irule, sec_irules_tls_version_control_2, to the selected list of iRules on the generic-app HTTPS virtual server
+   #. Move bonus version of irule, Lab1_2, to the selected list of iRules on the HTTPS virtual server
    
 .. NOTE:: 
    Lab Notes:
    
-   - Use the Chrome browser to manage the BIG-IP.
-   - Use the Firefox browser to perform access testing.
-      - Modify Firefox's TLS version by navigating to about:config and modifying the "security.tls.version.max" value.
-      - 1 = TLSv1.0
-      - 2 = TLSv1.1
-      - 3 = TLSv1.2 
-   - The test site URL is https://www.f5demolabs.com. A hosts file entry is already applied to the lab desktop.
+   - Use your computer's browser to manage the BIG-IP.
+   - The test site URL is https://www.f5demolabs.com. A hosts file entry is already applied to the Ubuntu client.
    - Use a command line client to also test access:
       - curl -vk https://www.f5demolabs.com --[tlsv1.0|tlsv1.1|tlsv1.2]
       - openssl s_client -connect www.f5demolabs.com:443 -[tls1|tls1_1|tls1_2]
-   - Three TLS version control iRules are provided:
+   - Three TLS version control iRules are provided.  The first two are already deployed on the lab BIGIP, but manual entry is encouraged to improve familiarity and understanding: 
       - Basic istats capture
       - Redirect to insecure page if TLSv1 or SSLv3
       - Provide David Holmes' iRules and access to the /sslversions URL.

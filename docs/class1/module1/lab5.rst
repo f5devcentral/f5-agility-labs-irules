@@ -5,28 +5,44 @@ Lab 5 - HTTP Payload Manipulation
 
 
 Collect an HTTP payload, change it, and release it to the client.
-As in the previous lab replace Damn with Darn, or get creative.
+As in the previous lab replace Damn with Darn, or get creative.  
+We arent going to use a stream profile this time we are using an
+HTTP::payload command instead.
 
 .. IMPORTANT::
   •	Estimated completion time: 20 minutes
 
 #. Open Chrome Browser
 #. Enter https://bigip1 into the address bar and hit Enter
-#. Login with username: admin password: admin.F5demo.com
-#. Click Local Traffic -> iRules  -> iRules List
-#. Click Create button
-#. Enter Name of HTTP_Payload_iRule
-#. Enter Your Code
-#. Click Finished
-#. Click Local Traffic -> Virtual Servers -> Virtual Server List
-#. Click on https_irules_vip
-#. Click on the Resources tab
-#. Click Manage button for the iRules section
 
-   .. image:: /_static/class1/manage_irule.png
+   .. image:: /_static/class1/bigip_login.png
       :width: 800
 
-#. What should you do here? (Hint: Remove Stream_iRule)
+#. #. Login with **username**: **admin** 
+              **password**: **admin.F5demo.com**
+#. Click Local Traffic -> iRules  -> iRules List
+#. Click **Create** button
+
+   .. image:: /_static/class1/irule_create.png
+      :width: 800
+
+#. Click **Create** button
+#. Enter Name of **HTTP_Payload_iRule**
+#. Enter Your Code
+#. Click **Finished**
+#. Click Local Traffic -> Virtual Servers -> Virtual Server List
+#. Click on **http_irules_vip**
+
+   .. image:: /_static/class1/select_vs.png
+      :width: 800
+
+#. Click on the **Resources** tab.
+#. Click **Manage** button for the iRules section.
+
+   .. image:: /_static/class1/resources.png
+      :width: 800
+
+#. What should you do here? (Hint: Remove Stream_iRule and replace with HTTP_Payload_iRule)
 #. Click the Finished button
 #. Open the Firefox browser
 #. Enter https://dvwa.f5lab.com  and ensure you get there and it is HTTPS
