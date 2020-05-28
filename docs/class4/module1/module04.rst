@@ -1,5 +1,6 @@
-Lab 4 - Subrequests join
-========================
+===========================================
+Subrequests join [join_subrequests]
+===========================================
 Combining the results of several subrequests asynchronously into a single JSON reply.
 
 Running inside Docker:

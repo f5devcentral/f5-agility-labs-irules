@@ -1,5 +1,5 @@
 ==================================
-Lab 1 - Hello World
+Hello World [hello]
 ==================================
 
 Running inside Docker:
@@ -53,7 +53,7 @@ Checking:
   Hello world!
 
   curl http://localhost/version
-  0.2.4
+  0.3.9
 
   # Stopping.
   docker stop njs_example

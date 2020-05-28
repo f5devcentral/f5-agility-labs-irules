@@ -1,5 +1,5 @@
-Lab 7 - Complex redirects using njs file map.
-=============================================
+Complex redirects using njs file map. [complex_redirects]
+=================================================================
 
 #. Start an NGINX docker instance with the complex_redirects app by running the following commands:  This places the complex_redirects.conf file and complex_redirects.js files into the running NGINX instance.
 

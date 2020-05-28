@@ -1,11 +1,11 @@
-Lab 3 - Injecting HTTP header using stream proxy
-================================================
+Extract JWT Payload into NGINX Variable [jwt]
+=====================================================
 
 Running inside Docker:
 
 .. code-block:: shell
 
-  EXAMPLE=inject_header
+  EXAMPLE=jwt
   docker run --rm --name njs_example  -v $(pwd)/conf/$EXAMPLE.conf:/etc/nginx/nginx.conf:ro  -v $(pwd)/njs/$EXAMPLE.js:/etc/nginx/example.js:ro -p 80:80 -p 8090:8090 -d nginx
 
 nginx.conf:
@@ -14,48 +14,39 @@ nginx.conf:
 
   ...
 
-  stream {
+  http {
       js_include example.js;
 
-      server {
-            listen 80;
+      js_set $jwt_payload_sub jwt_payload_sub;
 
-            proxy_pass 127.0.0.1:8080;
-            js_filter inject_header;
+      server {
+  ...
+            location /jwt {
+                return 200 $jwt_payload_sub;
+            }
       }
   }
-
-  ...
 
 example.js:
 
 .. code-block:: js
 
-    function inject_header(s) {
-        inject_my_header(s, 'Foo: my_foo');
+    function jwt(data) {
+        var parts = data.split('.').slice(0,2)
+            .map(v=>String.bytesFrom(v, 'base64url'))
+            .map(JSON.parse);
+        return { headers:parts[0], payload: parts[1] };
     }
 
-    function inject_my_header(s, header) {
-        var req = '';
-
-        s.on('upload', function(data, flags) {
-            req += data;
-            var n = req.search('\n');
-            if (n != -1) {
-                var rest = req.substr(n + 1);
-                req = req.substr(0, n + 1);
-                s.send(req + header + '\r\n' + rest, flags);
-                s.off('upload');
-            }
-        });
+    function jwt_payload_sub(r) {
+        return jwt(r.headersIn.Authorization.slice(7)).payload.sub;
     }
 
 Checking:
 
 .. code-block:: shell
 
-  curl http://localhost/
-  my_foo
+  curl 'http://localhost/jwt' -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiIsImV4cCI6MTU4NDcyMzA4NX0.eyJpc3MiOiJuZ2lueCIsInN1YiI6ImFsaWNlIiwiZm9vIjoxMjMsImJhciI6InFxIiwienl4IjpmYWxzZX0.Kftl23Rvv9dIso1RuZ8uHaJ83BkKmMtTwch09rJtwgk"
+  alice
 
   docker stop njs_example
-

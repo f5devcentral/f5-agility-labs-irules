@@ -1,5 +1,5 @@
-Lab 5 - Secure hash
-===================
+Secure hash [secure_link_hash]
+======================================
 Protecting ``/secure/`` location from simple bots and web crawlers.
 
 Running inside Docker:
@@ -7,11 +7,13 @@ Running inside Docker:
 .. code-block:: shell
 
   EXAMPLE=secure_link_hash
-  docker run --rm --name njs_example  -v $(pwd)/conf/$EXAMPLE.conf:/etc/nginx/nginx.conf:ro  -v $(pwd)/njs/$EXAMPLE.js:/etc/nginx/example.js:ro -p 80:80 -p 8090:8090 -d nginx
+  docker run --rm --name njs_example -e JWT_GEN_KEY=" mykey" -v $(pwd)/conf/$EXAMPLE.conf:/etc/nginx/nginx.conf:ro  -v $(pwd)/njs/$EXAMPLE.js:/etc/nginx/example.js:ro -p 80:80 -p 8080:8080 -d nginx
 
 nginx.conf:
 
 .. code-block:: nginx
+
+  env JWT_GEN_KEY;
 
   ...
 
@@ -22,6 +24,8 @@ nginx.conf:
 
       server {
             listen 80;
+
+            ...
 
             location /secure/ {
                 error_page 403 = @login;
@@ -49,7 +53,7 @@ example.js:
 
   function create_secure_link(r) {
     return require('crypto').createHash('md5')
-                            .update(r.uri).update(" mykey")
+                            .update(r.uri).update(process.env.JWT_GEN_KEY)
                             .digest('base64url');
   }
 
@@ -69,4 +73,3 @@ Checking:
   curl http://127.0.0.1/secure/r --cookie cookie.txt
   PASSED
 
-  docker stop njs_example
