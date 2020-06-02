@@ -1,5 +1,5 @@
 Choosing upstream in stream based on the underlying protocol [stream/detect_http]
-==================================
+=================================================================================
 
 Running inside Docker:
 
