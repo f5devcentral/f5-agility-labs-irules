@@ -136,7 +136,7 @@ for anything less than TLSv1.1.
 .. HINT::
 
    #. Change client ssl cipher from ``DEFAULT`` to ``DEFAULT:SSLv3`` by modifying the clientssl profile.
-   #. Use ``openssl s_client -connect www.f5demolabs.com:443 -tls1`` to connect
+   #. Use ``curl -vk -sslv3 www.f5demolabs.com:443`` to connect
    #. Move bonus version of irule, Lab1_2, to the selected list of iRules on the HTTPS virtual server
    
 .. NOTE:: 
@@ -144,7 +144,7 @@ for anything less than TLSv1.1.
    - Use your computer's browser to manage the BIG-IP.
    - The test site URL is https://www.f5demolabs.com. A hosts file entry is already applied to the Ubuntu client.
    - Use a command line client to also test access:
-      - curl -vk https://www.f5demolabs.com --[tlsv1.0|tlsv1.1|tlsv1.2]
+      - curl -vk https://www.f5demolabs.com -[tlsv1.0|tlsv1.1|tlsv1.2]
       - openssl s_client -connect www.f5demolabs.com:443 -[tls1|tls1_1|tls1_2]
    - Three TLS version control iRules are provided.  The first two are already deployed on the lab BIGIP, but manual entry is encouraged to improve familiarity and understanding: 
       - Basic istats capture
