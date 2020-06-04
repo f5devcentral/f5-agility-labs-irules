@@ -1,16 +1,16 @@
-NGINX programmability
-=====================
+NGINX Dataplane Scripting
+=========================
 
 This class will introduce NGINX programmability.  
 
 This class will cover the following topics
 
 - Implementing NJS
-- 
+- NJS examples and use cases
 
-We will be using a jumpbox to connect to the lab environment.  Click on the lab link given out during class and select the RDP option to connect to the lab box.
+We will be using a linux web shell to connect to the lab environment.  Click on the lab link given out during class and select the RDP option to connect to the lab box.
 
-Expected time to complete: **1 hour**
+Expected time to complete: **2 Hours**
 
 
 
