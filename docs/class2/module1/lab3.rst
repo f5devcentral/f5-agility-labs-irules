@@ -174,15 +174,19 @@ Testing
 ~~~~~~~
 In the BIG-IP, 
 
-- Access HTTPS URL without iRule to see current cookie status.
+- On the Ubuntu client, access the https URL without iRule to see current cookie status.
 
-   ``curl –vk https://www.f5demolabs.com``	
+   ``curl –vk https://www.f5demolabs.com``
+   
+   ``Examine the Set-Cookie line``
 
-- Attach the iRule to the HTTPS VIP
+- On the BIG-IP, attach the iRule to the https VIP.  It already exists in the lab named ``Lab3``.
 
-- Access the HTTPS URL to see the change in the cookie information.
+- On the Ubuntu client, access the HTTPS URL to see the change in the cookie information.
 
    ``curl -vk https://www.f5demolabs.com``
+   
+   ``Examine the Set-Cookie line``
 
 A word on cookie security – the ``secure`` and ``httpOnly`` flags are
 exceedingly important for the proper and secure use of HTTP cookies, but
