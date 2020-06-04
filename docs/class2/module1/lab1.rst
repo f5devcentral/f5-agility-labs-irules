@@ -77,7 +77,14 @@ Analysis
 Testing
 ~~~~~~~
 
-- Apply this iRule to the HTTPS virtual server. 
+- Apply this iRule to the https virtual server:
+
+  .. code-block:: console
+
+      Connect to the TMUI of the BIGIP.  
+      Navigate to Local Traffic -> Virtual Servers and click on the https virtual server.
+      Under the Resources tab, click Manage above the iRules section.
+      Move the Lab1_1 iRule from Available to Enabled, and click Finished.
      
 - Establish several connections to the virtual server from the Ubuntu client using different ciphers.
 
@@ -92,7 +99,7 @@ Testing
   .. code-block:: console
   
      run \util bash
-     istats dumpre’s an example output:
+     istats dump
 
   Here’s an example output:
 
