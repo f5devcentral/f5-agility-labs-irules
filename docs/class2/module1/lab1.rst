@@ -133,14 +133,14 @@ You’re still allowing SSLv3 and TLSv1 at this point, which is
 definitely bad, but you’re not allowing access to the application
 for anything less than TLSv1.1.
 
-.. HINT:: 
-   #. Change client ssl cipher from ``DEFAULT`` to ``DEFAULT:SSLv3``
+.. HINT::
+
+   #. Change client ssl cipher from ``DEFAULT`` to ``DEFAULT:SSLv3`` by modifying the clientssl profile.
    #. Use ``openssl s_client -connect www.f5demolabs.com:443 -tls1`` to connect
    #. Move bonus version of irule, Lab1_2, to the selected list of iRules on the HTTPS virtual server
    
 .. NOTE:: 
-   Lab Notes:
-   
+     
    - Use your computer's browser to manage the BIG-IP.
    - The test site URL is https://www.f5demolabs.com. A hosts file entry is already applied to the Ubuntu client.
    - Use a command line client to also test access:
