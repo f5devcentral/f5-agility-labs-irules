@@ -228,9 +228,8 @@ Analysis
 Testing
 ~~~~~~~
 
--  In the Client Authentication section of the client SSL
-   profile ``Lab4_Clientssl``, set Client Certificate to ``Require``, 
-   and assign ``f5test.local`` to the Trusted Certificate Authorities option.
+-  On the BIG-IP, go to Local Traffic->Profiles->SSL->Client.  In the Client Authentication section of the client SSL
+   profile ``Lab4_Clientssl``, set Client Certificate to ``Require``, assign ``f5test.local`` to the Trusted Certificate Authorities option, and click ``Update``.
 
 -  Test accessing the URL https://www.f5test.local from the client. First do not include the client certificate:
     curl -vk https://www.f5test.local
