@@ -1,35 +1,53 @@
 Extract JWT Payload into NGINX Variable [jwt]
 =====================================================
 
-#. Start an NGINX docker instance with the inject_header app by running the following commands:  This places the inject_header.conf file and inject_header.js files into the running NGINX instance.
+JSON Web Tokens (JWT) are a common way to authenticate to web applications.  In addition to authentication, JWTs can also be used to pass information, called claims, about the user to the application.  The commercial version of NGINX, NGINX Plus, has built-in JWT handling features.  Using njs, we can parse JWTs and extract claim data even in the open source version of NGINX.
 
-   .. code-block:: shell
+**Step 1:** Use the following commands to start your NGINX container with this lab's files:
 
-  EXAMPLE=jwt
-  docker run --rm --name njs_example  -v $(pwd)/conf/$EXAMPLE.conf:/etc/nginx/nginx.conf:ro  -v $(pwd)/njs/$EXAMPLE.js:/etc/nginx/example.js:ro -p 80:80 -p 8090:8090 -d nginx
+.. code-block:: shell
+  :emphasize-lines: 1,2
 
-   The nginx.conf will be as follows, notice it includes the njs script and calls the inject_header function for every request:nginx.conf:
+  EXAMPLE='jwt'
+  docker run --rm --name njs_example  -v $(pwd)/conf/$EXAMPLE.conf:/etc/nginx/nginx.conf:ro  -v $(pwd)/njs/$EXAMPLE.js:/etc/nginx/example.js:ro -v $(pwd)/njs/utils.js:/etc/nginx/utils.js:ro -p 80:80 -p 8090:8090 -d nginx
 
-   .. code-block:: nginx
+**Step 2:** Now let's use curl to test our NGINX server:
 
-     ...
+.. code-block:: shell
+  :emphasize-lines: 1,4
 
-     http {
-         js_include example.js;
+  curl 'http://localhost/jwt' -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiIsImV4cCI6MTU4NDcyMzA4NX0.eyJpc3MiOiJuZ2lueCIsInN1YiI6ImFsaWNlIiwiZm9vIjoxMjMsImJhciI6InFxIiwienl4IjpmYWxzZX0.Kftl23Rvv9dIso1RuZ8uHaJ83BkKmMtTwch09rJtwgk"
+  alice
 
-         js_set $jwt_payload_sub jwt_payload_sub;
+  docker stop njs_example
 
-         server {
-     ...
-               location /jwt {
-                   return 200 $jwt_payload_sub;
-               }
-         }
-     }
+**Code Snippets**
 
-   The njs code adds an HTTP header called Foo with a value of my_foo:
+This NGINX configuration uses `js_set` to invoke our JavaScript to extract the JWT claim into a variable we can return back to the user.
 
-   .. code-block:: js
+.. code-block:: nginx
+  :caption: nginx.conf
+  :linenos:
+
+  http {
+    js_import utils.js;
+    js_import main from example.js;
+
+    js_set $jwt_payload_sub main.jwt_payload_sub;
+
+    server {
+  ...
+        location /jwt {
+            return 200 $jwt_payload_sub;
+        }
+    }
+  }
+
+In our JavaScript we are leveraging the string processing features of njs to decode and parse the JWT into a JSON object.  We then extract the claim we want called "sub."
+
+.. code-block:: js
+  :caption: example.js
+  :linenos:
 
     function jwt(data) {
         var parts = data.split('.').slice(0,2)
@@ -42,11 +60,5 @@ Extract JWT Payload into NGINX Variable [jwt]
         return jwt(r.headersIn.Authorization.slice(7)).payload.sub;
     }
 
-#. To validate that it is working run the following commands:
+    export default {jwt_payload_sub}
 
-   .. code-block:: shell
-
-     curl 'http://localhost/jwt' -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiIsImV4cCI6MTU4NDcyMzA4NX0.eyJpc3MiOiJuZ2lueCIsInN1YiI6ImFsaWNlIiwiZm9vIjoxMjMsImJhciI6InFxIiwienl4IjpmYWxzZX0.Kftl23Rvv9dIso1RuZ8uHaJ83BkKmMtTwch09rJtwgk"
-     alice
-
-     docker stop njs_example

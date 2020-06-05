@@ -1,59 +1,71 @@
 Decode URI [decode_uri]
 ===============================
 
-#. Start an NGINX docker instance with the decode_uri app by running the following commands:  This places the decode_uri.conf file and decode_uri.js files into the running NGINX instance.
+When interacting with web servers, some characters have special meaning and can't be passed directly in a URL.  To overcome this limitation, strings can be "URL encoded" to allow special characters to be preserved.  In this example, we will use the decodeURIComponent() njs method to decode a URL encoded string provided in the query string parameter foo.
 
-   .. code-block:: shell
+**Step 1:** Use the following commands to start your NGINX container with this lab's files:
 
-      EXAMPLE=decode_uri
-      docker run --rm --name njs_example  -v $(pwd)/conf/$EXAMPLE.conf:/etc/nginx/nginx.conf:ro  -v $(pwd)/njs/$EXAMPLE.js:/etc/nginx/example.js:ro -p 80:80 -p 8090:8090 -d nginx
+.. code-block:: shell
+  :emphasize-lines: 1,2
 
-   The nginx.conf will be as follows, notice it sends the /uri 'dec_foo' to a njs function:
+  EXAMPLE='decode_uri'
+  docker run --rm --name njs_example  -v $(pwd)/conf/$EXAMPLE.conf:/etc/nginx/nginx.conf:ro  -v $(pwd)/njs/$EXAMPLE.js:/etc/nginx/example.js:ro -v $(pwd)/njs/utils.js:/etc/nginx/utils.js:ro -p 80:80 -p 8090:8090 -d nginx
 
-   .. code-block:: nginx
+**Step 2:** Now let's use curl to test our NGINX server:
 
-       ...
+.. code-block:: shell
+  :emphasize-lines: 1,4,7,10,13
 
-       http {
-         js_include example.js;
+  curl -G http://localhost/foo --data-urlencode "foo=Hello Günter"
+  Hello%20G%C3%BCnter
 
-         js_set $dec_foo dec_foo;
+  curl -G http://localhost/dec_foo -d "foo=Hello%20G%C3%BCnter"
+  Hello Günter
 
-         server {
-      ...
-      
-            location /foo {
-                return 200 $arg_foo;
-            }
+  curl -G http://localhost/foo --data-urlencode "foo=привет"
+  %D0%BF%D1%80%D0%B8%D0%B2%D0%B5%D1%82
 
-            location /dec_foo {
-                return 200 $dec_foo;
-            }
-          }
-      }
+  curl -G http://localhost/dec_foo -d "foo=%D0%BF%D1%80%D0%B8%D0%B2%D0%B5%D1%82"
+  привет
 
-   The njs decode_uri.js file is as follows.  Notice it takes the arguments sent to it and decodes it to readable format:
+  docker stop njs_example
 
-   .. code-block:: js
+**Code Snippets**
 
-      function dec_foo(r) {
-        return decodeURIComponent(r.args.foo);
-      }
+The NGINX configuraton provides two locations, /foo and /dec_foo.  Using /foo just returns the string as is without decoding.  The /dec_foo location returns the decoded version of the string.
 
-#. To see it work run the following commands from the linux shell:
+.. code-block:: nginx
+  :caption: nginx.conf
+  :linenos:
 
-   .. code-block:: shell
+    ...
 
-     curl -G http://localhost/dec_foo --data-urlencode "foo=Hello Günter"
-     Hello%20G%C3%BCnter
+    http {
+          js_import utils.js;
+          js_import main from example.js;
 
-     curl -G http://localhost/dec_foo -d "foo=Hello%20G%C3%BCnter"
-     Hello Günter
+          js_set $dec_foo main.dec_foo;
 
-     curl -G http://localhost/foo --data-urlencode "foo=привет"
-     %D0%BF%D1%80%D0%B8%D0%B2%D0%B5%D1%82
+      server {
+   ...
+   
+         location /foo {
+             return 200 $arg_foo;
+         }
 
-     curl -G http://localhost/dec_foo -d "foo=%D0%BF%D1%80%D0%B8%D0%B2%D0%B5%D1%82"
-     привет
+         location /dec_foo {
+             return 200 $dec_foo;
+         }
+       }
+   }
 
-     docker stop njs_example
+In our JavaScript we access the foo argument from the query string through the request's arguements object (args).  We then use the `decodeURIComponent()` built-in method to decode the string.
+
+.. code-block:: js
+  :caption: example.js
+  :linenos:
+
+   function dec_foo(r) {
+     return decodeURIComponent(r.args.foo);
+   }
+
