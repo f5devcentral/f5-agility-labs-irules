@@ -7,7 +7,7 @@ NGINX provides the ngx_http_secure_link_module to protect a web location from si
 .. code-block:: shell
   :emphasize-lines: 1,2
 
-  EXAMPLE='hello'
+  EXAMPLE='secure_link_hash'
   docker run --rm --name njs_example -e JWT_GEN_KEY=" mykey" -v $(pwd)/conf/$EXAMPLE.conf:/etc/nginx/nginx.conf:ro  -v $(pwd)/njs/$EXAMPLE.js:/etc/nginx/example.js:ro -v $(pwd)/njs/utils.js:/etc/nginx/utils.js:ro -p 80:80 -p 8090:8090 -d nginx
 
 **Step 2:** Now let's use curl to test our NGINX server:
