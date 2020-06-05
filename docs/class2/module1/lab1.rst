@@ -77,7 +77,14 @@ Analysis
 Testing
 ~~~~~~~
 
-- Apply this iRule to the HTTPS virtual server. 
+- Apply this iRule to the https virtual server:
+
+  .. code-block:: console
+
+      Connect to the TMUI of the BIGIP.  
+      Navigate to Local Traffic -> Virtual Servers and click on the https virtual server.
+      Under the Resources tab, click Manage above the iRules section.
+      Move the Lab1_1 iRule from Available to Enabled, and click Finished.
      
 - Establish several connections to the virtual server from the Ubuntu client using different ciphers.
 
@@ -92,7 +99,7 @@ Testing
   .. code-block:: console
   
      run \util bash
-     istats dumpre’s an example output:
+     istats dump
 
   Here’s an example output:
 
@@ -126,18 +133,20 @@ You’re still allowing SSLv3 and TLSv1 at this point, which is
 definitely bad, but you’re not allowing access to the application
 for anything less than TLSv1.1.
 
-.. HINT:: 
-   #. Change client ssl cipher from ``DEFAULT`` to ``DEFAULT:SSLv3``
-   #. Use ``openssl s_client -connect www.f5demolabs.com:443 -tls1`` to connect
+.. HINT::
+
+   #. Change client ssl cipher from ``DEFAULT`` to ``DEFAULT:SSLv3`` by modifying the clientssl profile.
+   #. Use ``curl -vk -sslv3 www.f5demolabs.com:443`` to connect
    #. Move bonus version of irule, Lab1_2, to the selected list of iRules on the HTTPS virtual server
-   
-.. NOTE:: 
-   Lab Notes:
+   #. Try again to use ``curl -vk -sslv3 www.f5demolabs.com:443`` to connect.  It should now be redirected.  
+
+Lab Notes
+~~~~~~~~~
    
    - Use your computer's browser to manage the BIG-IP.
    - The test site URL is https://www.f5demolabs.com. A hosts file entry is already applied to the Ubuntu client.
    - Use a command line client to also test access:
-      - curl -vk https://www.f5demolabs.com --[tlsv1.0|tlsv1.1|tlsv1.2]
+      - curl -vk https://www.f5demolabs.com -[sslv3|tlsv1.0|tlsv1.1|tlsv1.2]
       - openssl s_client -connect www.f5demolabs.com:443 -[tls1|tls1_1|tls1_2]
    - Three TLS version control iRules are provided.  The first two are already deployed on the lab BIGIP, but manual entry is encouraged to improve familiarity and understanding: 
       - Basic istats capture

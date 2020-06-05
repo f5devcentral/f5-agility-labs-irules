@@ -125,7 +125,7 @@ of that script.  We have already put the script on the Ubuntu client and instruc
       curl http://www.f5demolabs.com --write-out "%{http_code}\n" --silent -o /dev/null
    done
    
-- At the Ubuntu client command line, cd to the ~/scripts directory and run ``bash http_throttling``.
+- At the Ubuntu client command line, cd to the /home/ubuntu/scripts directory and run ``bash http_throttling``.
 - Notice that you are getting 200 responses from each request.  We will now add the iRule to the VIP.
 - Login to BIG-IP from Chrome browser.
 - Go to Local->Virtual Servers and select the http virtual server.
@@ -136,7 +136,7 @@ of that script.  We have already put the script on the Ubuntu client and instruc
 - Modify the iRule on the F5 to uncomment the line that states:
     ``log local0. "Request Count for $client_IP_addr is $getcount"``
 - Click on Update on the iRule.
-- Open ssh, connect to BIG-IP, and enter the bash shell.
+- Open ssh or the web shell to the BIG-IP, and enter the bash shell.
 - Run a tail of the BIG-IP LTM log from command line as follows:
 
    ``tail –f /var/log/ltm``
