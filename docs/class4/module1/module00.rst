@@ -122,6 +122,6 @@ When you're done with a lab, remove the running NGINX container before moving to
 .. code-block:: shell
   :emphasize-lines: 1
 
-  docker stop mynginx
+  docker stop njs_example
 
 We are now ready to start the first lab.  Click the "Next" button below to continue.
