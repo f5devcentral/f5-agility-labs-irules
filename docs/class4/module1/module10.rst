@@ -19,10 +19,12 @@ In this example we will use the stream module to inspect an incoming TCP connect
   curl http://localhost/
   HTTPBACK
 
-  echo 'ABC' | nc 127.0.0.1 80
+  echo 'ABC' | nc 127.0.0.1 80 -q1
   TCPBACK
 
   docker stop njs_example
+
+*Note: Remove the `-q1` option from `nc` above if you get an error.*
 
 **Code Snippets**
 
