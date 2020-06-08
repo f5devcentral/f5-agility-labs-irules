@@ -24,7 +24,7 @@ In this example we will use the stream module to inspect an incoming TCP connect
 
   docker stop njs_example
 
-*Note: Remove the `-q1` option from `nc` above if you get an error.*
+*Note: Remove the -q1 option from nc above if you get an error.*
 
 **Code Snippets**
 
