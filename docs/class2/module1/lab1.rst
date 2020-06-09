@@ -136,9 +136,9 @@ for anything less than TLSv1.1.
 .. HINT::
 
    #. Change client ssl cipher from ``DEFAULT`` to ``DEFAULT:SSLv3`` by modifying the clientssl profile.
-   #. Use ``curl -vk -sslv3 www.f5demolabs.com:443`` to connect
+   #. Use ``curl -vk -sslv3 https://www.f5demolabs.com:443`` to connect
    #. Move bonus version of irule, Lab1_2, to the selected list of iRules on the HTTPS virtual server
-   #. Try again to use ``curl -vk -sslv3 www.f5demolabs.com:443`` to connect.  It should now be redirected.  
+   #. Try again to use ``curl -vk -sslv3 https://www.f5demolabs.com:443`` to connect.  It should now be redirected.  
 
 Lab Notes
 ~~~~~~~~~
