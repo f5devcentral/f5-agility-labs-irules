@@ -3,6 +3,8 @@ NGINX Dataplane Scripting
 
 This class will introduce the student to customizing NGINX using NGINX JavaScript (njs)
 
+Access to the Presentation is here: https://github.com/f5devcentral/f5-agility-labs-irules/raw/master/docs/_static/class4/Agility2020-NGINXJavaScript.pdf 
+
 **Lab Environment**
 
 In each lab we will configure an NGINX server to either provide content itself or act as a reverse proxy that retrieves content from other servers.
