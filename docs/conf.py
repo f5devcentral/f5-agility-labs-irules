@@ -222,9 +222,6 @@ html_theme_options = {
                      }
 html_last_updated_fmt = '%Y-%m-%d %I:%M:%S'
 
-def setup(app):
-    app.add_stylesheet('css/f5_agility_theme.css')
-
 if on_rtd:
     templates_path = ['_templates']
 
