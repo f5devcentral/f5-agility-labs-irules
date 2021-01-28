@@ -1,34 +1,34 @@
-Lab 3 - HTTP Throttling
------------------------
+Lab 3 - Securing Cookies
+------------------------
 
-Scenario:
-~~~~~~~~~
+Scenario
+~~~~~~~~
 
-Your company has setup a new web application and did not have the time to develop an ASM 
-policy. Due to your companies profile, several bad actors have threatened to attack using 
-SlowLoris and SlowPost attacks to create a denial of service.  Although ASM can handle 
-this very easily and would be the best tool to use, we don't have the resources available 
-to test implementing the policy.  In this lab, we are going to use an iRule that throttles 
-the number of requests coming into the application.
+The security team has done an application scan and found that the HTTP cookies are being issued unsecured. They have asked the application team to verify that all the cookies get the Security and httpOnly flags set at the application tier. But, the app team is in the middle of a new deployment and can't reallocate resources to rewrite the cookie code.  So, they have asked the F5 team to set the flags on the cookies.
 
-Restraints:
-~~~~~~~~~~~
+Restraints
+~~~~~~~~~~
 
-The following restraints complicate the request to implement the throttling of HTTP requests:
+The following restraints prevent from implementing this solution:
 
--  You need to understand the number of the requests that would be coming from a single IP address.
+- The F5 administrators need to know the name of the HTTP Cookie or Cookies that are being used. 
 
--  Some requests may be coming from companies using a single proxy IP address to make the request.  Throttling those requests to only 10 per 10 seconds could impact the ability of a partner company to access the site.  
-
-Requirements:
-~~~~~~~~~~~~~
+Requirements
+~~~~~~~~~~~~
 
 To meet the business's objectives the iRule must meet the following requirements:
 
--  The rule must keep a single client from making too many HTTP requests to a single VIP thus stopping a SlowLoris or SlowPost attack.
+- The iRule must take a HTTP Cookie being sent from the application server and set the Secure flag and the HTTPOnly flag.
 
--  The rule should be able to adjust to the multiple customers coming through a proxy IP address.
- 
+- The security team also requires that the HTTP Cookie not be sent to Javascript Agents. 
+
+Lab Requirements:
+~~~~~~~~~~~~~~~~~
+
+-  BIG-IP LTM, web server, client browser, and SSL server certificate.
+   If you don’t have certificates to test with, you can use the CA
+   certificate, server certificate and the private key provided in the
+   Client Certificate Inspection lab from Additional Labs section.
 
 The iRule
 ~~~~~~~~~
@@ -36,181 +36,161 @@ The iRule
 .. code-block:: tcl
    :linenos:
 
-   when RULE_INIT {
-      # This defines the maximum requests to be served within the timing interval defined by the static::timeout variable below.
-      set static::maxReqs 4;
-
-      # Timer Interval in seconds within which only static::maxReqs Requests are allowed.
-      # (i.e: 10 req per 2 sec == 5 req per sec)
-      # If this timer expires, it means that the limit was not reached for this interval and the request
-      # counting starts over.
-      # Making this timeout large increases memory usage.  Making it too small negatively affects performance.
-      set static::timeout 30;
+   when HTTP_RESPONSE {
+       set ckname "mycookie"
+       if { [HTTP::cookie exists $ckname] } {
+           HTTP::cookie secure $ckname enable
+           HTTP::cookie httponly $ckname enable
+       }
    }
-
-   when HTTP_REQUEST {
-     # The iRule allows throttling for only sepecific Methods.  You list the Methods_to_throttle
-     # in a datagroup.  URIs_to_throttle or Methods_to_throttle.
-     # if you need to throttle by URI use an statement like this:
-     #                               if { [class match [HTTP::uri] equals URIs_to_throttle] }
-     # Note: a URI is everything after the hostname: e.g. /path1/login.aspx?name=user1
-     #
-
-     if { [class match [HTTP::method] equals Methods_to_throttle] } {
-
-        # The following expects the IP addresses in multiple X-forwarded-for headers.  It picks the first one.
-        if { [HTTP::header exists X-forwarded-for] } {
-           set client_IP_addr [getfield [lindex  [HTTP::header values X-Forwarded-For]  0] "," 1]
-        } else {
-           set client_IP_addr [IP::client_addr]
-        }
-        # The matching below expects a datagroup named: Throttling_Whitelist_IPs
-        # The Condition of the if statement is true if the IP address is NOT in the whitelist.
-        if { not ([class match $client_IP_addr equals Throttling_Whitelist_IPs ] )} {
-            set getcount [table lookup -notouch $client_IP_addr]
-            if { $getcount equals "" } {
-                table set $client_IP_addr "1" $static::timeout $static::timeout
-                # record of this session does not exist, starting new record, request is allowed.
-             } else {
-                   if { $getcount < $static::maxReqs } {
-                       log local0. "Request Count for $client_IP_addr is $getcount"
-                       table incr -notouch $client_IP_addr
-                       # record of this session exists but request is allowed.
-                   } else {
-                        HTTP::respond 403 content {
-                             <html>
-                             <head><title>HTTP Request denied</title></head>
-                             <body>Your HTTP requests are being throttled.</body>
-                             </html>
-                        }
-                   }
-            }
-         }
-      }
-   }
-
 
 
 Analysis
 ~~~~~~~~
 
--  Notice that RULE\_INIT sets up a set of variables that respectively
-   define the maximum rate of requests and a timeout value. Alter these values according
-   to your local preferences.
+HTTP cookie misuse represents one of the greatest vulnerability vectors
+known to Internet communications. It’s number 2 on the Open Web
+Application Security Project’s (OWASP) Top Ten list as “broken authentication”
+(https://www.owasp.org/index.php/OWASP_Top_Ten_Cheat_Sheet), and also
+touches other top ten list items, including XSS, security
+misconfiguration, sensitive data exposure, and cross site request
+forgery. 
 
--  The iRule creates an internal table for each client source address,
-   and an entry for each request is added to this table.
+So why do we use cookies if they’re so easy to get wrong? Well,
+as it turns out, HTTP as a “stateless” protocol doesn’t provide its own
+session management mechanism. So cookies are basically the best and
+potentially the only way to maintain information about a user session across
+multiple HTTP requests and responses. Too often, however, applications
+employ mixed content (HTTP and HTTPS in the same application), or worse,
+store too much information in that cookie. 
 
--  As each new request arrives, the iRule counts the number of entries
-   in the respective table. If the count doesn’t exceed the maxRate
-   threshold, a new entry is created and the request is allowed through.
+If an HTTP cookie is being used to maintain an authentication application 
+session, it’s always a best practice to encrypt every part of that application. 
+And it is never a best practice to store anything more than an identifier 
+(some seemingly random and unpredictable blob of characters) in a cookie. 
 
--  If the request exceeds the maxRate threshold, the iRule returns an
-   HTTP error response to the client.
+There are two built-in mechanisms defined in RFC 6265 that can help. But first, 
+let’s first understand what an HTTP cookie is. An HTTP cookie is essentially
+an HTTP header that is sent from the server to the client, and then sent
+back to the server in each and every subsequent request. To send a cookie, 
+the server will format the header as given below:
 
+``Set-Cookie: foo=bar; path=/; domain=domain.com; expires=Sat, 02 May 2009 23:38:35 GMT``
+
+where
+
+- ``foo=bar`` represents the mandatory name=value content
+
+- ``path=/`` represents the mandatory path, or scope of the cookie,
+  such that the browser will only return this cookie if the request is
+  in the designated path (in this case the entire website)
+
+- ``domain=`` represents another, albeit optional, scoping mechanism
+  that tells the browser that this cookie can be sent with any request
+  in the same domain or subdomain. Unlike the path attribute which
+  reduces visibility, the domain attribute increases visibility by
+  making the cookie potentially available across multiple subdomains.
+  Be careful with the domain attribute though. This is an often-used
+  way to build single sign-on, where users authenticate at one domain,
+  but are allowed access to other subdomains by virtue of the cookie
+  being available to all. At the very least, if you don’t own every
+  subdomain that this cookie could possibly be sent to, then someone
+  else may get your user’s session cookies.
+
+- ``expires=`` represents an optional attribute that indicates how
+  long the client should retain this cookie. If the expires attribute
+  is not in the Set-Cookie header, then the cookie is considered
+  “session-based” and will generally live for as long as the browser
+  session (ie. closing the browser deletes the cookie). If the expires
+  attribute exists, the cookie is typically stored on disk or other
+  long-term memory that will persist after the browser is closed and a
+  new one is opened. This is, generally speaking, not a best practice
+  from a security perspective. If a cookie is used to maintain some
+  sort of client state information, and the computer itself is
+  compromised, then that state can also be compromised. It is
+  typically far better to not include an expires attribute, thus
+  deleting the cookie when the browser closes. You can, however,
+  delete an existing in-memory session-based cookie by sending a new
+  cookie with the same attributes but with an expires attribute in the
+  past.
+
+Once the cookie has been received, and depending on scope, the client
+will transmit that information back to the server in every request.
+
+``Cookie: foo=bar``
+
+Notice that a request cookie doesn’t have path, domain or expires
+information. This information is meant for the client only, so doesn’t
+need to be relayed back to the server.
+
+Aside from adjusting path and domain attributes accordingly to limit or
+expand visibility, there are two additional scoping attributes that play
+a crucial part in cookie security.
+
+- ``secure`` represents a single (no value) flag that tells the browser
+  client to only transmit this cookie back in a secure (ie. encrypted
+  HTTPS) request. This attribute is critical against attacks like cross
+  site scripting (XSS) or request forgery (CSRF) where a browser may
+  otherwise be tricked into sending session cookies to an unencrypted
+  host. If you’re encrypting the entire application, the secure cookie
+  flag is an excellent option.
+
+
+- ``httpOnly`` represents a single (no value) flag that tells the
+  browser client to only transmit this cookie back to non-scripted user
+  agents. In other words, if a JavaScript agent makes a request inside the
+  browser, the cookie will not be sent with this request. Many XSS and
+  CSRF exploits rely on the ability to grab session cookies with rogue
+  browser scripting (ex. JavaScript, vbscript, etc.). There are of course
+  instances where a JavaScript agent needs to send the cookie, like in
+  side-channel Ajax requests, but if not, this flag is highly useful.
+
+
+So putting these attributes together might look something like this:
+
+``Set-Cookie: foo=bar; path=/; secure; httponly``
+
+we have removed the **expires** attribute because file-based cookies are
+almost always a bad idea. And we removed the **domain** attribute because
+there are better and more secure ways to do single sign-on. So in this
+example, we are setting a cookie called “foo” with a value of “bar”, that
+is scoped to all paths within this host (path=/), and will only be
+transmitted over HTTPS and only to non-script agents. As I mentioned a
+few times, there’s simply no substitute for a good security product (ie.
+web application firewall, malware scanner, etc.) and no excuse not to
+write secure code, but if you find yourself in a situation where secure
+cookie coding isn’t happening in the application, then here’s a quick
+and easy way to enable it with F5 iRules.
+
+
+-  In this very simple iRule, we’re triggering an event on the HTTP
+   response being sent from the application server, looking for the
+   cookie ``mycookie``. If it exists, enables the ``secure`` and
+   ``httpOnly`` flags. This command effectively includes the ``secure``
+   and ``httpOnly`` flags in the ``Set-Cookie`` header being sent to the
+   client.
 
 Testing
 ~~~~~~~
+In the BIG-IP, 
 
-A very simple way to test this iRule implementation is with a cURL
-script from the Terminal command line. Here’s a Bash representation
-of that script.  We have already put the script on the jumpbox and instructions follow the sameple code below.
+- On the Ubuntu client, access the https URL without iRule to see current cookie status.
 
-.. code-block:: console
-   :linenos:
-
-   #!/bin/bash
-   while [ 1 ]
-   do
-      curl http://www.f5demolabs.com --write-out "%{http_code}\n" --silent -o /dev/null
-   done
+   ``curl –vk https://www.f5demolabs.com``
    
-- In Terminal, cd to scripts directory and run ``bash http_trottling``.
-- Notice that you are getting 200 responses from each request.  We will now add the iRule to the VIP.
-- Login to Bigip01 from Chrome browser.
-- Go to Local->Virtual Servers and select the generic-app-http virtual server.
-- Select the resources tab and select Manage for iRules.
-- Select the sec_http_throttling irule and move it into Enabled.
-- Select Finished.
-- To view logging information on the F5 BIG-IP follow these instruction:
-- Modify the iRule on the F5 to uncomment the line that states:
-    ``log local0. "Request Count for $client_IP_addr is $getcount"``
-- Click on Update on the iRule.
-- Open putty and connect to Bigip01.
-- Run a tail of the BIG-IP LTM log from command line as follows:
+   ``Examine the Set-Cookie line``
 
-   ``tail –f /var/log/ltm``
+- On the BIG-IP, attach the iRule to the https VIP.  It already exists in the lab named ``Lab3``.
 
-The script will make repeated HTTP GET requests. When it exceeds the
-threshold the iRule will generate a 403 error response and prevent
-access to the web server until the **timeout** static variable time
-is reached. 
+- On the Ubuntu client, access the HTTPS URL to see the change in the cookie information.
 
-- Use the CTRL-C keyboard combination to stop the script.
+   ``curl -vk https://www.f5demolabs.com``
+   
+   ``Examine the Set-Cookie line``
 
-Bonus version
-~~~~~~~~~~~~~
-
-The above iRule presents an extremely simple approach to HTTP
-request throttling and is based solely on client source address. The
-following bonus example extends that functionality to allow for
-throttling of specific URLs.
-
-.. code-block:: tcl
-   :linenos:
-
-   when RULE_INIT {
-       # The max requests served within the timing interval per the static::timeout variable
-       set static::maxReqs 4
-       # Timer Interval in seconds within which only static::maxReqs Requests are allowed.  
-       # (i.e: 10 req per 2 sec == 5 req per sec) 
-       # If this timer expires, it means that the limit was not reached for this interval and    
-       # the request counting starts over. Making this timeout large increases memory usage.   
-       # Making it too small negatively affects performance.  
-       set static::timeout 2
-   }
-   when HTTP_REQUEST {
-       # Allows throttling for only specific URIs. List the URIs_to_throttle in a data group. 
-       # Note: a URI is everything after the hostname: e.g. /path1/login.aspx?name=user1
-       if { [class match [HTTP::uri] equals URIs_to_throttle] } {
-           # The following expects the IP addresses in multiple X-forwarded-for headers. 
-           # It picks the first one. If XFF isn’t defined it can grab the true source IP.
-           if { [HTTP::header exists X-forwarded-for] } {
-               set cIP_addr [getfield [lindex  [HTTP::header values X-Forwarded-For]  0] "," 1]
-           } else {
-               set cIP_addr [IP::client_addr]
-           }
-           set getcount [table lookup -notouch $cIP_addr]
-           if { $getcount equals "" } {
-               table set $cIP_addr "1" $static::timeout $static::timeout
-               # Record of this session does not exist, starting new record 
-               # Request is allowed.
-           } else {
-               if { $getcount < $static::maxReqs } {
-                   log local0. "Request Count for $cIP_addr is $getcount"  
-                   table incr -notouch $cIP_addr
-                   # record of this session exists but request is allowed.
-               } else {
-                   HTTP::respond 403 content {
-                   <html>
-                   <head><title>HTTP Request denied</title></head>
-                   <body>Your HTTP requests are being throttled.</body>
-                   </html>
-                   }
-               }
-           }
-       }
-   }
-
-By running the ``http_throttling_bonus`` script, you are checking HTTP requests
-limits against the URL paths in the ``URIs_to_throttle`` datagroup. Here’s a 
-Bash representation of that script.
-
-.. code-block:: console
-   :linenos:
-
-   #!/bin/bash
-   while [ 1 ]
-   do
-      curl http://www.f5demolabs.com/admin --write-out "%{http_code}\n" --silent -o /dev/null
-   done   
+A word on cookie security – the ``secure`` and ``httpOnly`` flags are
+exceedingly important for the proper and secure use of HTTP cookies, but
+alone they are not perfect. There are still ways to compromise HTTP
+cookies, even with these flags enabled, so do take additional
+precautions which should definitely include a solid web application
+firewall product and malware scanning and intrusion detection products.

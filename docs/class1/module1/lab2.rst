@@ -1,49 +1,82 @@
+
 #####################################################
-Lab 2 – Log and Change Headers
+Lab 2 - Log and Change Headers
 #####################################################
 
-Your iRule should log all request headers and all response headers and should remove the response header “Server”.
+Your iRule should:
+
+#. Log all HTTP **request** headers.
+#. Log all HTTP **response** headers.
+#. Remove the header named **Server** from all HTTP responses.
 
 .. ATTENTION::
-  Extra Credit: Change it to look like IIS.
+  OPTIONAL:  Instead of removing the **Server** header in the response, change the value of the **Server** header to **Microsoft-IIS/7.0**.
 
 .. IMPORTANT::
   •	Estimated completion time: 15 minutes
 
 #. Open Chrome Browser
 #. Enter https://bigip1 into the address bar and hit Enter
-#. Login with username: admin password: admin
-#. Click Local Traffic -> iRules  -> iRules List
-#. Click Create button
-#. Enter Name of Header_Log_Strip_iRule
-#. Enter Your Code
-#. Click Finished
-#. Click Local Traffic -> Virtual Servers -> Virtual Server List
-#. Click on http_irules_vip
-#. Click on the Resources tab
-#. Click Manage button for the iRules section
 
-   .. image:: /_static/class1/iRulesManage.png
+   .. image:: /_static/class1/bigip_login.png
+      :width: 800
+
+#. Login with **username**: **admin** 
+              **password**: **admin.F5demo.com**
+#. Click Local Traffic -> iRules  -> iRules List
+#. Click **Create** button
+
+   .. image:: /_static/class1/irule_create.png
+      :width: 800
+
+#. Enter Name of **Header_Log_Strip_iRule**
+#. Enter Your Code
+#. Click **Finished**
+#. Click Local Traffic -> Virtual Servers -> Virtual Server List
+#. Click on **http_irules_vip**
+
+   .. image:: /_static/class1/select_vs.png
+      :width: 800
+
+#. Click on the **Resources** tab
+#. Click **Manage** button for the iRules section
+
+   .. image:: /_static/class1/resources.png
       :width: 800
 
 #. Click on Header_Log_Strip_iRule from the Available box and click the << button, thus moving it to the Enabled box, your first and now second iRule should be in the Enabled box.
-#. Click the Finished button
+
+   .. image:: /_static/class1/lab2-irules-add.png
+      :width: 800
+
+#. Click the **Finished** button
 #. Open the Firefox browser
 #. Click the 3 horizontal line button on the far right of the address bar
-#. Install HTTPFox and toggle on, or use developer tools in Chrome to view headers
-#. Click the Start button on the HTTPFox window (if using HTTPFox)
+#. Use **developer tools** in Mozilla, or use Chrome to view headers
+
+   .. image:: /_static/class1/firefox_developer.png
+      :width: 600
+
 #. Enter http://dvwa.f5lab.com/  and ensure you get there
 #. Now enter http://wackopicko.f5lab.com/
 #. Finally, enter http://peruggia.f5lab.com/ and ensure you can get to that app
 #. Look at the headers for each of your requests. Did you log them all? What is the value of the Server header?
 
+   .. image:: /_static/class1/lab2_verify-remove.png
+      :width: 800
+
+.. ATTENTION::
+  OPTIONAL:  Instead of removing the **Server** header in the response, change the value of the **Server** header to **Microsoft-IIS/7.0**.
+
+   .. image:: /_static/class1/lab2_verify.png
+      :width: 800
 
 .. HINT::
 
   Basic Hint
   `if you need a hint here is some example code: <../../class1/module1/irules/lab2irule_0.html>`__
 
-  Link to DevCentral: https://devcentral.f5.com/wiki/iRules.HTTP__header.ashx
+  Link to DevCentral: https://clouddocs.f5.com/api/irules/HTTP__header.html
 
   If you are really stuck, here is what we are looking for:
 
