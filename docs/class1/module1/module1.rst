@@ -1,6 +1,6 @@
 
-Labs - Cooking with iRules Labs
-===============================
+Labs - Application Flow Control with iRules
+===========================================
 
 
 This is the collection of HTTP Labs.  Here is where you get to prove you listened in class :)

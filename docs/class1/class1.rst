@@ -1,5 +1,5 @@
-Cooking with iRules - HTTP
-==========================
+Application Flow Control with iRules 
+====================================
 
 This class covers the following topics: 
 
@@ -21,7 +21,7 @@ Expected time to complete: **1.25 hours**
 
 
 Lab Components
-^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~
 
 The following table lists the Credentials for all components:
 
