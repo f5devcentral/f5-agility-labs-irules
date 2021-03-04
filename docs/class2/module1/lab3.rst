@@ -176,7 +176,7 @@ In the BIG-IP,
 
 - On the Ubuntu client, access the https URL without iRule to see current cookie status.
 
-   ``curl –vk https://www.f5demolabs.com``
+   ``curl -vk https://www.f5demolabs.com``
    
    ``Examine the Set-Cookie line``
 

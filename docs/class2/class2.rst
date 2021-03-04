@@ -1,5 +1,5 @@
-Cooking with iRules - Security/SSL
-==================================
+Securing your application with iRules
+=====================================
 
 Security vulnerabilities are on the rise. In 2018, over 16,000 new CVEs were published, a more than 300% increase over 5 years (according to Skybox Security's 2019 Vulnerability and Threat Trends Report), and the number of known critical vulnerabilities is so large that application security teams simply cannot patch quickly enough.  As you’re no doubt aware by now, F5 iRules can often “fix”
 things that are missing or hard to solve in the existing application

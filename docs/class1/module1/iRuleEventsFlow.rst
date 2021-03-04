@@ -3,8 +3,8 @@ iRules Events
 #####################################################
 
 
-Here is the link to the iRule Events
-------------------------------------------------------------------------------------
+**Here is the link to the iRule Events**
+
 
 Complete listing of events - https://clouddocs.f5.com/api/irules/Events.html
 

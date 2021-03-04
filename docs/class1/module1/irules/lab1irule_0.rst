@@ -6,7 +6,7 @@ Lab 1 - Create an iRule that Parses URI to Route Traffic
 
 
 Example code to help you on your journey (Not fully functional):
-------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------
 
 Using an if / then / else / elseif
 
