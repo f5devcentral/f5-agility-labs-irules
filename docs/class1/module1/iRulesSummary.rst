@@ -3,8 +3,8 @@ iRules Summary
 #####################################################
 
 
-Here is a summary of all the irules used in this lab
-------------------------------------------------------------------------------------
+**Here is a summary of all the irules used in this lab**
+
 
 .. toctree::
    :maxdepth: 1
