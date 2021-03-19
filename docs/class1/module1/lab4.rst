@@ -47,7 +47,7 @@ Create a Stream Profile to change the body of the DVWA site
 
 #. Click on Stream_iRule from the Available box and click the << button, thus moving it to the Enabled box, your first and now second iRule should be in the Enabled box.
 
-   .. image:: /_static/class1/manage_irule.png
+   .. image:: /_static/class1/lab4-irules-add.png
       :width: 800
 
 #. Click the **Finished** button
