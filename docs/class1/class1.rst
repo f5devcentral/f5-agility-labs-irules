@@ -31,10 +31,10 @@ The following table lists the Credentials for all components:
     * - **Component**
       - **VLAN/IP Address(es)**
       - **Credentials**
-    * - BigIP admin
+    * - BIG-IP admin
       - **Management:** ``bigip1``
       - ``admin``/``admin.F5demo.com``
-    * - Bigip root
+    * - BIG-IP root
       - **Management:** - ``bigip1``
       - ``root``/``default.F5demo.com``
     * - Jumphost
