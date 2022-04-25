@@ -43,7 +43,6 @@ The link will open as an HTTP URL.
 The iRule:
 ~~~~~~~~~~
 .. code-block:: tcl
-   :linenos:
    
    when HTTP_REQUEST {
        # Explicitly disable the stream profile for each request so it doesn’t stay

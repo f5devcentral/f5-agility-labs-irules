@@ -34,7 +34,6 @@ The iRule
 ~~~~~~~~~
 
 .. code-block:: tcl
-   :linenos:
 
    when RULE_INIT {
       # This defines the maximum requests to be served within the timing interval defined by the static::timeout variable below.
@@ -117,7 +116,6 @@ script from the Terminal command line. Here’s a Bash representation
 of that script.  We have already put the script on the Ubuntu client and instructions follow the sample code below.
 
 .. code-block:: console
-   :linenos:
 
    #!/bin/bash
    while [ 1 ]
@@ -157,7 +155,6 @@ following bonus example extends that functionality to allow for
 throttling of specific URLs.
 
 .. code-block:: tcl
-   :linenos:
 
    when RULE_INIT {
        # The max requests served within the timing interval per the static::timeout variable
@@ -207,7 +204,6 @@ limits against the URL paths in the ``URIs_to_throttle`` datagroup. Here’s a
 Bash representation of that script.
 
 .. code-block:: console
-   :linenos:
 
    #!/bin/bash
    while [ 1 ]

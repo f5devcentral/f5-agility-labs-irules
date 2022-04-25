@@ -51,7 +51,6 @@ The iRule
 ~~~~~~~~~~~
 
 .. code-block:: tcl 
-   :linenos:
 
    when CLIENT_ACCEPTED {
       set geopbd_debug_verb 1

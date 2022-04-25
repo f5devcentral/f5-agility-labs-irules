@@ -17,7 +17,6 @@ The iRule
 ~~~~~~~~~
 
 .. code-block:: tcl
-   :linenos:
 
    when HTTP_REQUEST {
        # Use [HTTP::header values "X-Forwarded-For"] for testing
