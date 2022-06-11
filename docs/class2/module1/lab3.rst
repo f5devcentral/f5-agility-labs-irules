@@ -34,7 +34,6 @@ The iRule
 ~~~~~~~~~
 
 .. code-block:: tcl
-   :linenos:
 
    when HTTP_RESPONSE {
        set ckname "mycookie"

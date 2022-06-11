@@ -96,7 +96,6 @@ The iRule
 ~~~~~~~~~
 
 .. code-block:: tcl
-   :linenos:
 
    when RULE_INIT {
        set static::fqdn_pin1 "X3pGTSOuJeEVw989IJ/cEtXUEmy52zs1TZQrU06KUKg="

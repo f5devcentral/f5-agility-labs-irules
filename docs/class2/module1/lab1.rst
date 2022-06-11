@@ -55,7 +55,6 @@ The iRule
 ~~~~~~~~~
 
 .. code-block:: tcl
-   :linenos:
 
    when CLIENTSSL_HANDSHAKE {
        ISTATS::incr "ltm.virtual [virtual name] c [SSL::cipher version]" 1
@@ -120,7 +119,6 @@ security threshold, we’ll redirect the user to another page or site
 to inform them that they need to upgrade their browser.
 
 .. code-block:: tcl
-   :linenos:
 
    when HTTP_REQUEST {
        if { (( [SSL::cipher version] equals "TLSv1" ) or ( [SSL::cipher version] equals "SSLv3" )) and not ( [HTTP::uri] equals "/insecure.html" ) } {

@@ -60,7 +60,6 @@ The iRule
 
 
 .. code-block:: tcl 
-   :linenos:
 
    when ASM_REQUEST_DONE {
       set asm1_debug_verb 1
